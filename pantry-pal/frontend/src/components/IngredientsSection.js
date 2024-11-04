@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 export default function IngredientsSection() {
+  // hooks are special 
   const [ingredients, setIngredients] = useState([
     { id: 1, name: "Tomatoes", available: true },
     { id: 2, name: "Chicken", available: false },

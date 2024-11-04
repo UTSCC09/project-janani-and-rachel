@@ -1,6 +1,6 @@
 // backend/server.js
 const express = require('express');
-const recipeRoutes = require('./routes/recipes');
+// const recipeRoutes = require('./routes/recipes');
 const cors = require('cors'); // Enables CORS for cross-origin requests
 const app = express();
 const PORT = process.env.PORT || 5000;

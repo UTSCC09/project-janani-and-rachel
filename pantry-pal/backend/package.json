@@ -20,6 +20,8 @@
   "homepage": "https://github.com/UTSCC09/project-janani-and-rachel#readme",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.21.1"
+    "express": "^4.21.1",
+    "firebase": "^11.0.1",
+    "firebase-admin": "^12.7.0"
   }
 }

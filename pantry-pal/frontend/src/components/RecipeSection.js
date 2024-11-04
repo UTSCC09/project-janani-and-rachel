@@ -1,17 +1,21 @@
-import { useState } from "react";
+// Example usage in a frontend component
+import { useEffect, useState } from 'react';
 
-export default function RecipeSection() {
-  const [recipes, setRecipes] = useState([
-    { id: 1, name: "Spaghetti Bolognese" },
-    { id: 2, name: "Chicken Curry" },
-  ]);
+export default function RecipeList() {
+  const [recipes, setRecipes] = useState([]);
+
+  useEffect(() => {
+    fetch('/api/recipes') // URL pointing to backend API
+      .then((res) => res.json())
+      .then((data) => setRecipes(data));
+  }, []);
 
   return (
     <div>
       <h2>Recipes</h2>
       <ul>
-        {recipes.map((recipe) => (
-          <li key={recipe.id}>{recipe.name}</li>
+        {recipes.map((recipe, index) => (
+          <li key={index}>{recipe.name}</li>
         ))}
       </ul>
     </div>

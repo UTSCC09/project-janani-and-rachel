@@ -1,6 +1,6 @@
 // backend/server.js
-const express = require('express');
-const recipeRoutes = require('./routes/recipes.js');
+import express from 'express';
+import recipeRoutes from './routes/recipes.js';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -10,5 +10,3 @@ app.use('/api/recipes', recipeRoutes); // Route for recipe-related requests
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-

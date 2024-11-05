@@ -1,7 +1,21 @@
 // backend/routes/recipes.js
-const express = require('express');
-const router = express.Router();
-const { addRecipe, getAllRecipes, getRecipeById } = require('../config/db.js'); // Corrected path
+// might need to import collection, getDocs from 'firebase/firestore/lite';
+import express from 'express';
+export const router = express.Router();
+
+// Function to add a new recipe
+export function addRecipe() {
+  return;
+};
+// Function to get all recipes
+export function getAllRecipes() {
+  return;
+};
+
+// Function to get a recipe by ID
+export function getRecipeById() {
+  return;
+};
 
 // Route to get all recipes
 router.get('/', async (req, res) => {
@@ -38,5 +52,3 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ message: 'Error fetching recipe' });
   }
 });
-
-module.exports = router;

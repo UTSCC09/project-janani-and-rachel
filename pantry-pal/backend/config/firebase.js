@@ -1,7 +1,8 @@
 // backend/config/firebase.js
-const firebase = require('firebase/app'); // Use Firebase as per your requirement
+import { initializeApp } from 'firebase/app';
+
 // Import Firebase services as needed, for example:
-// require('firebase/firestore'); // If you are using Firestore
+import { getFirestore } from 'firebase/firestore/lite';
 
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
@@ -12,7 +13,8 @@ const firebaseConfig = {
   appId: "YOUR_APP_ID"
 };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
 
-module.exports = firebase;
+// documentation
+// https://www.npmjs.com/package/firebase

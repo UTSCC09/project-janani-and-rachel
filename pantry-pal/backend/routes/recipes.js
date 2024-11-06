@@ -1,7 +1,9 @@
 // backend/routes/recipes.js
 // might need to import collection, getDocs from 'firebase/firestore/lite';
 import express from 'express';
-export const router = express.Router();
+const router = express.Router(); // add back const
+export default router;
+
 
 // Function to add a new recipe
 export function addRecipe() {
@@ -20,8 +22,9 @@ export function getRecipeById() {
 // Route to get all recipes
 router.get('/', async (req, res) => {
   try {
-    const recipes = await getAllRecipes(); // Assume this returns a promise
-    res.json(recipes);
+    return res.json("Hello from server");
+    // const recipes = await getAllRecipes(); // Assume this returns a promise
+    // res.json(recipes);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching recipes' });
   }

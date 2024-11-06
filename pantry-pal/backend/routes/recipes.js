@@ -1,13 +1,15 @@
 // backend/routes/recipes.js
+// this route is for real time sharing of recipes between users
 // might need to import collection, getDocs from 'firebase/firestore/lite';
 import express from 'express';
-const router = express.Router(); // add back const
+const router = express.Router();
 export default router;
 
 // Function to add a new recipe
 export function addRecipe() {
   return;
 };
+
 // Function to get all recipes
 export function getAllRecipes() {
   return;

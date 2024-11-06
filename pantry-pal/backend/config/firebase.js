@@ -1,6 +1,5 @@
 // backend/config/firebase.js
 import { initializeApp } from 'firebase/app';
-
 // we might (idk yet) if we will need admin firebase module for this
 
 // Import Firebase services as needed, for example:

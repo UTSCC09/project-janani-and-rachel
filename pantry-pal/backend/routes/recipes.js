@@ -23,7 +23,16 @@ export function getRecipeById() {
 // Route to get all recipes
 router.get('/', async (req, res) => {
   try {
-    return res.json("Hello from server");
+    // return an array of recipes (this is temporary data for testing)
+    const recipes = [
+      { id: 1, name: 'Pasta', ingredients: ['pasta', 'tomato sauce', 'cheese'] },
+      { id: 2, name: 'Salad', ingredients: ['lettuce', 'tomato', 'cucumber'] },
+      { id: 3, name: 'Pizza', ingredients: ['dough', 'tomato sauce', 'cheese', 'pepper'] },
+    ];
+    res.json(recipes);
+    // return code 200
+    res.status(200);
+
     // const recipes = await getAllRecipes(); // Assume this returns a promise
     // res.json(recipes);
   } catch (error) {

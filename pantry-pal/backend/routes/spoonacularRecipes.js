@@ -7,8 +7,9 @@ import express from 'express';
 const router = express.Router();
 export default router;
 
-export function getRecipe() {
-    return;
+export function getRecipe(ingredients) {
+    // return a random recipe for now
+    // this is a placeholder for now
 };
 
 // Route to get recipes given a list of ingredients

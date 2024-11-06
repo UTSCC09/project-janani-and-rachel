@@ -4,6 +4,7 @@ import RecipeSection from "@/components/RecipeSection";
 import IngredientsSection from "@/components/IngredientsSection";
 import ShoppingListSection from "@/components/ShoppingListSection";
 import CalendarSection from "@/components/CalendarSection";
+import RecipeSearch from "@/components/RecipeSearch"; // Import the RecipeSearch component
 import styles from "@/styles/Home.module.css";
 
 export default function Home() {
@@ -23,6 +24,7 @@ export default function Home() {
           <button onClick={() => setActiveSection("ingredients")}>Ingredients</button>
           <button onClick={() => setActiveSection("shoppingList")}>Shopping List</button>
           <button onClick={() => setActiveSection("calendar")}>Calendar</button>
+          <button onClick={() => setActiveSection("recipeSearch")}>Search Recipes</button> {/* New Button for Recipe Search */}
         </nav>
 
         <main className={styles.content}>
@@ -30,6 +32,7 @@ export default function Home() {
           {activeSection === "ingredients" && <IngredientsSection />}
           {activeSection === "shoppingList" && <ShoppingListSection />}
           {activeSection === "calendar" && <CalendarSection />}
+          {activeSection === "recipeSearch" && <RecipeSearch onSearch={() => {}} />} {/* Show RecipeSearch when selected */}
         </main>
       </div>
     </>

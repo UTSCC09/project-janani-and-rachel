@@ -1,10 +1,12 @@
 import { useState } from "react";
+import RecipeSuggestion from "@/components/RecipeSuggestion"; // Import the RecipeSuggestion component
 
 export default function IngredientsSection() {
-  // hooks are special 
   const [ingredients, setIngredients] = useState([
     { id: 1, name: "Tomatoes", available: true },
     { id: 2, name: "Chicken", available: false },
+    { id: 3, name: "Lettuce", available: true }, // Add more sample ingredients
+    { id: 4, name: "Onions", available: true },
   ]);
 
   return (
@@ -17,6 +19,9 @@ export default function IngredientsSection() {
           </li>
         ))}
       </ul>
+
+      {/* Pass ingredients to RecipeSuggestion */}
+      <RecipeSuggestion ingredients={ingredients} />
     </div>
   );
 }

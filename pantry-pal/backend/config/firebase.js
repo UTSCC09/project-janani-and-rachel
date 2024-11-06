@@ -6,6 +6,7 @@ import { initializeApp } from 'firebase/app';
 // Import Firebase services as needed, for example:
 import { getFirestore } from 'firebase/firestore/lite';
 
+// need to replace this with the .env variables
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_AUTH_DOMAIN",

@@ -1,16 +1,7 @@
 // backend/config/firebase.js
 import { initializeApp } from 'firebase/app';
-<<<<<<< Updated upstream
-// we might (idk yet) if we will need admin firebase module for this
-
-// Import Firebase services as needed, for example:
-import { getFirestore } from 'firebase/firestore/lite';
-
-// need to replace this with the .env variables
-=======
 import { getDatabase } from "firebase/database";
 
->>>>>>> Stashed changes
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,

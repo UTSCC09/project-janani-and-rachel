@@ -1,4 +1,5 @@
 // backend/server.js
+import 'dotenv/config';
 import express from 'express';
 import { router as recipeRoutes } from './routes/recipes/recipes.js';
 import { router as ingredientRoutes } from './routes/ingredients.js';

@@ -4,8 +4,7 @@
 // to their list of recipes
 
 import express from 'express';
-const router = express.Router();
-export default router;
+export const router = express.Router();
 
 export function getRecipe(ingredients) {
     // return a random recipe for now

@@ -2,14 +2,13 @@
 // this route is for real time sharing of recipes between users
 // might need to import collection, getDocs from 'firebase/firestore/lite';
 import express from 'express';
-import recipeServices from '../../services/favRecipeServices'; 
+import { getFavRecipes } from '../../services/favRecipeServices.js'; 
 
 export const router = express.Router();
 
 // Route to get all favorited recipes
 router.get('/', (req, res, next) => {
-    recipeServices
-        .getFavRecipes("Janani")
+    getFavRecipes("Janani")
         .then((recipes) => {
             return res.status(200).json(recipes);
         });

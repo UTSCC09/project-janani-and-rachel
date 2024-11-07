@@ -1,78 +1,217 @@
 openapi: 3.0.0
 info:
-  title: Recipe API
-  description: API to retrieve recipes by their ID
+  title: Pantry Management API
+  description: API to manage pantry items and recipes 
   version: 1.0.0
 paths:
-  /recipes/{id}:
+  /api/ingredients/pantry:
     get:
-      summary: Get a recipe by ID
-      description: Retrieve a recipe by its unique identifier.
+      summary: Get all pantry items for a user
+      responses:
+        '200':
+          description: List of pantry items
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/Ingredient'
+    post:
+      summary: Add or update an ingredient in the pantry
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ingredient'
+      responses:
+        '201':
+          description: Pantry item added or updated
+  /api/recipes/favorites:
+    get:
+      summary: Get all favorite recipes for a user
+      responses:
+        '200':
+          description: List of favorite recipes
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/FavRecipe'
+    post:
+      summary: Add a favorite recipe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FavRecipe'
+      responses:
+        '201':
+          description: Recipe added to favorites
+  /api/recipes/{recipeId}:
+    patch:
+      summary: Update a favorite recipe
       parameters:
-        - name: id
+        - name: recipeId
           in: path
           required: true
           schema:
             type: string
-          description: The unique identifier of the recipe.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FavRecipe'
       responses:
         '200':
-          description: Recipe found and returned successfully
+          description: Recipe updated
+    delete:
+      summary: Remove a favorite recipe
+      parameters:
+        - name: recipeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Recipe removed
+  /api/recipes/shoppingList:
+    get:
+      summary: Get a user's shopping list
+      responses:
+        '200':
+          description: List of shopping list items
           content:
             application/json:
               schema:
                 type: object
-                properties:
-                  id:
-                    type: string
-                    description: The ID of the recipe
-                  name:
-                    type: string
-                    description: The name of the recipe
-                  ingredients:
-                    type: array
-                    items:
-                      type: string
-                    description: List of ingredients
-                  instructions:
-                    type: string
-                    description: Cooking instructions for the recipe
-        '404':
-          description: Recipe not found
+                additionalProperties:
+                  $ref: '#/components/schemas/ShoppingListItem'
+    post:
+      summary: Add or update an item in the shopping list
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShoppingListItem'
+      responses:
+        '201':
+          description: Item added to shopping list
+  /api/recipes/mealPlan/{date}:
+    get:
+      summary: Get meal plan for a specific date
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Meal plan for the date
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Recipe not found"
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Error fetching recipe"
+                $ref: '#/components/schemas/MealPlan'
+    patch:
+      summary: Update meal plan for a specific date
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MealPlan'
+      responses:
+        '200':
+          description: Meal plan updated
+
 components:
   schemas:
+    Ingredient:
+      type: object
+      properties:
+        quantity:
+          type: number
+          nullable: true
+        units:
+          type: string
+          nullable: true
+        purchaseDate:
+          type: string
+          format: date
+          nullable: true
+        expirationDate:
+          type: string
+          format: date
+          nullable: true
+        frozen:
+          type: boolean
+          default: false
+    FavRecipe:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        ingredients:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Ingredient'
+        directions:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        planned:
+          type: boolean
+          default: false
+        date:
+          type: string
+          format: date
+          nullable: true
+    ShoppingListItem:
+      type: object
+      properties:
+        quantity:
+          type: number
+          nullable: true
+        units:
+          type: string
+          nullable: true
+    MealPlan:
+      type: object
+      properties:
+        breakfast:
+          type: string
+          nullable: true
+        lunch:
+          type: string
+          nullable: true
+        dinner:
+          type: string
+          nullable: true
+        snack:
+          type: string
+          nullable: true
     Recipe:
       type: object
       properties:
-        id:
+        title:
           type: string
-          description: The ID of the recipe
-        name:
-          type: string
-          description: The name of the recipe
         ingredients:
-          type: array
-          items:
-            type: string
-          description: List of ingredients
-        instructions:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Ingredient'
+        directions:
           type: string
-          description: Cooking instructions for the recipe
+        notes:
+          type: string

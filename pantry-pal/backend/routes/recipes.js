@@ -2,8 +2,10 @@
 // this route is for real time sharing of recipes between users
 // might need to import collection, getDocs from 'firebase/firestore/lite';
 import express from 'express';
-const router = express.Router();
-export default router;
+import { getFavRecipes } from '../services/recipeServices'; 
+
+export const router = express.Router();
+
 
 // Function to add a new recipe
 export function addRecipe() {

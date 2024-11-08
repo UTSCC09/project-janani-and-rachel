@@ -6,22 +6,6 @@
 import express from 'express';
 export const router = express.Router();
 
-export function getRecipe(ingredients) {
-    // return a random recipe for now
-    // this is a placeholder for now
-};
-
-// Route to get recipes given a list of ingredients
-router.get('/', async (req, res) => {
-    const { ingredients } = req.body;
-    try {
-        const recipe = await getRecipe(ingredients); // Assume this returns a promise
-        if (recipe) {
-            res.json(recipe);
-        } else {
-            res.status(404).json({ message: 'Recipe not found' });
-        }
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching recipe' });
-    }
-});
+router.get('/', (req, res, next) => {
+    
+})

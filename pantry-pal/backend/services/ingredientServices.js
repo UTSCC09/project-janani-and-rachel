@@ -1,161 +1,137 @@
-import { getPriority } from 'os';
 import { db } from '../config/firebase.js';
-import { ref, get, set, update } from 'firebase/database';
+import { collection, doc, setDoc, getDocs, getDoc, deleteDoc, limit, orderBy, query, startAfter } from 'firebase/firestore';
 
-export function getIngredients(uid) {
-    
-    return new Promise((resolve, reject) => {
-        const ingredientsRef = ref(db, `users/${uid}/ingredients`);
+export async function getPantry(uid, page = 1, lim = 10) {
+    try {
+      const pantryRef = collection(db, 'Users', uid, 'Pantry');
+      let q = query(pantryRef, orderBy('ingredientName'), limit(lim)); // base query with limit
+  
+      // Retrieve the data
+      const snapshot = await getDocs(q);
+  
+      if (snapshot.empty) {
+        console.log("No more ingredients in pantry for the specified page.");
+        return [];
+      }
+  
+      return snapshot.docs.map(doc => doc.data());
+    } catch (error) {
+      console.error("Error fetching paginated pantry ingredients:", error);
+      throw error;
+    }
+  }
 
-        get(ingredientsRef).then((snapshot) => {
-            if (snapshot.exists()) {
-                const ingredients = snapshot.val();
-                resolve(ingredients);
-            } else {
-                console.log("No data available");
-                resolve([]);
-            }
-        }).catch((error) => {
-            console.error("Error reading data: ", error);
-            reject(error);
-        });
-    });
-};
-export function getPantry(uid) {
-
-    return new Promise((resolve, reject) => {
-        const pantryRef = ref(db, `users/${uid}/pantry`);
-
-        get(pantryRef).then((snapshot) => {
-            if (snapshot.exists()) {
-                const pantry = snapshot.val();
-                resolve(pantry);
-            } else {
-                console.log("No data available");
-                resolve([]);
-            }
-        }).catch((error) => {
-            console.error("Error reading data: ", error);
-            reject(error);
-        });
-    });
-};
-export function addToPantry(uid, ingredientName, purchaseDate = new Date(), expirationDate = null, quantity = null, unit = null, frozen = false) {
-    return new Promise((resolve, reject) => {
-        const pantryRef = ref(db, `users/${uid}/pantry/${ingredientName}`);
-        const ingredientRef = ref(db, `users/${uid}/ingredients/${ingredientName}`);
-
-        // Construct pantry data, excluding null values
-        const pantryData = {
-            purchaseDate: purchaseDate.toISOString(),  // Store date as ISO string
+export async function addToPantry(uid, ingredientName, purchaseDate = new Date(), expirationDate = null, frozen = false) {
+    try {
+        const pantryRef = doc(db, 'Users', uid, 'Pantry', ingredientName);
+      
+        const ingredientData = {
+            ingredientName: ingredientName,
+            purchaseDate: purchaseDate,
+            expirationDate: expirationDate,
             frozen: frozen
         };
-        if (expirationDate) pantryData.expirationDate = expirationDate.toISOString();
-        if (quantity) pantryData.quantity = quantity;
-        if (unit) pantryData.unit = unit;
-
-        // Execute both `set` operations and resolve after both are complete
-        const pantryPromise = set(pantryRef, pantryData);
-        const ingredientPromise = update(ingredientRef, { inPantry: true });
-
-        // Wait for both promises to resolve
-        Promise.all([pantryPromise, ingredientPromise])
-            .then(() => {
-                resolve(`Added ${ingredientName} to pantry successfully.`);
-            })
-            .catch((error) => {
-                console.error("Error adding data: ", error);
-                reject(error);
-            });
-    });
+  
+        await setDoc(pantryRef, ingredientData);
+  
+        console.log(`Ingredient '${ingredientName}' added to pantry for user ${uid}.`);
+        return ingredientData; // return the data for confirmation if needed
+    } 
+    catch (error) {
+        console.error("Error adding ingredient to pantry:", error);
+        throw error;
+    }
 }
 
 export function modifyInPantry() {}
-export function removeFromPantry(uid, ingredientName) {
-    return new Promise((resolve, reject) => {
-        const pantryRef = ref(db, `users/${uid}/pantry/${ingredientName}`);
-        const ingredientRef = ref(db, `users/${uid}/ingredients/${ingredientName}`);
+export async function removeFromPantry(uid, ingredientId) {
+    const ingredientRef = doc(db, 'Users', uid, 'Pantry', ingredientId);
+    try {
+        // Get the document before deleting
+        const ingredientDoc = await getDoc(ingredientRef);
+      
+        if (!ingredientDoc.exists) {
+            throw new Error(`Ingredient with ID ${ingredientId} not found in pantry.`);
+        }
+  
+        // Store the data of the ingredient to return it after deletion
+        const deletedIngredient = ingredientDoc.data();
+  
+        // Delete the document
+        await deleteDoc(ingredientRef);
+  
+        console.log("Ingredient deleted from pantry with ID:", ingredientId);
+        return deletedIngredient;
+    } 
+    catch (error) {
+        console.error("Error deleting ingredient from pantry:", error);
+        throw error;
+    }
+}
 
-        // Execute both `set` operations and resolve after both are complete
-        const pantryPromise = set(pantryRef, null);
-        const ingredientPromise = update(ingredientRef, { inPantry: null });
-
-        // Wait for both promises to resolve
-        Promise.all([pantryPromise, ingredientPromise])
-            .then(() => {
-                resolve(`Removed ${ingredientName} from pantry successfully.`);
-            })
-            .catch((error) => {
-                console.error("Error removing data: ", error);
-                reject(error);
-            });
-    });
+export async function getShoppingList(uid, page=1, lim=10) {
+    try {
+        const shoppingListRef = collection(db, 'Users', uid, 'ShoppingList');
+        let q = query(shoppingListRef, orderBy('ingredientName'), limit(lim)); // base query with limit
+  
+        // Retrieve the data
+        const snapshot = await getDocs(q);
+  
+        if (snapshot.empty) {
+            console.log("No more ingredients in shopping list for the specified page.");
+            return [];
+        }
+  
+        return snapshot.docs.map(doc => doc.data());
+    } catch (error) {
+        console.error("Error fetching paginated shopping list ingredients:", error);
+        throw error;
+    }
 };
-export function getShoppingList(uid) {
-    return new Promise((resolve, reject) => {
-        const shoppingListRef = ref(db, `users/${uid}/shoppingList`);
 
-        get(shoppingListRef).then((snapshot) => {
-            if (snapshot.exists()) {
-                const shoppingList = snapshot.val();
-                resolve(shoppingList);
-            } else {
-                console.log("No data available");
-                resolve([]);
-            }
-        }).catch((error) => {
-            console.error("Error reading data: ", error);
-            reject(error);
-        });
-    });
-};
-export function addToShoppingCart(uid, ingredientName, quantity=null, units=null) {
-    return new Promise((resolve, reject) => {
-        const shoppingListRef = ref(db, `users/${uid}/shoppingList/${ingredientName}`);
-        const ingredientRef = ref(db, `users/${uid}/ingredients/${ingredientName}`);
-
-        // Construct shopping list data
-        const shoppingListData = {
-            priority: "medium",
-            quantity: quantity,
-            units: units // Changed to 'units' to match your schema
+export async function addToShoppingList(uid, ingredientName) {
+    try {
+        const shoppingListRef = doc(db, 'Users', uid, 'ShoppingList', ingredientName);
+      
+        const ingredientData = {
+            ingredientName: ingredientName,
         };
-
-        // Update only the inShoppingList field for the ingredient
-        const shoppingListPromise = set(shoppingListRef, shoppingListData);
-        const ingredientPromise = update(ingredientRef, { inShoppingList: true });
-
-        // Wait for both promises to resolve
-        Promise.all([shoppingListPromise, ingredientPromise])
-            .then(() => {
-                resolve(`Added ${quantity} ${units} of ${ingredientName} to shopping list successfully.`);
-            })
-            .catch((error) => {
-                console.error("Error adding data: ", error);
-                reject(error);
-            });
-    });
+  
+        await setDoc(shoppingListRef, ingredientData);
+  
+        console.log(`Ingredient '${ingredientName}' added to shopping list for user ${uid}.`);
+        return ingredientData; // return the data for confirmation if needed
+    } 
+    catch (error) {
+        console.error("Error adding ingredient to shopping list:", error);
+        throw error;
+    }
 };
 
 export function modifyInShoppingCart() {};
-export function removeFromShoppingCart(uid, ingredientName) {
-    return new Promise((resolve, reject) => {
-        const shoppingListRef = ref(db, `users/${uid}/shoppingList/${ingredientName}`);
-        const ingredientRef = ref(db, `users/${uid}/ingredients/${ingredientName}`);
-
-        // Execute both `set` operations and resolve after both are complete
-        const shoppingListPromise = set(shoppingListRef, null);
-        const ingredientPromise = update(ingredientRef, { inShoppingList: null });
-
-        // Wait for both promises to resolve
-        Promise.all([shoppingListPromise, ingredientPromise])
-            .then(() => {
-                resolve(`Removed ${ingredientName} from shopping list successfully.`);
-            })
-            .catch((error) => {
-                console.error("Error removing data: ", error);
-                reject(error);
-            });
-    });
+export async function removeFromShoppingCart(uid, ingredientName) {
+    try {
+        const ingredientRef = doc(db, 'Users', uid, 'ShoppingList', ingredientName);
+      
+        // Get the document before deleting
+        const ingredientDoc = await getDoc(ingredientRef);
+      
+        if (!ingredientDoc.exists) {
+            throw new Error(`Ingredient with ID ${ingredientName} not found in shopping list.`);
+        }
+  
+        // Store the data of the ingredient to return it after deletion
+        const deletedIngredient = ingredientDoc.data();
+  
+        // Delete the document
+        await deleteDoc(ingredientRef);
+  
+        console.log("Ingredient deleted from shopping list with ID:", ingredientName);
+        return deletedIngredient;
+    }
+    catch (error) {
+        console.error("Error deleting ingredient from shopping list:", error);
+        throw error;
+    }
 };
 

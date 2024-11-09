@@ -1,7 +1,7 @@
 import express from 'express';
-import { getIngredients, getPantry, addToPantry, removeFromPantry }  
+import { getPantry, addToPantry, removeFromPantry }  
     from '../services/ingredientServices.js';
-import { getShoppingList, addToShoppingCart, removeFromShoppingCart } 
+import { getShoppingList, addToShoppingList, removeFromShoppingCart } 
     from '../services/ingredientServices.js';
 
 export const router = express.Router();
@@ -16,7 +16,7 @@ router.get('/', (req, res, next) => {
 });
 
 router.get('/pantry', (req, res, next) => {
-    const uid = 'janani_gurram'; // for testing purposes
+    const uid = 'Janani'; // for testing purposes
     getPantry(uid).then((pantry) => {
         res.json(pantry);
     }).catch((error) => {
@@ -25,9 +25,9 @@ router.get('/pantry', (req, res, next) => {
 });
 
 router.post('/pantry', (req, res, next) => {
-    const uid = 'janani_gurram'; // for testing purposes
-    const { name, purchaseDate, expirationDate, quantity, unit, frozen } = req.body;
-    addToPantry(uid, name, purchaseDate, expirationDate, quantity, unit, frozen).then((ingredient) => {
+    const uid = 'Janani'; // for testing purposes
+    const { ingredientName, purchaseDate, expirationDate, frozen } = req.body;
+    addToPantry(uid, ingredientName, purchaseDate, expirationDate, frozen).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
         console.error("Error adding to pantry: ", error);
@@ -35,9 +35,9 @@ router.post('/pantry', (req, res, next) => {
 });
 
 router.delete('/pantry', (req, res, next) => {
-    const uid = 'janani_gurram'; // for testing purposes
-    const name = req.body.name;
-    removeFromPantry(uid, name).then((ingredient) => {
+    const uid = 'Janani'; // for testing purposes
+    const ingredientName = req.body.ingredientName;
+    removeFromPantry(uid, ingredientName).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
         console.error("Error removing from pantry: ", error);
@@ -45,7 +45,7 @@ router.delete('/pantry', (req, res, next) => {
 });
 
 router.get('/shoppingList', (req, res, next) => {
-    const uid = 'janani_gurram'; // for testing purposes
+    const uid = 'Janani'; // for testing purposes
     getShoppingList(uid).then((shoppingList) => {
         res.json(shoppingList);
     }).catch((error) => {
@@ -54,9 +54,9 @@ router.get('/shoppingList', (req, res, next) => {
 });
 
 router.post('/shoppingList', (req, res, next) => {
-    const uid = 'janani_gurram'; // for testing purposes
-    const { name, quantity, unit } = req.body;
-    addToShoppingCart(uid, name, quantity, unit).then((ingredient) => {
+    const uid = 'Janani'; // for testing purposes
+    const { ingredientName } = req.body;
+    addToShoppingList(uid, ingredientName).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
         console.error("Error adding to shopping list: ", error);
@@ -64,9 +64,9 @@ router.post('/shoppingList', (req, res, next) => {
 });
 
 router.delete('/shoppingList', (req, res, next) => {
-    const uid = 'janani_gurram'; // for testing purposes
-    const name = req.body.name;
-    removeFromShoppingCart(uid, name).then((ingredient) => {
+    const uid = 'Janani'; // for testing purposes
+    const ingredientName = req.body.ingredientName;
+    removeFromShoppingCart(uid, ingredientName).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
         console.error("Error removing from shopping list: ", error);

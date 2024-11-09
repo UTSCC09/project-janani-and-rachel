@@ -13,8 +13,8 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties:
+                type: array
+                items:
                   $ref: '#/components/schemas/Ingredient'
     post:
       summary: Add or update an ingredient in the pantry
@@ -26,57 +26,20 @@ paths:
       responses:
         '201':
           description: Pantry item added or updated
-  /api/recipes/favorites:
-    get:
-      summary: Get all favorite recipes for a user
-      responses:
-        '200':
-          description: List of favorite recipes
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  $ref: '#/components/schemas/FavRecipe'
-    post:
-      summary: Add a favorite recipe
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FavRecipe'
-      responses:
-        '201':
-          description: Recipe added to favorites
-  /api/recipes/{recipeId}:
-    patch:
-      summary: Update a favorite recipe
-      parameters:
-        - name: recipeId
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FavRecipe'
-      responses:
-        '200':
-          description: Recipe updated
     delete:
-      summary: Remove a favorite recipe
-      parameters:
-        - name: recipeId
-          in: path
-          required: true
-          schema:
-            type: string
+      summary: Remove an ingredient from the pantry
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ingredientName:
+                  type: string
       responses:
-        '204':
-          description: Recipe removed
-  /api/recipes/shoppingList:
+        '200':
+          description: Pantry item removed
+  /api/ingredients/shoppingList:
     get:
       summary: Get a user's shopping list
       responses:
@@ -85,8 +48,8 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties:
+                type: array
+                items:
                   $ref: '#/components/schemas/ShoppingListItem'
     post:
       summary: Add or update an item in the shopping list
@@ -98,52 +61,90 @@ paths:
       responses:
         '201':
           description: Item added to shopping list
-  /api/recipes/mealPlan/{date}:
-    get:
-      summary: Get meal plan for a specific date
-      parameters:
-        - name: date
-          in: path
-          required: true
-          schema:
-            type: string
-            format: date
-      responses:
-        '200':
-          description: Meal plan for the date
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MealPlan'
-    patch:
-      summary: Update meal plan for a specific date
-      parameters:
-        - name: date
-          in: path
-          required: true
-          schema:
-            type: string
-            format: date
+    delete:
+      summary: Remove an item from the shopping list
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MealPlan'
+              type: object
+              properties:
+                ingredientName:
+                  type: string
       responses:
         '200':
-          description: Meal plan updated
-
+          description: Shopping list item removed
+  /api/recipes/favorites:
+    get:
+      summary: Get all favorite recipes for a user
+      responses:
+        '200':
+          description: List of favorite recipes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FavRecipe'
+  /api/recipes/favorites/planned:
+    get:
+      summary: Get all planned favorite recipes for a user
+      responses:
+        '200':
+          description: List of planned favorite recipes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FavRecipe'
+  /api/recipes/favorites/unplanned:
+    get:
+      summary: Get all unplanned favorite recipes for a user
+      responses:
+        '200':
+          description: List of unplanned favorite recipes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FavRecipe'
+  /api/recipes/favorites/{recipeId}:
+    get:
+      summary: Get a specific favorite recipe by ID
+      parameters:
+        - ingredientName: recipeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Favorite recipe details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavRecipe'
+  /api/recipes/spoonacular:
+    get:
+      summary: Find recipes given a list of ingredients
+      responses:
+        '200':
+          description: List of recipes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recipe'
 components:
   schemas:
     Ingredient:
       type: object
       properties:
-        quantity:
-          type: number
-          nullable: true
-        units:
+        ingredientName:
           type: string
-          nullable: true
         purchaseDate:
           type: string
           format: date
@@ -158,7 +159,7 @@ components:
     FavRecipe:
       type: object
       properties:
-        name:
+        ingredientName:
           type: string
           nullable: true
         ingredients:
@@ -181,12 +182,8 @@ components:
     ShoppingListItem:
       type: object
       properties:
-        quantity:
-          type: number
-          nullable: true
-        units:
+        ingredientName:
           type: string
-          nullable: true
     MealPlan:
       type: object
       properties:

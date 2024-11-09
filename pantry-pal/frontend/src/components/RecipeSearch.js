@@ -13,7 +13,7 @@ export default function RecipeSearch({ onSearch }) {
 
     try {
       // Make a request to the backend API with the entered ingredients
-      const res = await fetch(`/api/recipes?ingredients=${encodeURIComponent(ingredients)}`); // here i will call janani's API to get the recipes
+      const res = await fetch(`/api/recipes?ingredients=${encodeURIComponent(ingredients)}`);
       if (!res.ok) {
         throw new Error("Failed to fetch recipes");
       }

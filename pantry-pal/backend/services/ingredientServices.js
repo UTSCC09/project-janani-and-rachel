@@ -1,25 +1,40 @@
 import { db } from '../config/firebase.js';
 import { collection, doc, setDoc, getDocs, getDoc, deleteDoc, limit, orderBy, query, startAfter } from 'firebase/firestore';
 
-export async function getPantry(uid, page = 1, lim = 10) {
+export async function getPantry(uid, lim = 10, lastVisibleIngredient = null) {
     try {
-      const pantryRef = collection(db, 'Users', uid, 'Pantry');
-      let q = query(pantryRef, orderBy('ingredientName'), limit(lim)); // base query with limit
+        const pantryRef = collection(db, 'Users', uid, 'Pantry');
+        let q = query(pantryRef, orderBy('ingredientName'), limit(lim)); 
   
-      // Retrieve the data
-      const snapshot = await getDocs(q);
+        if (lastVisibleIngredient) {
+            // Retrieve the lastVisible document snapshot using its ID
+            const lastVisibleDoc = await getDoc(doc(pantryRef, lastVisibleIngredient));
+            if (lastVisibleDoc.exists()) {
+                q = query(pantryRef, orderBy('name'), startAfter(lastVisibleDoc), limit(limitNumber));
+            }
+        }
+
+        // Retrieve the data
+        const snapshot = await getDocs(q);
   
-      if (snapshot.empty) {
-        console.log("No more ingredients in pantry for the specified page.");
-        return [];
-      }
+        if (snapshot.empty) {
+            console.log("No more ingredients in pantry for the specified page.");
+            return [];
+        }
   
-      return snapshot.docs.map(doc => doc.data());
-    } catch (error) {
-      console.error("Error fetching paginated pantry ingredients:", error);
-      throw error;
+        // Set the last document in this page as the new lastVisible
+        const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
+
+        return {
+            ingredients: snapshot.docs.map(doc => (doc.data())),
+            lastVisible: newLastVisible.id  // Return the new lastVisible ID for the next page
+        };
+    } 
+    catch (error) {
+        console.error("Error fetching paginated pantry ingredients:", error);
+        throw error;
     }
-  }
+}
 
 export async function addToPantry(uid, ingredientName, purchaseDate = new Date(), expirationDate = null, frozen = false) {
     try {
@@ -69,11 +84,19 @@ export async function removeFromPantry(uid, ingredientId) {
     }
 }
 
-export async function getShoppingList(uid, page=1, lim=10) {
+export async function getShoppingList(uid, lim=10, lastVisibleIngredient = null) {
     try {
         const shoppingListRef = collection(db, 'Users', uid, 'ShoppingList');
         let q = query(shoppingListRef, orderBy('ingredientName'), limit(lim)); // base query with limit
-  
+        
+        if (lastVisibleIngredient) {
+            // Retrieve the lastVisible document snapshot using its ID
+            const lastVisibleDoc = await getDoc(doc(shoppingListRef, lastVisibleIngredient));
+            if (lastVisibleDoc.exists()) {
+                q = query(shoppingListRef, orderBy('name'), startAfter(lastVisibleDoc), limit(limitNumber));
+            }
+        }
+
         // Retrieve the data
         const snapshot = await getDocs(q);
   

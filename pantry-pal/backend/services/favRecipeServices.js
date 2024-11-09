@@ -1,95 +1,123 @@
 import { db } from '../config/firebase.js';
-import { ref, get, query, orderByChild, equalTo, orderByKey } from 'firebase/database';
+import { collection, doc, where, setDoc, getDocs, getDoc, deleteDoc, limit, orderBy, query, startAfter } from 'firebase/firestore';
 
-function getFavRecipes(uid, page, limit) {
-    uid = "janani_gurram"; // for testing purposes
-    
+
+function getFavRecipes(uid, lim=10, lastVisibleRecipe=null) {    
     // resolve used to send successful result to the then() function
     // reject used to send error to the catch() function
     return new Promise((resolve, reject) => {
         
-        // using firebase realtime database
-        const recipesRef = ref(db, 'users/' + uid + '/favRecipes');
-        get(recipesRef).then((snapshot) => {
-            if (snapshot.exists()) {
-                const recipes = snapshot.val();
-                resolve(recipes);
-            } else {
-                console.log("No data available");
-                resolve([]);
-            }
-        }).catch((error) => {
-            console.error("Error reading data: ", error);
-            reject(error);
-        });
-        
-    });
-}
+        const recipesRef = collection(db, "Users", uid, "FavRecipes");
+        let q = query(recipesRef, orderBy('recipeName'), limit(lim));
 
-function getPlannedFavRecipes(uid) {
-    uid = "janani_gurram"; // for testing purposes
-
-    return new Promise((resolve, reject) => {
-        const recipesRef = ref(db, 'users/' + uid + '/favRecipes');
-        
-        // Use orderByChild('planned') and equalTo(true) correctly in query
-        const plannedQuery = query(recipesRef, orderByChild('planned'), equalTo(true));
-        
-        get(plannedQuery).then((snapshot) => {
-            if (snapshot.exists()) {
-                const recipes = snapshot.val();
-                resolve(recipes);
-            } else {
-                console.log("No data available");
-                resolve([]);
+        if (lastVisibleRecipe) {
+            // Retrieve the lastVisible document snapshot using its ID
+            const lastVisibleDoc = getDoc(doc(recipesRef, lastVisibleRecipe));
+            if (lastVisibleDoc.exists()) {
+                q = query(recipesRef, orderBy('recipeName'), startAfter(lastVisibleDoc), limit(lim));
             }
-        }).catch((error) => {
-            console.error("Error reading data: ", error);
+        }
+
+        getDocs(q).then((snapshot) => {
+            if (snapshot.empty) {
+                console.log("No more recipes in favorites for the specified page.");
+                resolve([]);
+            } else {
+                const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
+                const recipes = snapshot.docs.map(doc => (doc.data()));
+                resolve({
+                    recipes: recipes,
+                    lastVisible: newLastVisible.id
+                });
+            }
+        }
+        ).catch((error) => {
+            console.error("Error fetching paginated favorite recipes:", error);
             reject(error);
         });
     });
 }
-function getUnPlannedFavRecipes(uid) {
-    uid = "janani_gurram"; // for testing purposes
+
+function getPlannedFavRecipes(uid, lim=10, lastVisibleRecipe=null) {
 
     return new Promise((resolve, reject) => {
-        const recipesRef = ref(db, 'users/' + uid + '/favRecipes');
+        const recipesRef = collection(db, 'Users', uid, 'FavRecipes');
         
-        // Use orderByChild('planned') and equalTo(false) correctly in query
-        const unPlannedQuery = query(recipesRef, orderByChild('planned'), equalTo(false));
+        // return is planned = true
+        const plannedQuery = query(recipesRef, where('planned', '==', true), limit(lim));
         
-        get(unPlannedQuery).then((snapshot) => {
-            if (snapshot.exists()) {
-                const recipes = snapshot.val();
-                resolve(recipes);
-            } else {
-                console.log("No data available");
+        if (lastVisibleRecipe) {
+            // Retrieve the lastVisible document snapshot using its ID
+            const lastVisibleDoc = getDoc(doc(recipesRef, lastVisibleRecipe));
+            if (lastVisibleDoc.exists()) {
+                plannedQuery = query(recipesRef, where('planned', '==', true), startAfter(lastVisibleDoc), limit(lim));
+            }
+        }
+
+        const get = getDocs(plannedQuery).then((snapshot) => {
+            if (snapshot.empty) {
+                console.log("No more planned recipes in favorites for the specified page.");
                 resolve([]);
+            } else {
+                const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
+                const recipes = snapshot.docs.map(doc => (doc.data()));
+                resolve({
+                    recipes: recipes,
+                    lastVisible: newLastVisible.id
+                });
             }
         }).catch((error) => {
-            console.error("Error reading data: ", error);
+            console.error("Error fetching paginated planned favorite recipes:", error);
+            reject(error);
+        });
+    });
+}
+function getUnPlannedFavRecipes(uid, lim=10, lastVisibleRecipe=null) {
+    return new Promise((resolve, reject) => {
+        const recipesRef = collection(db, 'Users', uid, 'FavRecipes');
+        
+        // return is planned = false
+        const unplannedQuery = query(recipesRef, where('planned', '==', false), limit(lim));
+        
+        if (lastVisibleRecipe) {
+            // Retrieve the lastVisible document snapshot using its ID
+            const lastVisibleDoc = getDoc(doc(recipesRef, lastVisibleRecipe));
+            if (lastVisibleDoc.exists()) {
+                unplannedQuery = query(recipesRef, where('planned', '==', false), startAfter(lastVisibleDoc), limit(lim));
+            }
+        }
+
+        const get = getDocs(unplannedQuery).then((snapshot) => {
+            if (snapshot.empty) {
+                console.log("No more unplanned recipes in favorites for the specified page.");
+                resolve([]);
+            } else {
+                const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
+                const recipes = snapshot.docs.map(doc => (doc.data()));
+                resolve({
+                    recipes: recipes,
+                    lastVisible: newLastVisible.id
+                });
+            }
+        }).catch((error) => {
+            console.error("Error fetching paginated unplanned favorite recipes:", error);
             reject(error);
         });
     });
 };
+
 function getFavRecipeById(uid, recipeId) {
-    uid = "janani_gurram"; // for testing purposes
-
     return new Promise((resolve, reject) => {
-        const recipesRef = ref(db, 'users/' + uid + '/favRecipes');
-        
-        const idQuery = query(recipesRef, orderByKey(), equalTo(recipeId));
-
-        get(idQuery).then((snapshot) => {
-            if (snapshot.exists()) {
-                const recipe = snapshot.val();
-                resolve(recipe);
+        const recipeRef = doc(db, 'Users', uid, 'FavRecipes', recipeId);
+        getDoc(recipeRef).then((doc) => {
+            if (doc.exists()) {
+                resolve(doc.data());
             } else {
-                console.log("No data available");
-                resolve({});
+                console.log("No such recipe in favorites!");
+                resolve(null);
             }
         }).catch((error) => {
-            console.error("Error reading data: ", error);
+            console.error("Error fetching favorite recipe by ID:", error);
             reject(error);
         });
     });

@@ -1,24 +1,157 @@
-import { useState } from "react";
-import RecipeSuggestion from "@/components/RecipeSuggestion"; // Import the RecipeSuggestion component
+import { useState, useEffect } from "react";
+import RecipeSuggestion from "@/components/RecipeSuggestion";
+
+const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
 export default function IngredientsSection() {
-  const [ingredients, setIngredients] = useState([
-    { id: 1, name: "Tomatoes", available: true },
-    { id: 2, name: "Chicken", available: false },
-    { id: 3, name: "Lettuce", available: true }, // Add more sample ingredients
-    { id: 4, name: "Onions", available: true },
-  ]);
+  const [ingredients, setIngredients] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [newIngredient, setNewIngredient] = useState({
+    ingredientName: "",
+    units: "",
+    purchaseDate: "",
+    expirationDate: "",
+    frozen: false,
+  });
+
+  // Fetch ingredients from /api/ingredients/pantry when the component mounts
+  useEffect(() => {
+    fetch(`${domain}/api/ingredients/pantry`)
+      .then((response) => response.json())
+      .then((data) => {
+        // Process data to format dates
+        const processedData = data.map((item) => ({
+          ...item,
+          purchaseDate: item.purchaseDate
+            ? new Date(item.purchaseDate.seconds * 1000).toLocaleDateString()
+            : "N/A",
+          expirationDate: item.expirationDate
+            ? new Date(item.expirationDate.seconds * 1000).toLocaleDateString()
+            : "N/A",
+        }));
+        setIngredients(processedData);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching ingredients:", error);
+        setLoading(false);
+      });
+  }, []);
+
+  // Handle input change for the new ingredient form
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setNewIngredient((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  // Handle form submission
+  const handleAddIngredient = (e) => {
+    e.preventDefault();
+
+    // Send POST request to add or update ingredient
+    fetch(`${domain}/api/ingredients/pantry`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newIngredient),
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error("Failed to add or update ingredient.");
+        }
+      })
+      .then((data) => {
+        // Refresh ingredient list to reflect the new addition/update
+        setIngredients((prev) => [...prev, newIngredient]);
+        // Reset form
+        setNewIngredient({
+          ingredientName: "",
+          units: "",
+          purchaseDate: "",
+          expirationDate: "",
+          frozen: false,
+        });
+      })
+      .catch((error) => {
+        console.error("Error adding/updating ingredient:", error);
+      });
+  };
 
   return (
     <div>
       <h2>Ingredients</h2>
-      <ul>
-        {ingredients.map((ingredient) => (
-          <li key={ingredient.id}>
-            {ingredient.name} - {ingredient.available ? "Available" : "Not Available"}
-          </li>
-        ))}
-      </ul>
+
+      {loading ? (
+        <p>Loading ingredients...</p>
+      ) : (
+        <ul>
+          {ingredients.map((ingredient, index) => (
+            <li key={index} style={{ marginBottom: "1em" }}>
+              <strong>{ingredient.ingredientName}</strong>
+              <ul>
+                <li>Expiration Date: {ingredient.expirationDate || "N/A"}</li>
+                <li>Frozen: {ingredient.frozen ? "Yes" : "No"}</li>
+                <li>Purchase Date: {ingredient.purchaseDate}</li>
+              </ul>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <h3>Add or Update Ingredient</h3>
+      <form onSubmit={handleAddIngredient}>
+        <label>
+          Name:
+          <input
+            type="text"
+            name="ingredientName"
+            value={newIngredient.ingredientName}
+            onChange={handleInputChange}
+            required
+          />
+        </label>
+        <label>
+          Units:
+          <input
+            type="text"
+            name="units"
+            value={newIngredient.units}
+            onChange={handleInputChange}
+          />
+        </label>
+        <label>
+          Purchase Date:
+          <input
+            type="date"
+            name="purchaseDate"
+            value={newIngredient.purchaseDate}
+            onChange={handleInputChange}
+          />
+        </label>
+        <label>
+          Expiration Date:
+          <input
+            type="date"
+            name="expirationDate"
+            value={newIngredient.expirationDate}
+            onChange={handleInputChange}
+          />
+        </label>
+        <label>
+          Frozen:
+          <input
+            type="checkbox"
+            name="frozen"
+            checked={newIngredient.frozen}
+            onChange={handleInputChange}
+          />
+        </label>
+        <button type="submit">Add/Update Ingredient</button>
+      </form>
 
       {/* Pass ingredients to RecipeSuggestion */}
       <RecipeSuggestion ingredients={ingredients} />

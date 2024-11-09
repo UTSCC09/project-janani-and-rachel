@@ -1,33 +1,60 @@
-// Example usage in a frontend component
 import { useEffect, useState } from 'react';
 
-// let the user find recipes they can make given the ingredients they currently have
-// this component will display a list of recipes
-// the list of recipes will be fetched from the backend API
-// the backend API will return a list of recipes
-// we need to get the current ingredients the user has
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
 export default function RecipeList() {
-  const [recipes, setRecipes] = useState([]);
+  const [recipes, setRecipes] = useState({});
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch(`${domain}/api/recipes`) // get the user' s recipes and display them
-      .then((res) => res.json())
-      .then((data) => setRecipes(data));
-      // log the response
-      console.log(recipes);
-  }, []);
+  // useEffect(() => {
+  //   fetch(`${domain}/api/recipes/favorites`) // Fetch the user's favorite recipes
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       setRecipes(data);
+  //       setLoading(false);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching recipes:", error);
+  //       setLoading(false);
+  //     });
+  // }, []);
 
+  // const handleDelete = (recipeId) => {
+  //   fetch(`${domain}/api/recipes/${recipeId}`, {
+  //     method: 'DELETE',
+  //   })
+  //     .then((res) => {
+  //       if (res.status === 204) {
+  //         setRecipes((prevRecipes) => {
+  //           const newRecipes = { ...prevRecipes };
+  //           delete newRecipes[recipeId];
+  //           return newRecipes;
+  //         });
+  //       } else {
+  //         console.error("Error deleting recipe:", res.status);
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error deleting recipe:", error);
+  //     });
+  // };
 
   return (
     <div>
-      <h2>Recipes</h2>
-      <ul>
-        {recipes.map((recipe, index) => (
-          <li key={index}>{recipe.name}</li>
-        ))}
-      </ul>
+      <h2>Favorite Recipes</h2>
+      {loading ? (
+        <p>Loading recipes...</p>
+      ) : (
+        <ul>
+          {Object.entries(recipes).map(([id, recipe]) => (
+            <li key={id} style={{ marginBottom: "1em" }}>
+              <h3>{recipe.name}</h3>
+              {recipe.date && <p><strong>Date:</strong> {new Date(recipe.date).toLocaleDateString()}</p>}
+              <button onClick={() => handleDelete(id)}>Delete</button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

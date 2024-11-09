@@ -20,7 +20,7 @@ export default function IngredientsSection() {
       .then((response) => response.json())
       .then((data) => {
         // Process data to format dates
-        const processedData = data.map((item) => ({
+        const processedData = data.ingredients.map((item) => ({
           ...item,
           purchaseDate: item.purchaseDate
             ? new Date(item.purchaseDate.seconds * 1000).toLocaleDateString()
@@ -81,6 +81,27 @@ export default function IngredientsSection() {
       });
   };
 
+  // Handle delete ingredient
+  const handleDeleteIngredient = (ingredientName) => {
+    fetch(`${domain}/api/ingredients/pantry`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ingredientName }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          setIngredients((prev) =>
+            prev.filter((ingredient) => ingredient.ingredientName !== ingredientName)
+          );
+        } else {
+          throw new Error("Failed to delete ingredient.");
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting ingredient:", error);
+      });
+  };
+
   return (
     <div>
       <h2>Ingredients</h2>
@@ -93,10 +114,13 @@ export default function IngredientsSection() {
             <li key={index} style={{ marginBottom: "1em" }}>
               <strong>{ingredient.ingredientName}</strong>
               <ul>
-                <li>Expiration Date: {ingredient.expirationDate || "N/A"}</li>
+                <li>Expiration Date: {ingredient.expirationDate}</li>
                 <li>Frozen: {ingredient.frozen ? "Yes" : "No"}</li>
                 <li>Purchase Date: {ingredient.purchaseDate}</li>
               </ul>
+              <button onClick={() => handleDeleteIngredient(ingredient.ingredientName)}>
+                Delete
+              </button>
             </li>
           ))}
         </ul>

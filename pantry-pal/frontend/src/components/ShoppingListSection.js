@@ -1,4 +1,20 @@
 import { useState, useEffect } from "react";
+import {
+  Box,
+  Typography,
+  Button,
+  TextField,
+  List,
+  ListItem,
+  ListItemText,
+  IconButton,
+  CircularProgress,
+  Paper,
+  Card,
+  CardContent,
+  Divider,
+} from "@mui/material";
+import { FaPlusCircle, FaTrashAlt } from "react-icons/fa"; // React Icons
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
@@ -75,36 +91,97 @@ export default function ShoppingListSection() {
   };
 
   return (
-    <div>
-      <h2>Shopping List</h2>
+    <Box sx={{ padding: "2rem", maxWidth: 600, margin: "auto" }}>
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{ fontWeight: 600, textAlign: "center" }}
+      >
+        Shopping List
+      </Typography>
+
       {loading ? (
-        <p>Loading shopping list...</p>
+        <Box sx={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
+          <CircularProgress />
+        </Box>
       ) : (
-        <ul>
-          {shoppingList.map((item, index) => (
-            <li key={index}>
-              {item.ingredientName}
-              <button onClick={() => handleDeleteItem(item.ingredientName)} style={{ marginLeft: "10px" }}>
-                Delete
-              </button>
-            </li>
-          ))}
-        </ul>
+        <Paper
+          elevation={3}
+          sx={{
+            padding: "1rem",
+            marginBottom: "1.5rem",
+            backgroundColor: "#f9f9f9",
+            borderRadius: 2,
+          }}
+        >
+          <List sx={{ padding: 0 }}>
+            {shoppingList.map((item, index) => (
+              <Card
+                key={index}
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "1rem",
+                  marginBottom: "1rem",
+                  boxShadow: 3,
+                  borderRadius: 2,
+                  backgroundColor: "#fff",
+                  "&:hover": { boxShadow: 6 },
+                }}
+              >
+                <ListItemText
+                  primary={item.ingredientName}
+                  sx={{ textDecoration: "none", fontWeight: 500 }}
+                />
+                <IconButton
+                  edge="end"
+                  onClick={() => handleDeleteItem(item.ingredientName)}
+                  color="error"
+                  sx={{ padding: "0.5rem" }}
+                >
+                  <FaTrashAlt />
+                </IconButton>
+              </Card>
+            ))}
+          </List>
+        </Paper>
       )}
 
-      <h3>Add Item to Shopping List</h3>
-      <form onSubmit={handleAddItem}>
-        <label>
-          Ingredient Name:
-          <input
-            type="text"
-            value={newItem}
-            onChange={handleInputChange}
-            required
-          />
-        </label>
-        <button type="submit">Add to Shopping List</button>
-      </form>
-    </div>
+      <Typography variant="h6" sx={{ marginBottom: "1rem", fontWeight: 600 }}>
+        Add Item to Shopping List
+      </Typography>
+
+      <Box
+        component="form"
+        onSubmit={handleAddItem}
+        sx={{ display: "flex", flexDirection: "row", gap: 2 }}
+      >
+        <TextField
+          label="Ingredient Name"
+          variant="outlined"
+          value={newItem}
+          onChange={handleInputChange}
+          fullWidth
+          required
+          sx={{ backgroundColor: "#fff", borderRadius: 1 }}
+        />
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          sx={{
+            height: "100%",
+            borderRadius: 1,
+            boxShadow: 2,
+            "&:hover": { boxShadow: 4 },
+          }}
+          startIcon={<FaPlusCircle />}
+        >
+          Add
+        </Button>
+      </Box>
+    </Box>
   );
 }

@@ -1,4 +1,14 @@
 import { useState } from "react";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  CircularProgress,
+  Paper,
+  InputAdornment,
+} from "@mui/material";
+import { FaSearch, FaExclamationCircle } from "react-icons/fa";
 
 export default function RecipeSearch({ onSearch }) {
   const [ingredients, setIngredients] = useState("");
@@ -29,19 +39,54 @@ export default function RecipeSearch({ onSearch }) {
   };
 
   return (
-    <div>
-      <h2>Search Recipes by Ingredients</h2>
-      <input
-        type="text"
-        value={ingredients}
-        onChange={(e) => setIngredients(e.target.value)}
-        placeholder="Enter ingredients separated by commas"
-      />
-      <button onClick={handleSearch} disabled={loading}>
-        {loading ? "Searching..." : "Search"}
-      </button>
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
-    </div>
+    <Box sx={{ padding: "2rem", maxWidth: 600, margin: "auto" }}>
+      <Typography variant="h4" gutterBottom>
+        Search Recipes by Ingredients
+      </Typography>
+      <Paper elevation={3} sx={{ padding: "1rem", marginBottom: "1rem" }}>
+        <TextField
+          label="Ingredients"
+          variant="outlined"
+          placeholder="Enter ingredients separated by commas"
+          value={ingredients}
+          onChange={(e) => setIngredients(e.target.value)}
+          fullWidth
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <FaSearch />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <Box
+          sx={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}
+        >
+          <Button
+            onClick={handleSearch}
+            variant="contained"
+            color="primary"
+            disabled={loading}
+            startIcon={loading ? <CircularProgress size={24} /> : <FaSearch />}
+          >
+            {loading ? "Searching..." : "Search"}
+          </Button>
+        </Box>
+        {error && (
+          <Typography
+            color="error"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              marginTop: "1rem",
+              gap: 1,
+            }}
+          >
+            <FaExclamationCircle />
+            {error}
+          </Typography>
+        )}
+      </Paper>
+    </Box>
   );
 }

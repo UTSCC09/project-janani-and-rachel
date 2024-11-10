@@ -1,6 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Button, Card, CardContent, CircularProgress, TextField, Typography, Grid, Box, Divider } from '@mui/material';
-import { MdStar, MdStarBorder } from 'react-icons/md'; // Importing Material icons from react-icons
+import {
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  TextField,
+  Typography,
+  Box,
+  Divider,
+  IconButton,
+  Chip,
+} from '@mui/material';
+import { MdDelete } from 'react-icons/md';
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
@@ -80,35 +91,59 @@ export default function RecipeList() {
 
   return (
     <Box sx={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <Typography variant="h3" gutterBottom align="center" sx={{ color: '#1976d2' }}>My Favorite Recipes</Typography>
+      <Typography
+        variant="h3"
+        gutterBottom
+        align="center"
+        sx={{
+          color: '#1976d2',
+          fontWeight: 600,
+          marginBottom: '2rem',
+        }}
+      >
+        My Favorite Recipes
+      </Typography>
 
       {/* Search Section */}
       <Box sx={{ marginBottom: '2rem' }}>
-        <Typography variant="h5" gutterBottom sx={{ textAlign: 'center' }}>Search for a Favorite Recipe by ID</Typography>
+        <Typography variant="h5" gutterBottom sx={{ textAlign: 'center' }}>
+          Search for a Favorite Recipe by ID
+        </Typography>
         <Box display="flex" alignItems="center" mb={2} sx={{ justifyContent: 'center' }}>
           <TextField
             label="Enter Recipe ID"
             variant="outlined"
             value={searchRecipeId}
             onChange={(e) => setSearchRecipeId(e.target.value)}
-            sx={{ marginRight: 1, maxWidth: '300px' }}
+            sx={{
+              marginRight: 1,
+              maxWidth: '300px',
+              '& .MuiOutlinedInput-root': { borderRadius: '12px' },
+            }}
             fullWidth
           />
           <Button
             variant="contained"
             onClick={handleSearchRecipe}
             disabled={loadingSearch}
-            sx={{ padding: '10px 20px' }}
+            sx={{
+              padding: '10px 20px',
+              borderRadius: '12px',
+              textTransform: 'none',
+              '&:hover': {
+                backgroundColor: '#1976d2',
+                opacity: 0.9,
+              },
+            }}
           >
-            {loadingSearch ? 'Searching...' : 'Search'}
+            {loadingSearch ? <CircularProgress size={24} color="inherit" /> : 'Search'}
           </Button>
         </Box>
       </Box>
 
-
       {/* Search Result */}
       {searchedRecipe && (
-        <Card sx={{ marginTop: 2 }}>
+        <Card sx={{ marginTop: 2, borderRadius: '12px', boxShadow: 3, backgroundColor: '#f9f9f9' }}>
           <CardContent>
             <Typography variant="h6">{searchedRecipe.recipeName}</Typography>
             <Divider sx={{ margin: '1rem 0' }} />
@@ -125,82 +160,128 @@ export default function RecipeList() {
               <strong>Date:</strong> {searchedRecipe.date || 'N/A'}
             </Typography>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-              <Button
-                variant="outlined"
-                color="error"
-                onClick={() => handleDelete(searchedRecipe.recipeId)}
-              >
-                Delete
-              </Button>
+              <IconButton onClick={() => handleDelete(searchedRecipe.recipeId)} color="error" sx={{ padding: 0 }}>
+                <MdDelete size={24} />
+              </IconButton>
             </Box>
           </CardContent>
         </Card>
       )}
 
       {/* All Recipes Section */}
-      <Typography variant="h5" gutterBottom>All Recipes</Typography>
+      <Typography variant="h5" gutterBottom sx={{ marginTop: '2rem' }}>
+        All Recipes
+      </Typography>
       {loadingAll ? (
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
           <CircularProgress />
         </Box>
       ) : (
-        <Grid container spacing={3}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {allRecipes.map((recipe) => (
-            <Grid item xs={12} sm={6} md={4} key={recipe.recipeId}>
-              <Card sx={{ borderRadius: '12px', boxShadow: 3 }}>
-                <CardContent>
+            <Card
+              key={recipe.recipeId}
+              sx={{
+                borderRadius: '12px',
+                boxShadow: 3,
+                backgroundColor: '#fafafa',
+                padding: '1rem',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <CardContent>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
                   <Typography variant="h6">{recipe.recipeName}</Typography>
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-                    {recipe.planned ? <MdStar color="gold" /> : <MdStarBorder />}
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={() => handleDelete(recipe.recipeId)}
-                    >
-                      Delete
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
+                  {recipe.planned && (
+                    <Chip
+                      label="Planned"
+                      color="primary"
+                      sx={{
+                        fontSize: '0.875rem',
+                        fontWeight: 'bold',
+                        borderRadius: '16px',
+                        padding: '0.2rem 0.8rem',
+                      }}
+                    />
+                  )}
+                </Box>
+
+                <Box sx={{ marginBottom: '1rem' }}>
+                  <Typography variant="body2">
+                    <strong>Directions:</strong> {recipe.directions}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Notes:</strong> {recipe.notes}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Date:</strong> {recipe.date || 'N/A'}
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() => handleDelete(recipe.recipeId)}
+                    sx={{
+                      padding: '6px 16px',
+                      borderRadius: '12px',
+                      textTransform: 'none',
+                    }}
+                  >
+                    <MdDelete size={20} />
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
           ))}
-        </Grid>
+        </Box>
       )}
 
+
       {/* Unplanned Recipes Section */}
-      <Typography variant="h5" gutterBottom>Unplanned Recipes</Typography>
+      <Typography variant="h5" gutterBottom sx={{ marginTop: '2rem' }}>
+        Unplanned Recipes
+      </Typography>
       {loadingUnplanned ? (
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
           <CircularProgress />
         </Box>
       ) : unplannedRecipes.length === 0 ? (
-        <Typography variant="body1" align="center">No unplanned recipes available.</Typography>
+        <Typography variant="body1" align="center" sx={{ fontStyle: 'italic', marginTop: '1rem' }}>
+          No unplanned recipes available.
+        </Typography>
       ) : (
-        <Grid container spacing={3}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '2rem' }}>
           {unplannedRecipes.map((recipe) => (
-            <Grid item xs={12} sm={6} md={4} key={recipe.recipeId}>
-              <Card sx={{ borderRadius: '12px', boxShadow: 3 }}>
+            <Box key={recipe.recipeId} sx={{ flexBasis: '30%' }}>
+              <Card sx={{ borderRadius: '12px', boxShadow: 3, padding: '1rem', backgroundColor: '#fafafa' }}>
                 <CardContent>
-                  <Typography variant="h6">{recipe.recipeName}</Typography>
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-                    {recipe.planned ? <MdStar color="gold" /> : <MdStarBorder />}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography variant="h6" sx={{ marginBottom: '0.5rem' }}>
+                      {recipe.recipeName}
+                    </Typography>
                   </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
                     <Button
                       variant="outlined"
                       color="error"
                       onClick={() => handleDelete(recipe.recipeId)}
+                      sx={{
+                        padding: '6px 16px',
+                        borderRadius: '12px',
+                        textTransform: 'none',
+                      }}
                     >
-                      Delete
+                      <MdDelete size={20} />
                     </Button>
                   </Box>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       )}
     </Box>
   );

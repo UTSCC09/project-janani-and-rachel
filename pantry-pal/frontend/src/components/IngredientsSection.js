@@ -1,6 +1,21 @@
 import { useState, useEffect } from "react";
 import RecipeSuggestion from "@/components/RecipeSuggestion";
-import { Box, TextField, Button, Checkbox, FormControlLabel, Typography, CircularProgress, List, ListItem, ListItemText, Card, CardContent, CardActions } from "@mui/material";
+import {
+  Box,
+  TextField,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Typography,
+  CircularProgress,
+  List,
+  ListItem,
+  ListItemText,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
+import { FaTrashAlt, FaPlus, FaCheckCircle, FaRegCalendarAlt, FaRegCalendar } from "react-icons/fa";
+import { MdEdit } from "react-icons/md";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
@@ -95,43 +110,54 @@ export default function IngredientsSection() {
   };
 
   return (
-    <Box sx={{ padding: 2 }}>
-      <Typography variant="h4" gutterBottom>
-        Ingredients
+    <Box sx={{ padding: 3, maxWidth: "900px", margin: "0 auto" }}>
+      <Typography variant="h4" gutterBottom align="center">
+        Pantry Ingredients
       </Typography>
 
       {loading ? (
-        <CircularProgress />
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <CircularProgress />
+        </Box>
       ) : (
-        <List sx={{ marginBottom: 2 }}>
+        <List>
           {ingredients.map((ingredient, index) => (
-            <ListItem key={index} sx={{ marginBottom: 2 }}>
-              <Card sx={{ width: "100%", boxShadow: 3 }}>
-                <CardContent>
-                  <Typography variant="h6" component="div" sx={{ fontWeight: "bold" }}>
-                    {ingredient.ingredientName}
-                  </Typography>
-                  <Typography color="text.secondary" sx={{ marginBottom: 1 }}>
-                    Expiration Date: {ingredient.expirationDate}
-                  </Typography>
-                  <Typography color="text.secondary" sx={{ marginBottom: 1 }}>
-                    Purchase Date: {ingredient.purchaseDate}
-                  </Typography>
-                  <Typography color="text.secondary">
-                    Frozen: {ingredient.frozen ? "Yes" : "No"}
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    onClick={() => handleDeleteIngredient(ingredient.ingredientName)}
-                    size="small"
-                  >
-                    Delete
-                  </Button>
-                </CardActions>
-              </Card>
+            <ListItem key={index} sx={{ marginBottom: 2, backgroundColor: "#f9f9f9", borderRadius: 2 }}>
+              <ListItemText
+                primary={ingredient.ingredientName}
+                secondary={
+                  <>
+                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <Box>
+                        <Typography variant="body2">
+                          <FaRegCalendarAlt style={{ marginRight: "5px" }} />
+                          Expiration: {ingredient.expirationDate}
+                        </Typography>
+                        <Typography variant="body2">
+                          <FaRegCalendar style={{ marginRight: "5px" }} />
+                          Purchased: {ingredient.purchaseDate}
+                        </Typography>
+                      </Box>
+                      <Typography variant="body2">
+                        <FaCheckCircle color={ingredient.frozen ? "green" : "gray"} style={{ marginRight: "5px" }} />
+                        {ingredient.frozen ? "Frozen" : "Not Frozen"}
+                      </Typography>
+                    </Box>
+                  </>
+                }
+              />
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Tooltip title="Delete Ingredient" arrow>
+                  <IconButton color="error" onClick={() => handleDeleteIngredient(ingredient.ingredientName)}>
+                    <FaTrashAlt />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Edit Ingredient" arrow>
+                  <IconButton color="primary" sx={{ marginLeft: 1 }}>
+                    <MdEdit />
+                  </IconButton>
+                </Tooltip>
+              </Box>
             </ListItem>
           ))}
         </List>
@@ -141,14 +167,15 @@ export default function IngredientsSection() {
       <Button
         variant="outlined"
         onClick={() => setShowForm((prev) => !prev)}
-        sx={{ marginBottom: 2 }}
+        startIcon={<FaPlus />}
+        sx={{ marginBottom: 2, display: "block", width: "100%", maxWidth: "200px", margin: "0 auto" }}
       >
-        {showForm ? "Hide Form" : "Add Ingredient"}
+        {showForm ? "Hide Add Ingredient Form" : "Add Ingredient"}
       </Button>
 
       {/* Conditionally render the form */}
       {showForm && (
-        <>
+        <Box sx={{ backgroundColor: "#f3f3f3", padding: 3, borderRadius: 2 }}>
           <Typography variant="h6" gutterBottom>
             Add or Update Ingredient
           </Typography>
@@ -170,7 +197,6 @@ export default function IngredientsSection() {
                 InputLabelProps={{
                   shrink: true, // Ensures label stays above the field when filled
                 }}
-                sx={{ marginBottom: 1 }} // Optional: add spacing between fields
               />
               <TextField
                 label="Expiration Date"
@@ -181,7 +207,6 @@ export default function IngredientsSection() {
                 InputLabelProps={{
                   shrink: true, // Ensures label stays above the field when filled
                 }}
-                sx={{ marginBottom: 1 }} // Optional: add spacing between fields
               />
               <FormControlLabel
                 control={
@@ -193,12 +218,13 @@ export default function IngredientsSection() {
                 }
                 label="Frozen"
               />
-              <Button variant="contained" color="primary" type="submit">
-                Add/Update Ingredient
+              <Button variant="contained" color="primary" type="submit" fullWidth>
+                <FaPlus style={{ marginRight: "8px" }} />
+                Add Ingredient
               </Button>
             </Box>
           </form>
-        </>
+        </Box>
       )}
 
       <RecipeSuggestion ingredients={ingredients} />

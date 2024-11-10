@@ -12,6 +12,9 @@ router.get('/', (req, res, next) => {
     getFavRecipes("Janani")
         .then((recipes) => {
             return res.status(200).json(recipes);
+        }).catch((error) => {
+            console.error("Error fetching favorite recipes:", error);
+            res.status(500).json({ error: "An error occurred while fetching favorite recipes." });
         });
 
 });
@@ -21,6 +24,9 @@ router.get('/planned', (req, res, next) => {
     getPlannedFavRecipes("Janani")
         .then((recipes) => {
             return res.status(200).json(recipes);
+        }).catch((error) => {
+            console.error("Error fetching planned favorite recipes:", error);
+            res.status(500).json({ error: "An error occurred while fetching planned favorite recipes." });
         });
 });
 
@@ -28,6 +34,9 @@ router.get('/unplanned', (req, res, next) => {
     getUnPlannedFavRecipes("Janani")
         .then((recipes) => {
             return res.status(200).json(recipes);
+        }).catch((error) => {
+            console.error("Error fetching unplanned favorite recipes:", error);
+            res.status(500).json({ error: "An error occurred while fetching unplanned favorite recipes." });
         });
 });
 
@@ -36,6 +45,9 @@ router.get('/:recipeId', (req, res, next) => {
     getFavRecipeById("Janani", req.params.recipeId)
         .then((recipe) => {
             return res.status(200).json(recipe);
+        }).catch((error) => {
+            console.error("Error fetching favorite recipe by ID:", error);
+            res.status(500).json({ error: "An error occurred while fetching favorite recipe." });
         });
 });
 
@@ -44,5 +56,11 @@ router.get('/:recipeId', (req, res, next) => {
 router.post('/', (req, res, next) => {
     // add recipe to favorites
     // req.body formated as response from search recipes
-    
+    addFavRecipe("Janani", req.body)
+        .then((recipe) => {
+            return res.status(200).json(recipe);
+        }).catch((error) => {
+            console.error("Error adding recipe to favorites:", error);
+            res.status(500).json({ error: "An error occurred while adding recipe to favorites." });
+        });
 });

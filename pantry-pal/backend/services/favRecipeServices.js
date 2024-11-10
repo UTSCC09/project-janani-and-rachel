@@ -72,6 +72,7 @@ function getPlannedFavRecipes(uid, lim=10, lastVisibleRecipe=null) {
         });
     });
 }
+
 function getUnPlannedFavRecipes(uid, lim=10, lastVisibleRecipe=null) {
     return new Promise((resolve, reject) => {
         const recipesRef = collection(db, 'Users', uid, 'FavRecipes');
@@ -125,9 +126,31 @@ function getFavRecipeById(uid, recipeId) {
 
 function addFavRecipe(uid, recipe) {
     return new Promise((resolve, reject) => {
-        const recipeRef = doc(collection(db, 'Users', uid, 'FavRecipes'));
-        setDoc(recipeRef, recipe).then(() => {
-            resolve(recipe);
+        const favRecipeRef = doc(db, 'Users', uid, 'FavRecipes', String(recipe.recipeId));
+        const recipeRef = doc(db, 'Recipes', String(recipe.recipeId)); // Updated line
+        const favRecipeData = {
+            recipeId: recipe.recipeId,
+            recipeName: recipe.recipeName,
+            planned: false,
+            recipe: recipeRef
+        };
+        const recipeData = {
+            recipeId: recipe.recipeId,
+            recipeName: recipe.recipeName,
+            totalIngredientCount: recipe.totalIngredientCount,
+            ingredients: recipe.ingredients,
+            instructions: recipe.instructions,
+            sourceUrl: recipe.sourceUrl
+        };
+
+        setDoc(recipeRef, recipeData).then(() => {
+            setDoc(favRecipeRef, favRecipeData).then(() => {
+                console.log("Recipe added to favorites!");
+                resolve(recipeData);
+            }).catch((error) => {
+                console.error("Error adding recipe to favorites:", error);
+                reject(error);
+            });
         }).catch((error) => {
             console.error("Error adding recipe to favorites:", error);
             reject(error);

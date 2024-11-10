@@ -123,4 +123,16 @@ function getFavRecipeById(uid, recipeId) {
     });
 };
 
-export { getFavRecipes, getPlannedFavRecipes, getUnPlannedFavRecipes, getFavRecipeById };
+function addFavRecipe(uid, recipe) {
+    return new Promise((resolve, reject) => {
+        const recipeRef = doc(collection(db, 'Users', uid, 'FavRecipes'));
+        setDoc(recipeRef, recipe).then(() => {
+            resolve(recipe);
+        }).catch((error) => {
+            console.error("Error adding recipe to favorites:", error);
+            reject(error);
+        });
+    });
+}
+
+export { getFavRecipes, getPlannedFavRecipes, getUnPlannedFavRecipes, getFavRecipeById, addFavRecipe };

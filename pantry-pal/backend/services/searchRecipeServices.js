@@ -62,13 +62,13 @@ function formatRecipes(data) {
     });
 }
 
-
 export async function searchRecipesByKeyword(keyword, page=1, lim=10) {
     const url = `${spoonacularAPI}recipes/complexSearch?apiKey=${spoonacularKey}&query=${keyword}` +
-        `&number=${lim}&offset=${(page-1) * lim}&instructionsRequired=true&fillIngredients=true` +
-        `&includeIngredients=${pantryIngredients.join(",")}&addRecipeInformation=true&addRecipeInstructions=true`;
-    
+        `&number=${lim}&offset=${(page-1) * lim}&instructionsRequired=true&sort=popularity` +
+        `&addRecipeInformation=true&addRecipeInstructions=true&fillIngredients=true`;
+
     try {
+        
         const response = await fetch(url);
         if (!response.ok) {
             throw new Error('Failed to fetch recipes');
@@ -86,7 +86,6 @@ export async function searchRecipesByMaxMatching(page=1, lim=10) {
     const url = `${spoonacularAPI}recipes/complexSearch?apiKey=${spoonacularKey}&sort=max-used-ingredients` +
         `&number=${lim}&offset=${(page-1) * lim}&instructionsRequired=true&fillIngredients=true` +
         `&includeIngredients=${pantryIngredients.join(",")}&addRecipeInformation=true&addRecipeInstructions=true`;
-    console.log(url);
     try {
         const response = await fetch(url);
         if (!response.ok) {
@@ -105,7 +104,6 @@ export async function searchRecipesByMinMissing(page=1, lim=10) {
     const url = `${spoonacularAPI}recipes/complexSearch?apiKey=${spoonacularKey}&sort=min-missing-ingredients` +
         `&number=${lim}&offset=${(page-1) * lim}&instructionsRequired=true&fillIngredients=true` +
         `&includeIngredients=${pantryIngredients.join(",")}&addRecipeInformation=true&addRecipeInstructions=true`;
-    console.log(url);
     try {
         const response = await fetch(url);
         if (!response.ok) {

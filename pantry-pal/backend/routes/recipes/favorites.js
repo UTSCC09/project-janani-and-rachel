@@ -2,7 +2,7 @@
 // this route is for real time sharing of recipes between users
 // might need to import collection, getDocs from 'firebase/firestore/lite';
 import express from 'express';
-import { getFavRecipes, getPlannedFavRecipes, getUnPlannedFavRecipes, getFavRecipeById } 
+import { getFavRecipes, getPlannedFavRecipes, getUnPlannedFavRecipes, getFavRecipeById, addFavRecipe } 
 from '../../services/favRecipeServices.js'; 
 
 export const router = express.Router();

@@ -6,15 +6,6 @@ import { getShoppingList, addToShoppingList, removeFromShoppingCart }
 
 export const router = express.Router();
 
-router.get('/', (req, res, next) => {
-    const uid = 'janani_gurram'; // for testing purposes
-    getIngredients(uid).then((ingredients) => {
-        res.json(ingredients);
-    }).catch((error) => {
-        console.error("Error getting ingredients: ", error);
-    });
-});
-
 router.get('/pantry', (req, res, next) => {
     const uid = 'Janani'; // for testing purposes
     getPantry(uid).then((pantry) => {

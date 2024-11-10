@@ -38,6 +38,7 @@ function formatRecipes(data) {
     const recipes = data.results;
     return recipes.map((recipe) => {
         const missedIngredients = recipe.missedIngredients.map((ingredient) => ingredient.name);
+        const ingredients = recipe.extendedIngredients.map((ingredient) => ingredient.name);
         let instructions = [];
         if (recipe.analyzedInstructions.length > 0) {
             instructions = recipe.analyzedInstructions[0].steps.map((step) => {
@@ -48,10 +49,12 @@ function formatRecipes(data) {
             });
         }
         const formattedRecipe = {
-            id: recipe.id,
-            name: recipe.title,
+            recipeId: recipe.id,
+            recipeName: recipe.title,
             missedIngredientCount: recipe.missedIngredientCount,
             missedIngredients: missedIngredients,
+            totalIngredientCount: ingredients.length,
+            ingredients: ingredients,
             instructions: instructions,
             sourceUrl: recipe.sourceUrl
         };

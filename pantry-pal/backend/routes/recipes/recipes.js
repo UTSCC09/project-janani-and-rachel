@@ -12,7 +12,7 @@ router.get('/search-keyword', (req, res, next) => {
     try {
         const page = req.query.page || 0;
         const limit = parseInt(req.query.limit) || 10;
-        const keyword = req.body.keyword;
+        const keyword = req.query.keyword || "";
         searchRecipesByKeyword(keyword, page, limit)
         .then((recipes) => { res.json(recipes) });
     } catch (error) {

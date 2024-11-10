@@ -63,9 +63,9 @@ function formatRecipes(data) {
 }
 
 
-export async function searchRecipesByKeyword(keyword, page=0, lim=10) {
+export async function searchRecipesByKeyword(keyword, page=1, lim=10) {
     const url = `${spoonacularAPI}recipes/complexSearch?apiKey=${spoonacularKey}&query=${keyword}` +
-        `&number=${lim}&offset=${page * lim}&instructionsRequired=true&fillIngredients=true` +
+        `&number=${lim}&offset=${(page-1) * lim}&instructionsRequired=true&fillIngredients=true` +
         `&includeIngredients=${pantryIngredients.join(",")}&addRecipeInformation=true&addRecipeInstructions=true`;
     
     try {
@@ -82,9 +82,9 @@ export async function searchRecipesByKeyword(keyword, page=0, lim=10) {
     }
 }
 
-export async function searchRecipesByMaxMatching(page=0, lim=10) {
+export async function searchRecipesByMaxMatching(page=1, lim=10) {
     const url = `${spoonacularAPI}recipes/complexSearch?apiKey=${spoonacularKey}&sort=max-used-ingredients` +
-        `&number=${lim}&offset=${page * lim}&instructionsRequired=true&fillIngredients=true` +
+        `&number=${lim}&offset=${(page-1) * lim}&instructionsRequired=true&fillIngredients=true` +
         `&includeIngredients=${pantryIngredients.join(",")}&addRecipeInformation=true&addRecipeInstructions=true`;
     console.log(url);
     try {
@@ -101,9 +101,9 @@ export async function searchRecipesByMaxMatching(page=0, lim=10) {
     }
 }
 
-export async function searchRecipesByMinMissing(page=0, lim=10) {
+export async function searchRecipesByMinMissing(page=1, lim=10) {
     const url = `${spoonacularAPI}recipes/complexSearch?apiKey=${spoonacularKey}&sort=min-missing-ingredients` +
-        `&number=${lim}&offset=${page * lim}&instructionsRequired=true&fillIngredients=true` +
+        `&number=${lim}&offset=${(page-1) * lim}&instructionsRequired=true&fillIngredients=true` +
         `&includeIngredients=${pantryIngredients.join(",")}&addRecipeInformation=true&addRecipeInstructions=true`;
     console.log(url);
     try {

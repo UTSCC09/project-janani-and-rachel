@@ -123,4 +123,4 @@ function getFavRecipeById(uid, recipeId) {
     });
 };
 
-export { getFavRecipes, getPlannedFavRecipes, getUnPlannedFavRecipes, getFavRecipeById };
+export { getFavRecipes, getPlannedFavRecipes, getUnPlannedFavRecipes };

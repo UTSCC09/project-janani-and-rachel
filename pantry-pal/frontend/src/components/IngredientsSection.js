@@ -28,6 +28,7 @@ export default function IngredientsSection() {
     expirationDate: "",
     frozen: false,
   });
+  
   const [showForm, setShowForm] = useState(false); // State to manage form visibility
 
   useEffect(() => {
@@ -121,46 +122,71 @@ export default function IngredientsSection() {
         </Box>
       ) : (
         <List>
-          {ingredients.map((ingredient, index) => (
-            <ListItem key={index} sx={{ marginBottom: 2, backgroundColor: "#f9f9f9", borderRadius: 2 }}>
-              <ListItemText
-                primary={ingredient.ingredientName}
-                secondary={
-                  <>
-                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                      <Box>
-                        <Typography variant="body2">
-                          <FaRegCalendarAlt style={{ marginRight: "5px" }} />
-                          Expiration: {ingredient.expirationDate}
-                        </Typography>
-                        <Typography variant="body2">
-                          <FaRegCalendar style={{ marginRight: "5px" }} />
-                          Purchased: {ingredient.purchaseDate}
-                        </Typography>
-                      </Box>
-                      <Typography variant="body2">
-                        <FaCheckCircle color={ingredient.frozen ? "green" : "gray"} style={{ marginRight: "5px" }} />
-                        {ingredient.frozen ? "Frozen" : "Not Frozen"}
-                      </Typography>
-                    </Box>
-                  </>
-                }
-              />
-              <Box sx={{ display: "flex", alignItems: "center" }}>
+        {ingredients.map((ingredient, index) => (
+            <ListItem key={index} sx={{ marginBottom: 2, backgroundColor: "#ffffff", borderRadius: 2, padding: 2, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            
+            {/* Left Section: Ingredient Details */}
+            <Box sx={{ display: "flex", flexDirection: "column", flex: 1 }}>
+                
+                {/* Ingredient Name */}
+                <Typography variant="h6" sx={{ fontWeight: "bold", marginBottom: 1 }}>
+                {ingredient.ingredientName}
+                </Typography>
+
+                {/* Expiration, Purchase Date and Frozen Status */}
+                <Box sx={{ display: "flex", flexDirection: "column", marginBottom: 1 }}>
+                
+                {/* Expiration Date */}
+                <Box sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
+                    <FaRegCalendarAlt style={{ marginRight: "8px", fontSize: "16px", color: "#3f51b5" }} />
+                    <Typography variant="body2" sx={{ color: "#777" }}>
+                    Expiration: {ingredient.expirationDate}
+                    </Typography>
+                </Box>
+                
+                {/* Purchase Date */}
+                <Box sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
+                    <FaRegCalendar style={{ marginRight: "8px", fontSize: "16px", color: "#3f51b5" }} />
+                    <Typography variant="body2" sx={{ color: "#777" }}>
+                    Purchased: {ingredient.purchaseDate}
+                    </Typography>
+                </Box>
+
+                {/* Frozen Status */}
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <FaCheckCircle
+                    color={ingredient.frozen ? "green" : "gray"}
+                    style={{ marginRight: "8px", fontSize: "16px" }}
+                    />
+                    <Typography variant="body2" sx={{ color: ingredient.frozen ? "green" : "gray" }}>
+                    {ingredient.frozen ? "Frozen" : "Not Frozen"}
+                    </Typography>
+                </Box>
+                </Box>
+            </Box>
+            
+            {/* Right Section: Action Buttons (Delete/Edit) */}
+            <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", height: "100%" }}>
+                {/* Delete Button */}
                 <Tooltip title="Delete Ingredient" arrow>
-                  <IconButton color="error" onClick={() => handleDeleteIngredient(ingredient.ingredientName)}>
+                <IconButton color="error" onClick={() => handleDeleteIngredient(ingredient.ingredientName)}>
                     <FaTrashAlt />
-                  </IconButton>
+                </IconButton>
                 </Tooltip>
+
+                {/* Edit Button */}
                 <Tooltip title="Edit Ingredient" arrow>
-                  <IconButton color="primary" sx={{ marginLeft: 1 }}>
+                <IconButton color="primary" sx={{ marginLeft: 1 }}>
                     <MdEdit />
-                  </IconButton>
+                </IconButton>
                 </Tooltip>
-              </Box>
+            </Box>
             </ListItem>
-          ))}
+        ))}
         </List>
+
+
+      
       )}
 
       {/* Toggle Button */}
@@ -168,7 +194,13 @@ export default function IngredientsSection() {
         variant="outlined"
         onClick={() => setShowForm((prev) => !prev)}
         startIcon={<FaPlus />}
-        sx={{ marginBottom: 2, display: "block", width: "100%", maxWidth: "200px", margin: "0 auto" }}
+        sx={{
+          marginBottom: 2,
+          display: "block",
+          width: "100%",
+          maxWidth: "200px",
+          margin: "0 auto",
+        }}
       >
         {showForm ? "Hide Add Ingredient Form" : "Add Ingredient"}
       </Button>
@@ -194,9 +226,6 @@ export default function IngredientsSection() {
                 name="purchaseDate"
                 value={newIngredient.purchaseDate}
                 onChange={handleInputChange}
-                InputLabelProps={{
-                  shrink: true, // Ensures label stays above the field when filled
-                }}
               />
               <TextField
                 label="Expiration Date"
@@ -204,17 +233,10 @@ export default function IngredientsSection() {
                 name="expirationDate"
                 value={newIngredient.expirationDate}
                 onChange={handleInputChange}
-                InputLabelProps={{
-                  shrink: true, // Ensures label stays above the field when filled
-                }}
               />
               <FormControlLabel
                 control={
-                  <Checkbox
-                    name="frozen"
-                    checked={newIngredient.frozen}
-                    onChange={handleInputChange}
-                  />
+                  <Checkbox name="frozen" checked={newIngredient.frozen} onChange={handleInputChange} />
                 }
                 label="Frozen"
               />

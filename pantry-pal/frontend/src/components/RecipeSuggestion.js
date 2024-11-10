@@ -1,32 +1,66 @@
 import { useState } from "react";
-import { Button, Typography, Box, List, ListItem, ListItemText, Card, CardContent, Divider, Paper } from "@mui/material";
-import { FaSearch, FaUtensils, FaRegFrown } from "react-icons/fa"; // Additional React Icons
+import { Button, Typography, Box, Card, CardContent, Divider, Paper, CircularProgress, Chip } from "@mui/material";
+import { FaSearch, FaUtensils, FaRegFrown, FaCheckCircle } from "react-icons/fa";
+
+const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
 export default function RecipeSuggestion({ ingredients }) {
   const [suggestedRecipes, setSuggestedRecipes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [showRecipes, setShowRecipes] = useState(false);
 
-  // Sample list of recipes
-  const allRecipes = [
-    { id: 1, name: "Tomato Soup", ingredients: ["Tomatoes", "Onions", "Salt"] },
-    { id: 2, name: "Chicken Salad", ingredients: ["Chicken", "Lettuce", "Tomatoes"] },
-    { id: 3, name: "Chicken Soup", ingredients: ["Chicken", "Onions", "Salt"] },
-    { id: 4, name: "Grilled Chicken", ingredients: ["Chicken", "Garlic", "Olive Oil"] },
-  ];
+  // Function to fetch suggested recipes from the backend
+  const findSuggestedRecipes = async () => {
+    setLoading(true);
+    setError(null); // Reset any previous errors
+    setSuggestedRecipes([]); // Clear previous suggestions
 
-  // Function to check if the recipe can be made with the available ingredients
-  const canMakeRecipe = (recipeIngredients) => {
-    return recipeIngredients.every((ingredient) =>
-      ingredients.some((ing) => ing.name === ingredient && ing.available)
-    );
+    try {
+      const response = await fetch(`${domain}/api/recipes/search-most-matching`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch suggested recipes");
+      }
+
+      const data = await response.json();
+      setSuggestedRecipes(data);
+      setShowRecipes(true);
+    } catch (err) {
+      setError("There was an error fetching the suggested recipes.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const findSuggestedRecipes = () => {
-    const filteredRecipes = allRecipes.filter((recipe) =>
-      canMakeRecipe(recipe.ingredients)
-    );
-    setSuggestedRecipes(filteredRecipes);
-    setShowRecipes(true);
+  // Function to add missing ingredients to the shopping list
+  const addMissingIngredientsToShoppingList = async (missedIngredients, recipeId) => {
+    try {
+      // Loop over the missed ingredients and send each to the backend
+      const promises = missedIngredients.map((ingredient) =>
+        fetch(`${domain}/api/ingredients/shoppingList`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ ingredientName: ingredient }),
+        })
+      );
+
+      // Wait for all promises to resolve
+      await Promise.all(promises);
+
+      // Update the specific recipe's success message
+      setSuggestedRecipes((prevRecipes) =>
+        prevRecipes.map((recipe) =>
+          recipe.recipeId === recipeId
+            ? { ...recipe, successMessage: "All missing ingredients have been successfully added to the shopping list." }
+            : recipe
+        )
+      );
+    } catch (err) {
+      console.error("Error adding missing ingredients to shopping list", err);
+    }
   };
 
   return (
@@ -43,55 +77,100 @@ export default function RecipeSuggestion({ ingredients }) {
           fontWeight: 600,
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
-          backgroundImage: "linear-gradient(45deg, #2196f3, #21cbf3)", // Gradient background
+          backgroundImage: "linear-gradient(45deg, #2196f3, #21cbf3)",
           color: "white",
-          transition: "all 0.3s ease", // Smooth transition
+          transition: "all 0.3s ease",
           "&:hover": {
-            backgroundPosition: "right center", // Change position on hover
-            backgroundImage: "linear-gradient(45deg, #1565c0, #0097a7)", // Darker gradient on hover
-            transform: "scale(1.05)", // Slight scale-up effect
+            backgroundPosition: "right center",
+            backgroundImage: "linear-gradient(45deg, #1565c0, #0097a7)",
+            transform: "scale(1.05)",
           },
           "&:active": {
-            transform: "scale(1)", // Reset scale on click
+            transform: "scale(1)",
           },
         }}
-        startIcon={<FaSearch />} // React Icon added here (FaSearch)
+        startIcon={loading ? <CircularProgress size={24} color="inherit" /> : <FaSearch />}
+        disabled={loading}
       >
-        Find Suggested Recipes
+        {loading ? "Finding Recipes..." : "Find Suggested Recipes"}
       </Button>
+
+      {/* Display error if there is any */}
+      {error && (
+        <Typography color="error" sx={{ marginTop: 2, textAlign: "center", fontWeight: "bold" }}>
+          {error}
+        </Typography>
+      )}
 
       {/* Display suggested recipes */}
       {showRecipes && (
-        <Paper sx={{ width: "100%", maxWidth: "600px", padding: 3, boxShadow: 3, borderRadius: 2 }}>
-          <Typography variant="h5" gutterBottom align="center" sx={{ fontWeight: 600 }}>
-            Suggested Recipes
-          </Typography>
-          <Divider sx={{ marginBottom: 2 }} />
+        <Box sx={{ marginTop: 3, width: "100%" }}>
           {suggestedRecipes.length > 0 ? (
-            <List>
-              {suggestedRecipes.map((recipe) => (
-                <Card key={recipe.id} sx={{ marginBottom: 2, borderRadius: 2, boxShadow: 2 }}>
-                  <CardContent>
-                    <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                      {recipe.name}
+            suggestedRecipes.map((recipe) => (
+              <Card key={recipe.recipeId} sx={{ marginBottom: "1.5rem", borderRadius: "8px", boxShadow: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" color="primary" gutterBottom>
+                    {recipe.recipeName}
+                  </Typography>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: "1rem", marginBottom: "1rem" }}>
+                    <Chip label={`Missing Ingredients: ${recipe.missedIngredientCount}`} color="secondary" />
+                    <Chip label={`Ingredients: ${recipe.ingredients.length}`} color="info" />
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Ingredients:</strong> {recipe.ingredients.join(", ")}
+                  </Typography>
+                  <Divider sx={{ marginY: "1rem" }} />
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Instructions:</strong>
+                  </Typography>
+                  <ul>
+                    {recipe.instructions.map((instruction, index) => (
+                      <li key={index}>
+                        <Typography variant="body2">{instruction.step}</Typography>
+                      </li>
+                    ))}
+                  </ul>
+                  <Typography variant="body2" color="primary" sx={{ marginTop: "1rem" }}>
+                    <a href={recipe.sourceUrl} target="_blank" rel="noopener noreferrer">
+                      Full Recipe Source
+                    </a>
+                  </Typography>
+                </CardContent>
+                <Box sx={{ padding: "1rem" }}>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => addMissingIngredientsToShoppingList(recipe.missedIngredients, recipe.recipeId)}
+                    disabled={recipe.missedIngredients.length === 0}
+                    fullWidth
+                    sx={{ padding: "1rem", textTransform: "none" }}
+                    startIcon={<FaCheckCircle />}
+                  >
+                    Add Missing Ingredients to Shopping List
+                  </Button>
+
+                  {/* Success Message */}
+                  {recipe.successMessage && (
+                    <Typography
+                      variant="body1"
+                      color="success.main"
+                      sx={{ marginTop: "1rem", textAlign: "center", fontWeight: "bold" }}
+                    >
+                      {recipe.successMessage}
                     </Typography>
-                    <Divider sx={{ marginY: 1 }} />
-                    <Typography variant="body2" color="text.secondary">
-                      Ingredients: {recipe.ingredients.join(", ")}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              ))}
-            </List>
+                  )}
+                </Box>
+              </Card>
+            ))
           ) : (
             <Box sx={{ textAlign: "center", padding: 3 }}>
               <FaRegFrown size={40} color="gray" />
               <Typography variant="body1" sx={{ fontStyle: "italic", color: "gray", marginTop: 2 }}>
-                No recipes can be made with the available ingredients.
+                No recipes found for the given ingredients.
               </Typography>
             </Box>
           )}
-        </Paper>
+        </Box>
       )}
     </Box>
   );

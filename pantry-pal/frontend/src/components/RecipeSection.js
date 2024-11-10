@@ -107,11 +107,11 @@ export default function RecipeList() {
       {/* Search Section */}
       <Box sx={{ marginBottom: '2rem' }}>
         <Typography variant="h5" gutterBottom sx={{ textAlign: 'center' }}>
-          Search for a Favorite Recipe by ID
+          Search for a Favorite Recipe by Name
         </Typography>
         <Box display="flex" alignItems="center" mb={2} sx={{ justifyContent: 'center' }}>
           <TextField
-            label="Enter Recipe ID"
+            label="Recipe Name"
             variant="outlined"
             value={searchRecipeId}
             onChange={(e) => setSearchRecipeId(e.target.value)}

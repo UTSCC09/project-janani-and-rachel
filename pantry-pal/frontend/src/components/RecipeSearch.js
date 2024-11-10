@@ -9,11 +9,10 @@ import {
   InputAdornment,
   Card,
   CardContent,
-  IconButton,
   Divider,
   Chip,
 } from "@mui/material";
-import { FaSearch, FaExclamationCircle, FaCheckCircle } from "react-icons/fa";
+import { FaSearch, FaExclamationCircle } from "react-icons/fa";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
@@ -31,7 +30,6 @@ export default function RecipeSearch({ onSearch }) {
     setRecipes([]); // Clear previous recipes
 
     try {
-      // Make a request to the backend API with the entered keyword
       const res = await fetch(`${domain}/api/recipes/search-keyword?keyword=${encodeURIComponent(ingredients)}`);
       if (!res.ok) {
         throw new Error("Failed to fetch recipes");
@@ -44,36 +42,6 @@ export default function RecipeSearch({ onSearch }) {
       console.error(err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Function to add missing ingredients to the shopping list
-  const addMissingIngredientsToShoppingList = async (missedIngredients, recipeId) => {
-    try {
-      // Loop over the missed ingredients and send each to the backend
-      const promises = missedIngredients.map((ingredient) =>
-        fetch(`${domain}/api/ingredients/shoppingList`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ ingredientName: ingredient }),
-        })
-      );
-
-      // Wait for all promises to resolve
-      await Promise.all(promises);
-
-      // Update the specific recipe's success message
-      setRecipes((prevRecipes) =>
-        prevRecipes.map((recipe) =>
-          recipe.recipeId === recipeId
-            ? { ...recipe, successMessage: "All missing ingredients have been successfully added to the shopping list." }
-            : recipe
-        )
-      );
-    } catch (err) {
-      console.error("Error adding missing ingredients to shopping list", err);
     }
   };
 
@@ -161,30 +129,6 @@ export default function RecipeSearch({ onSearch }) {
                   </a>
                 </Typography>
               </CardContent>
-              <Box sx={{ padding: "1rem" }}>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={() => addMissingIngredientsToShoppingList(recipe.missedIngredients, recipe.recipeId)}
-                  disabled={recipe.missedIngredients.length === 0}
-                  fullWidth
-                  sx={{ padding: "1rem", textTransform: "none" }}
-                  startIcon={<FaCheckCircle />}
-                >
-                  Add Missing Ingredients to Shopping List
-                </Button>
-
-                {/* Success Message */}
-                {recipe.successMessage && (
-                  <Typography
-                    variant="body1"
-                    color="success.main"
-                    sx={{ marginTop: "1rem", textAlign: "center", fontWeight: "bold" }}
-                  >
-                    {recipe.successMessage}
-                  </Typography>
-                )}
-              </Box>
             </Card>
           ))
         ) : (

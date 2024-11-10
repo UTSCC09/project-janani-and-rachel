@@ -24,11 +24,11 @@ export default function IngredientsSection() {
   const [loading, setLoading] = useState(true);
   const [newIngredient, setNewIngredient] = useState({
     ingredientName: "",
-    purchaseDate: "",
-    expirationDate: "",
+    purchaseDate: new Date().toISOString().split('T')[0], // Defaults to current date
+    expirationDate: "", // Defaults to empty string
     frozen: false,
   });
-  
+
   const [showForm, setShowForm] = useState(false); // State to manage form visibility
 
   useEffect(() => {
@@ -80,7 +80,7 @@ export default function IngredientsSection() {
         setIngredients((prev) => [...prev, newIngredient]);
         setNewIngredient({
           ingredientName: "",
-          purchaseDate: "",
+          purchaseDate: new Date().toISOString().split('T')[0], // Reset to current date
           expirationDate: "",
           frozen: false,
         });
@@ -122,71 +122,65 @@ export default function IngredientsSection() {
         </Box>
       ) : (
         <List>
-        {ingredients.map((ingredient, index) => (
+          {ingredients.map((ingredient, index) => (
             <ListItem key={index} sx={{ marginBottom: 2, backgroundColor: "#ffffff", borderRadius: 2, padding: 2, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-            
-            {/* Left Section: Ingredient Details */}
-            <Box sx={{ display: "flex", flexDirection: "column", flex: 1 }}>
-                
+              {/* Left Section: Ingredient Details */}
+              <Box sx={{ display: "flex", flexDirection: "column", flex: 1 }}>
                 {/* Ingredient Name */}
                 <Typography variant="h6" sx={{ fontWeight: "bold", marginBottom: 1 }}>
-                {ingredient.ingredientName}
+                  {ingredient.ingredientName}
                 </Typography>
 
                 {/* Expiration, Purchase Date and Frozen Status */}
                 <Box sx={{ display: "flex", flexDirection: "column", marginBottom: 1 }}>
-                
-                {/* Expiration Date */}
-                <Box sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
+                  {/* Expiration Date */}
+                  <Box sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
                     <FaRegCalendarAlt style={{ marginRight: "8px", fontSize: "16px", color: "#3f51b5" }} />
                     <Typography variant="body2" sx={{ color: "#777" }}>
-                    Expiration: {ingredient.expirationDate}
+                      Expiration: {ingredient.expirationDate}
                     </Typography>
-                </Box>
-                
-                {/* Purchase Date */}
-                <Box sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
+                  </Box>
+
+                  {/* Purchase Date */}
+                  <Box sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
                     <FaRegCalendar style={{ marginRight: "8px", fontSize: "16px", color: "#3f51b5" }} />
                     <Typography variant="body2" sx={{ color: "#777" }}>
-                    Purchased: {ingredient.purchaseDate}
+                      Purchased: {ingredient.purchaseDate}
                     </Typography>
-                </Box>
+                  </Box>
 
-                {/* Frozen Status */}
-                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  {/* Frozen Status */}
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
                     <FaCheckCircle
-                    color={ingredient.frozen ? "green" : "gray"}
-                    style={{ marginRight: "8px", fontSize: "16px" }}
+                      color={ingredient.frozen ? "green" : "gray"}
+                      style={{ marginRight: "8px", fontSize: "16px" }}
                     />
                     <Typography variant="body2" sx={{ color: ingredient.frozen ? "green" : "gray" }}>
-                    {ingredient.frozen ? "Frozen" : "Not Frozen"}
+                      {ingredient.frozen ? "Frozen" : "Not Frozen"}
                     </Typography>
+                  </Box>
                 </Box>
-                </Box>
-            </Box>
-            
-            {/* Right Section: Action Buttons (Delete/Edit) */}
-            <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", height: "100%" }}>
+              </Box>
+
+              {/* Right Section: Action Buttons (Delete/Edit) */}
+              <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", height: "100%" }}>
                 {/* Delete Button */}
                 <Tooltip title="Delete Ingredient" arrow>
-                <IconButton color="error" onClick={() => handleDeleteIngredient(ingredient.ingredientName)}>
+                  <IconButton color="error" onClick={() => handleDeleteIngredient(ingredient.ingredientName)}>
                     <FaTrashAlt />
-                </IconButton>
+                  </IconButton>
                 </Tooltip>
 
                 {/* Edit Button */}
                 <Tooltip title="Edit Ingredient" arrow>
-                <IconButton color="primary" sx={{ marginLeft: 1 }}>
+                  <IconButton color="primary" sx={{ marginLeft: 1 }}>
                     <MdEdit />
-                </IconButton>
+                  </IconButton>
                 </Tooltip>
-            </Box>
+              </Box>
             </ListItem>
-        ))}
+          ))}
         </List>
-
-
-      
       )}
 
       {/* Toggle Button */}

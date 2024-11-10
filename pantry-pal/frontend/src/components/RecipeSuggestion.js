@@ -116,9 +116,28 @@ export default function RecipeSuggestion({ ingredients }) {
                     <Chip label={`Missing Ingredients: ${recipe.missedIngredientCount}`} color="secondary" />
                     <Chip label={`Ingredients: ${recipe.ingredients.length}`} color="info" />
                   </Box>
+
+                  {/* Display all ingredients and missed ingredients */}
                   <Typography variant="body2" color="text.secondary">
                     <strong>Ingredients:</strong> {recipe.ingredients.join(", ")}
                   </Typography>
+                  {recipe.missedIngredients.length > 0 && (
+                    <Box sx={{ marginTop: "1rem" }}>
+                      <Typography variant="body2" color="error" sx={{ fontWeight: "bold" }}>
+                        Missing Ingredients:
+                      </Typography>
+                      <ul style={{ margin: 0, padding: 0, listStyleType: "none" }}>
+                        {recipe.missedIngredients.map((ingredient, index) => (
+                          <li key={index}>
+                            <Typography variant="body2" color="text.secondary">
+                              {ingredient}
+                            </Typography>
+                          </li>
+                        ))}
+                      </ul>
+                    </Box>
+                  )}
+
                   <Divider sx={{ marginY: "1rem" }} />
                   <Typography variant="body2" color="text.secondary">
                     <strong>Instructions:</strong>

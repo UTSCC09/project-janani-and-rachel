@@ -38,3 +38,11 @@ router.get('/:recipeId', (req, res, next) => {
             return res.status(200).json(recipe);
         });
 });
+
+
+// Route to add a recipe to favorites
+router.post('/', (req, res, next) => {
+    // add recipe to favorites
+    // req.body formated as response from search recipes
+    
+});

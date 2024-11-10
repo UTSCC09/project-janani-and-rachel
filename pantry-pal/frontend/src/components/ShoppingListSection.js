@@ -37,7 +37,7 @@ export default function ShoppingListSection() {
       body: JSON.stringify({ ingredientName: newItem }),
     })
       .then((response) => {
-        if (response.status === 201) {
+        if (response.status === 200) {
           // Update shopping list with the new item
           setShoppingList((prev) => [...prev, { ingredientName: newItem }]);
           // Reset input field

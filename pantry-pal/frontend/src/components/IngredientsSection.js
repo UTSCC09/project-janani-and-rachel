@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import RecipeSuggestion from "@/components/RecipeSuggestion";
+import { Box, TextField, Button, Checkbox, FormControlLabel, Typography, CircularProgress, List, ListItem, ListItemText, Card, CardContent, CardActions } from "@mui/material";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
@@ -8,18 +9,16 @@ export default function IngredientsSection() {
   const [loading, setLoading] = useState(true);
   const [newIngredient, setNewIngredient] = useState({
     ingredientName: "",
-    units: "",
     purchaseDate: "",
     expirationDate: "",
     frozen: false,
   });
+  const [showForm, setShowForm] = useState(false); // State to manage form visibility
 
-  // Fetch ingredients from /api/ingredients/pantry when the component mounts
   useEffect(() => {
     fetch(`${domain}/api/ingredients/pantry`)
       .then((response) => response.json())
       .then((data) => {
-        // Process data to format dates
         const processedData = data.ingredients.map((item) => ({
           ...item,
           purchaseDate: item.purchaseDate
@@ -38,7 +37,6 @@ export default function IngredientsSection() {
       });
   }, []);
 
-  // Handle input change for the new ingredient form
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setNewIngredient((prev) => ({
@@ -47,11 +45,9 @@ export default function IngredientsSection() {
     }));
   };
 
-  // Handle form submission
   const handleAddIngredient = (e) => {
     e.preventDefault();
 
-    // Send POST request to add or update ingredient
     fetch(`${domain}/api/ingredients/pantry`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -64,13 +60,10 @@ export default function IngredientsSection() {
           throw new Error("Failed to add or update ingredient.");
         }
       })
-      .then((data) => {
-        // Refresh ingredient list to reflect the new addition/update
+      .then(() => {
         setIngredients((prev) => [...prev, newIngredient]);
-        // Reset form
         setNewIngredient({
           ingredientName: "",
-          units: "",
           purchaseDate: "",
           expirationDate: "",
           frozen: false,
@@ -81,7 +74,6 @@ export default function IngredientsSection() {
       });
   };
 
-  // Handle delete ingredient
   const handleDeleteIngredient = (ingredientName) => {
     fetch(`${domain}/api/ingredients/pantry`, {
       method: "DELETE",
@@ -103,82 +95,113 @@ export default function IngredientsSection() {
   };
 
   return (
-    <div>
-      <h2>Ingredients</h2>
+    <Box sx={{ padding: 2 }}>
+      <Typography variant="h4" gutterBottom>
+        Ingredients
+      </Typography>
 
       {loading ? (
-        <p>Loading ingredients...</p>
+        <CircularProgress />
       ) : (
-        <ul>
+        <List sx={{ marginBottom: 2 }}>
           {ingredients.map((ingredient, index) => (
-            <li key={index} style={{ marginBottom: "1em" }}>
-              <strong>{ingredient.ingredientName}</strong>
-              <ul>
-                <li>Expiration Date: {ingredient.expirationDate}</li>
-                <li>Frozen: {ingredient.frozen ? "Yes" : "No"}</li>
-                <li>Purchase Date: {ingredient.purchaseDate}</li>
-              </ul>
-              <button onClick={() => handleDeleteIngredient(ingredient.ingredientName)}>
-                Delete
-              </button>
-            </li>
+            <ListItem key={index} sx={{ marginBottom: 2 }}>
+              <Card sx={{ width: "100%", boxShadow: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" component="div" sx={{ fontWeight: "bold" }}>
+                    {ingredient.ingredientName}
+                  </Typography>
+                  <Typography color="text.secondary" sx={{ marginBottom: 1 }}>
+                    Expiration Date: {ingredient.expirationDate}
+                  </Typography>
+                  <Typography color="text.secondary" sx={{ marginBottom: 1 }}>
+                    Purchase Date: {ingredient.purchaseDate}
+                  </Typography>
+                  <Typography color="text.secondary">
+                    Frozen: {ingredient.frozen ? "Yes" : "No"}
+                  </Typography>
+                </CardContent>
+                <CardActions>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() => handleDeleteIngredient(ingredient.ingredientName)}
+                    size="small"
+                  >
+                    Delete
+                  </Button>
+                </CardActions>
+              </Card>
+            </ListItem>
           ))}
-        </ul>
+        </List>
       )}
 
-      <h3>Add or Update Ingredient</h3>
-      <form onSubmit={handleAddIngredient}>
-        <label>
-          Name:
-          <input
-            type="text"
-            name="ingredientName"
-            value={newIngredient.ingredientName}
-            onChange={handleInputChange}
-            required
-          />
-        </label>
-        <label>
-          Units:
-          <input
-            type="text"
-            name="units"
-            value={newIngredient.units}
-            onChange={handleInputChange}
-          />
-        </label>
-        <label>
-          Purchase Date:
-          <input
-            type="date"
-            name="purchaseDate"
-            value={newIngredient.purchaseDate}
-            onChange={handleInputChange}
-          />
-        </label>
-        <label>
-          Expiration Date:
-          <input
-            type="date"
-            name="expirationDate"
-            value={newIngredient.expirationDate}
-            onChange={handleInputChange}
-          />
-        </label>
-        <label>
-          Frozen:
-          <input
-            type="checkbox"
-            name="frozen"
-            checked={newIngredient.frozen}
-            onChange={handleInputChange}
-          />
-        </label>
-        <button type="submit">Add/Update Ingredient</button>
-      </form>
+      {/* Toggle Button */}
+      <Button
+        variant="outlined"
+        onClick={() => setShowForm((prev) => !prev)}
+        sx={{ marginBottom: 2 }}
+      >
+        {showForm ? "Hide Form" : "Add Ingredient"}
+      </Button>
 
-      {/* Pass ingredients to RecipeSuggestion */}
+      {/* Conditionally render the form */}
+      {showForm && (
+        <>
+          <Typography variant="h6" gutterBottom>
+            Add or Update Ingredient
+          </Typography>
+          <form onSubmit={handleAddIngredient}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <TextField
+                label="Ingredient Name"
+                name="ingredientName"
+                value={newIngredient.ingredientName}
+                onChange={handleInputChange}
+                required
+              />
+              <TextField
+                label="Purchase Date"
+                type="date"
+                name="purchaseDate"
+                value={newIngredient.purchaseDate}
+                onChange={handleInputChange}
+                InputLabelProps={{
+                  shrink: true, // Ensures label stays above the field when filled
+                }}
+                sx={{ marginBottom: 1 }} // Optional: add spacing between fields
+              />
+              <TextField
+                label="Expiration Date"
+                type="date"
+                name="expirationDate"
+                value={newIngredient.expirationDate}
+                onChange={handleInputChange}
+                InputLabelProps={{
+                  shrink: true, // Ensures label stays above the field when filled
+                }}
+                sx={{ marginBottom: 1 }} // Optional: add spacing between fields
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    name="frozen"
+                    checked={newIngredient.frozen}
+                    onChange={handleInputChange}
+                  />
+                }
+                label="Frozen"
+              />
+              <Button variant="contained" color="primary" type="submit">
+                Add/Update Ingredient
+              </Button>
+            </Box>
+          </form>
+        </>
+      )}
+
       <RecipeSuggestion ingredients={ingredients} />
-    </div>
+    </Box>
   );
 }

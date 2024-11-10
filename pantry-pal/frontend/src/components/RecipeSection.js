@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
+import { Button, Card, CardContent, CircularProgress, TextField, Typography, Grid, Box, Divider } from '@mui/material';
+import { MdStar, MdStarBorder } from 'react-icons/md'; // Importing Material icons from react-icons
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
 export default function RecipeList() {
   const [allRecipes, setAllRecipes] = useState([]);
-  const [plannedRecipes, setPlannedRecipes] = useState([]);
   const [unplannedRecipes, setUnplannedRecipes] = useState([]);
   const [loadingAll, setLoadingAll] = useState(true);
   const [loadingUnplanned, setLoadingUnplanned] = useState(true);
-  const [searchRecipeId, setSearchRecipeId] = useState("");
+  const [searchRecipeId, setSearchRecipeId] = useState('');
   const [searchedRecipe, setSearchedRecipe] = useState(null);
   const [loadingSearch, setLoadingSearch] = useState(false);
 
@@ -19,11 +20,10 @@ export default function RecipeList() {
       .then((data) => {
         const recipes = data.recipes || [];
         setAllRecipes(recipes);
-        setPlannedRecipes(recipes.filter((recipe) => recipe.planned));
         setLoadingAll(false);
       })
       .catch((error) => {
-        console.error("Error fetching all recipes:", error);
+        console.error('Error fetching all recipes:', error);
         setLoadingAll(false);
       });
 
@@ -35,7 +35,7 @@ export default function RecipeList() {
         setLoadingUnplanned(false);
       })
       .catch((error) => {
-        console.error("Error fetching unplanned recipes:", error);
+        console.error('Error fetching unplanned recipes:', error);
         setLoadingUnplanned(false);
       });
   }, []);
@@ -49,19 +49,16 @@ export default function RecipeList() {
           setAllRecipes((prevRecipes) =>
             prevRecipes.filter((recipe) => recipe.recipeId !== recipeId)
           );
-          setPlannedRecipes((prevRecipes) =>
-            prevRecipes.filter((recipe) => recipe.recipeId !== recipeId)
-          );
           setUnplannedRecipes((prevRecipes) =>
             prevRecipes.filter((recipe) => recipe.recipeId !== recipeId)
           );
           setSearchedRecipe(null);
         } else {
-          console.error("Error deleting recipe:", res.status);
+          console.error('Error deleting recipe:', res.status);
         }
       })
       .catch((error) => {
-        console.error("Error deleting recipe:", error);
+        console.error('Error deleting recipe:', error);
       });
   };
 
@@ -75,82 +72,136 @@ export default function RecipeList() {
         setLoadingSearch(false);
       })
       .catch((error) => {
-        console.error("Error fetching recipe by ID:", error);
+        console.error('Error fetching recipe by ID:', error);
         setSearchedRecipe(null);
         setLoadingSearch(false);
       });
   };
 
   return (
-    <div>
-      <h2>All Favorite Recipes</h2>
-      {loadingAll ? (
-        <p>Loading recipes...</p>
-      ) : (
-        <ul>
-          {allRecipes.map((recipe) => (
-            <li key={recipe.recipeId} style={{ marginBottom: "1em" }}>
-              <h3>{recipe.recipeName}</h3>
-              <button onClick={() => handleDelete(recipe.recipeId)}>Delete</button>
-            </li>
-          ))}
-        </ul>
-      )}
+    <Box sx={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+      <Typography variant="h3" gutterBottom align="center" sx={{ color: '#1976d2' }}>My Favorite Recipes</Typography>
 
-      <h2>Planned Recipes</h2>
-      {loadingAll ? (
-        <p>Loading planned recipes...</p>
-      ) : plannedRecipes.length === 0 ? (
-        <p>No planned recipes.</p>
-      ) : (
-        <ul>
-          {plannedRecipes.map((recipe) => (
-            <li key={recipe.recipeId} style={{ marginBottom: "1em" }}>
-              <h3>{recipe.recipeName}</h3>
-              <p><strong>Planned for:</strong> {recipe.date || "N/A"}</p>
-              <button onClick={() => handleDelete(recipe.recipeId)}>Delete</button>
-            </li>
-          ))}
-        </ul>
-      )}
+      {/* Search Section */}
+      <Box sx={{ marginBottom: '2rem' }}>
+        <Typography variant="h5" gutterBottom sx={{ textAlign: 'center' }}>Search for a Favorite Recipe by ID</Typography>
+        <Box display="flex" alignItems="center" mb={2} sx={{ justifyContent: 'center' }}>
+          <TextField
+            label="Enter Recipe ID"
+            variant="outlined"
+            value={searchRecipeId}
+            onChange={(e) => setSearchRecipeId(e.target.value)}
+            sx={{ marginRight: 1, maxWidth: '300px' }}
+            fullWidth
+          />
+          <Button
+            variant="contained"
+            onClick={handleSearchRecipe}
+            disabled={loadingSearch}
+            sx={{ padding: '10px 20px' }}
+          >
+            {loadingSearch ? 'Searching...' : 'Search'}
+          </Button>
+        </Box>
+      </Box>
 
-      <h2>Unplanned Recipes</h2>
-      {loadingUnplanned ? (
-        <p>Loading unplanned recipes...</p>
-      ) : unplannedRecipes.length === 0 ? (
-        <p>No unplanned recipes.</p>
-      ) : (
-        <ul>
-          {unplannedRecipes.map((recipe) => (
-            <li key={recipe.recipeId} style={{ marginBottom: "1em" }}>
-              <h3>{recipe.recipeName}</h3>
-              <button onClick={() => handleDelete(recipe.recipeId)}>Delete</button>
-            </li>
-          ))}
-        </ul>
-      )}
 
-      <h2>Search for a Favorite Recipe by ID</h2>
-      <input
-        type="text"
-        placeholder="Enter Recipe ID"
-        value={searchRecipeId}
-        onChange={(e) => setSearchRecipeId(e.target.value)}
-      />
-      <button onClick={handleSearchRecipe} disabled={loadingSearch}>
-        {loadingSearch ? "Searching..." : "Search"}
-      </button>
-      
+      {/* Search Result */}
       {searchedRecipe && (
-        <div style={{ marginTop: "1em", padding: "1em", border: "1px solid #ddd" }}>
-          <h3>{searchedRecipe.ingredientName}</h3>
-          <p><strong>Directions:</strong> {searchedRecipe.directions}</p>
-          <p><strong>Notes:</strong> {searchedRecipe.notes}</p>
-          <p><strong>Planned:</strong> {searchedRecipe.planned ? "Yes" : "No"}</p>
-          <p><strong>Date:</strong> {searchedRecipe.date || "N/A"}</p>
-          <button onClick={() => handleDelete(searchRecipeId)}>Delete</button>
-        </div>
+        <Card sx={{ marginTop: 2 }}>
+          <CardContent>
+            <Typography variant="h6">{searchedRecipe.recipeName}</Typography>
+            <Divider sx={{ margin: '1rem 0' }} />
+            <Typography variant="body1">
+              <strong>Directions:</strong> {searchedRecipe.directions}
+            </Typography>
+            <Typography variant="body1">
+              <strong>Notes:</strong> {searchedRecipe.notes}
+            </Typography>
+            <Typography variant="body1">
+              <strong>Planned:</strong> {searchedRecipe.planned ? 'Yes' : 'No'}
+            </Typography>
+            <Typography variant="body1">
+              <strong>Date:</strong> {searchedRecipe.date || 'N/A'}
+            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={() => handleDelete(searchedRecipe.recipeId)}
+              >
+                Delete
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
       )}
-    </div>
+
+      {/* All Recipes Section */}
+      <Typography variant="h5" gutterBottom>All Recipes</Typography>
+      {loadingAll ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Grid container spacing={3}>
+          {allRecipes.map((recipe) => (
+            <Grid item xs={12} sm={6} md={4} key={recipe.recipeId}>
+              <Card sx={{ borderRadius: '12px', boxShadow: 3 }}>
+                <CardContent>
+                  <Typography variant="h6">{recipe.recipeName}</Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                    {recipe.planned ? <MdStar color="gold" /> : <MdStarBorder />}
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handleDelete(recipe.recipeId)}
+                    >
+                      Delete
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+
+      {/* Unplanned Recipes Section */}
+      <Typography variant="h5" gutterBottom>Unplanned Recipes</Typography>
+      {loadingUnplanned ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Box>
+      ) : unplannedRecipes.length === 0 ? (
+        <Typography variant="body1" align="center">No unplanned recipes available.</Typography>
+      ) : (
+        <Grid container spacing={3}>
+          {unplannedRecipes.map((recipe) => (
+            <Grid item xs={12} sm={6} md={4} key={recipe.recipeId}>
+              <Card sx={{ borderRadius: '12px', boxShadow: 3 }}>
+                <CardContent>
+                  <Typography variant="h6">{recipe.recipeName}</Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                    {recipe.planned ? <MdStar color="gold" /> : <MdStarBorder />}
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handleDelete(recipe.recipeId)}
+                    >
+                      Delete
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+    </Box>
   );
 }

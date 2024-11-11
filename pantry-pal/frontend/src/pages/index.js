@@ -85,7 +85,7 @@ export default function Home() {
               },
             }}
           >
-            <MenuItem onClick={() => handleMenuClose("recipes")}>Recipes</MenuItem>
+            <MenuItem onClick={() => handleMenuClose("recipes")}>Favorite Recipes</MenuItem>
             <MenuItem onClick={() => handleMenuClose("ingredients")}>Ingredients</MenuItem>
             <MenuItem onClick={() => handleMenuClose("shoppingList")}>Shopping List</MenuItem>
             <MenuItem onClick={() => handleMenuClose("calendar")}>Calendar</MenuItem>

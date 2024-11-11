@@ -11,8 +11,9 @@ import {
   CardContent,
   Divider,
   Chip,
+  IconButton
 } from "@mui/material";
-import { FaSearch, FaExclamationCircle } from "react-icons/fa";
+import { FaSearch, FaExclamationCircle, FaStar, FaRegStar } from "react-icons/fa";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
@@ -21,6 +22,7 @@ export default function RecipeSearch({ onSearch }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [recipes, setRecipes] = useState([]);
+  const [favorites, setFavorites] = useState(new Set());
 
   const handleSearch = async () => {
     if (!ingredients) return;
@@ -42,6 +44,35 @@ export default function RecipeSearch({ onSearch }) {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFavoriteClick = async (recipe) => {
+    try {
+      const res = await fetch(`${domain}/api/recipes/favorites`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          recipeId: recipe.recipeId,
+          recipeName: recipe.recipeName,
+          missedIngredientCount: recipe.missedIngredientCount,
+          missedIngredients: recipe.missedIngredients,
+          totalIngredientCount: recipe.totalIngredientCount,
+          ingredients: recipe.ingredients,
+          instructions: recipe.instructions,
+          sourceUrl: recipe.sourceUrl,
+        }),
+      });
+
+      if (res.ok) {
+        setFavorites(new Set(favorites.add(recipe.recipeId))); // Add to favorites set
+      } else {
+        console.error("Failed to add recipe to favorites");
+      }
+    } catch (err) {
+      console.error("Error while adding to favorites", err);
     }
   };
 
@@ -128,6 +159,15 @@ export default function RecipeSearch({ onSearch }) {
                     Full Recipe Source
                   </a>
                 </Typography>
+
+                {/* Star Button to add to favorites */}
+                <IconButton
+                  onClick={() => handleFavoriteClick(recipe)}
+                  onMouseLeave={(e) => e.target.style.color = ""}
+                  sx={{ color: favorites.has(recipe.recipeId) ? "yellow" : "gray", marginLeft: "auto" }}
+                >
+                  {favorites.has(recipe.recipeId) ? <FaStar /> : <FaRegStar />}
+                </IconButton>
               </CardContent>
             </Card>
           ))

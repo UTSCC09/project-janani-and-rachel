@@ -38,15 +38,16 @@ export default function IngredientsSection() {
         const processedData = data.ingredients.map((item) => ({
           ...item,
           purchaseDate: item.purchaseDate
-            ? new Date(item.purchaseDate.seconds * 1000).toLocaleDateString()
+            ? new Date(item.purchaseDate).toLocaleDateString()
             : "N/A",
           expirationDate: item.expirationDate
-            ? new Date(item.expirationDate.seconds * 1000).toLocaleDateString()
+            ? new Date(item.expirationDate).toLocaleDateString()
             : "N/A",
         }));
         setIngredients(processedData);
         setLoading(false);
       })
+      
       .catch((error) => {
         console.error("Error fetching ingredients:", error);
         setLoading(false);

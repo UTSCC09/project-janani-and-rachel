@@ -46,8 +46,7 @@ export default function IngredientsSection() {
         }));
         setIngredients(processedData);
         setLoading(false);
-      })
-      
+      })      
       .catch((error) => {
         console.error("Error fetching ingredients:", error);
         setLoading(false);

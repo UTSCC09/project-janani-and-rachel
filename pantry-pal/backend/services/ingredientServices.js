@@ -1,5 +1,5 @@
 import { db } from '../config/firebase.js';
-import { collection, doc, setDoc, getDocs, getDoc, deleteDoc, limit, orderBy, query, startAfter } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc, getDocs, getDoc, deleteDoc, limit, orderBy, query, startAfter } from 'firebase/firestore';
 
 export async function getPantry(uid, lim = 10, lastVisibleIngredient = null) {
     try {
@@ -58,7 +58,21 @@ export async function addToPantry(uid, ingredientName, purchaseDate = new Date()
     }
 }
 
-export function modifyInPantry() {}
+export async function modifyInPantry(uid, ingredient) {
+    try {
+        const pantryRef = doc(db, 'Users', uid, 'Pantry', ingredient.ingredientName);
+        
+        await updateDoc(pantryRef, ingredient);
+  
+        console.log(`Ingredient '${ingredient.ingredientName}' modified in pantry for user ${uid}.`);
+        return ingredient; // return the data for confirmation if needed
+    }
+    catch (error) {
+        console.error("Error modifying ingredient in pantry:", error);
+        throw error;
+    }
+}
+
 export async function removeFromPantry(uid, ingredientId) {
     const ingredientRef = doc(db, 'Users', uid, 'Pantry', ingredientId);
     try {
@@ -131,7 +145,20 @@ export async function addToShoppingList(uid, ingredientName) {
     }
 };
 
-export function modifyInShoppingCart() {};
+export async function modifyInShoppingCart(uid, ingredient) {
+    try {
+        const shoppingListRef = doc(db, 'Users', uid, 'ShoppingList', ingredient.ingredientName);
+        
+        updateDoc(shoppingListRef, ingredient);
+  
+        console.log(`Ingredient '${ingredient.ingredientName}' modified in shopping list for user ${uid}.`);
+        return ingredient; // return the data for confirmation if needed
+    }
+    catch (error) {
+        console.error("Error modifying ingredient in shopping list:", error);
+        throw error;
+    }
+};
 export async function removeFromShoppingCart(uid, ingredientName) {
     try {
         const ingredientRef = doc(db, 'Users', uid, 'ShoppingList', ingredientName);

@@ -1,7 +1,7 @@
 import express from 'express';
-import { getPantry, addToPantry, removeFromPantry }  
+import { getPantry, addToPantry, removeFromPantry, modifyInPantry }  
     from '../services/ingredientServices.js';
-import { getShoppingList, addToShoppingList, removeFromShoppingCart } 
+import { getShoppingList, addToShoppingList, removeFromShoppingCart, modifyInShoppingCart } 
     from '../services/ingredientServices.js';
 
 export const router = express.Router();
@@ -22,6 +22,15 @@ router.post('/pantry', (req, res, next) => {
         res.json(ingredient);
     }).catch((error) => {
         console.error("Error adding to pantry: ", error);
+    });
+});
+
+router.patch('/pantry', (req, res, next) => {
+    const uid = 'Janani'; // for testing purposes
+    modifyInPantry(uid, req.body).then((ingredient) => {
+        res.json(ingredient);
+    }).catch((error) => {
+        console.error("Error modifying in pantry: ", error);
     });
 });
 
@@ -51,6 +60,15 @@ router.post('/shoppingList', (req, res, next) => {
         res.json(ingredient);
     }).catch((error) => {
         console.error("Error adding to shopping list: ", error);
+    });
+});
+
+router.patch('/shoppingList', (req, res, next) => {
+    const uid = 'Janani'; // for testing purposes
+    modifyInShoppingCart(uid, req.body).then((ingredient) => {
+        res.json(ingredient);
+    }).catch((error) => {
+        console.error("Error modifying in shopping list: ", error);
     });
 });
 

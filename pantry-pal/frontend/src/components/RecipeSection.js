@@ -42,7 +42,8 @@ export default function RecipeList() {
     fetch(`${domain}/api/recipes/favorites/unplanned`)
       .then((res) => res.json())
       .then((data) => {
-        setUnplannedRecipes(data || []);
+        // Assuming `data.recipes` is the correct format for unplanned recipes
+        setUnplannedRecipes(data.recipes || []);
         setLoadingUnplanned(false);
       })
       .catch((error) => {
@@ -235,51 +236,6 @@ export default function RecipeList() {
                 </Box>
               </CardContent>
             </Card>
-          ))}
-        </Box>
-      )}
-
-
-      {/* Unplanned Recipes Section */}
-      <Typography variant="h5" gutterBottom sx={{ marginTop: '2rem' }}>
-        Unplanned Recipes
-      </Typography>
-      {loadingUnplanned ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress />
-        </Box>
-      ) : unplannedRecipes.length === 0 ? (
-        <Typography variant="body1" align="center" sx={{ fontStyle: 'italic', marginTop: '1rem' }}>
-          No unplanned recipes available.
-        </Typography>
-      ) : (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '2rem' }}>
-          {unplannedRecipes.map((recipe) => (
-            <Box key={recipe.recipeId} sx={{ flexBasis: '30%' }}>
-              <Card sx={{ borderRadius: '12px', boxShadow: 3, padding: '1rem', backgroundColor: '#fafafa' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="h6" sx={{ marginBottom: '0.5rem' }}>
-                      {recipe.recipeName}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={() => handleDelete(recipe.recipeId)}
-                      sx={{
-                        padding: '6px 16px',
-                        borderRadius: '12px',
-                        textTransform: 'none',
-                      }}
-                    >
-                      <MdDelete size={20} />
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Box>
           ))}
         </Box>
       )}

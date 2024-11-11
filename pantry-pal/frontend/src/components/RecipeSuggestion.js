@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Button, Typography, Box, Card, CardContent, Divider, Paper, CircularProgress, Chip } from "@mui/material";
-import { FaSearch, FaUtensils, FaRegFrown, FaCheckCircle } from "react-icons/fa";
+import { Button, Typography, Box, Card, CardContent, Divider, Paper, CircularProgress, Chip, IconButton } from "@mui/material";
+import { FaSearch, FaUtensils, FaRegFrown, FaCheckCircle, FaStar, FaRegStar } from "react-icons/fa";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
@@ -9,6 +9,8 @@ export default function RecipeSuggestion({ ingredients }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showRecipes, setShowRecipes] = useState(false);
+
+  const [favorites, setFavorites] = useState(new Set());
 
   // Function to fetch suggested recipes from the backend
   const findSuggestedRecipes = async () => {
@@ -33,33 +35,64 @@ export default function RecipeSuggestion({ ingredients }) {
     }
   };
 
-  // Function to add missing ingredients to the shopping list
+  const handleFavoriteClick = async (recipe) => {
+    try {
+      // POST request to add recipe to favorites
+      const response = await fetch(`${domain}/api/recipes/favorites`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          recipeId: recipe.recipeId,
+          recipeName: recipe.recipeName,
+          missedIngredientCount: recipe.missedIngredientCount,
+          missedIngredients: recipe.missedIngredients,
+          totalIngredientCount: recipe.totalIngredientCount,
+          ingredients: recipe.ingredients,
+          instructions: recipe.instructions,
+          sourceUrl: recipe.sourceUrl,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add to favorites");
+      }
+
+      // Add recipe to favorites set
+      setFavorites((prevFavorites) => new Set(prevFavorites.add(recipe.recipeId)));
+    } catch (err) {
+      console.error("Error adding to favorites", err);
+    }
+  };
+
+  // Function to add missing ingredients to shopping list
   const addMissingIngredientsToShoppingList = async (missedIngredients, recipeId) => {
     try {
-      // Loop over the missed ingredients and send each to the backend
-      const promises = missedIngredients.map((ingredient) =>
-        fetch(`${domain}/api/ingredients/shoppingList`, {
+      for (let ingredient of missedIngredients) {
+        const response = await fetch(`${domain}/api/ingredients/shoppingList`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ ingredientName: ingredient }),
-        })
-      );
+        });
 
-      // Wait for all promises to resolve
-      await Promise.all(promises);
+        if (!response.ok) {
+          throw new Error("Failed to add ingredient to shopping list");
+        }
+      }
 
-      // Update the specific recipe's success message
+      // After adding, show success message for this recipe
       setSuggestedRecipes((prevRecipes) =>
         prevRecipes.map((recipe) =>
           recipe.recipeId === recipeId
-            ? { ...recipe, successMessage: "All missing ingredients have been successfully added to the shopping list." }
+            ? { ...recipe, successMessage: "Missing ingredients added to shopping list!" }
             : recipe
         )
       );
     } catch (err) {
-      console.error("Error adding missing ingredients to shopping list", err);
+      console.error("Error adding ingredients to shopping list", err);
     }
   };
 
@@ -81,8 +114,7 @@ export default function RecipeSuggestion({ ingredients }) {
           color: "white",
           transition: "all 0.3s ease",
           "&:hover": {
-            backgroundPosition: "right center",
-            backgroundImage: "linear-gradient(45deg, #1565c0, #0097a7)",
+            backgroundColor: "transparent",
             transform: "scale(1.05)",
           },
           "&:active": {
@@ -107,7 +139,23 @@ export default function RecipeSuggestion({ ingredients }) {
         <Box sx={{ marginTop: 3, width: "100%" }}>
           {suggestedRecipes.length > 0 ? (
             suggestedRecipes.map((recipe) => (
-              <Card key={recipe.recipeId} sx={{ marginBottom: "1.5rem", borderRadius: "8px", boxShadow: 3 }}>
+              <Card key={recipe.recipeId} sx={{ marginBottom: "1.5rem", borderRadius: "8px", boxShadow: 3, position: "relative" }}>
+                {/* Star Button positioned at top-right */}
+                <IconButton
+                  onClick={() => handleFavoriteClick(recipe)}
+                  onMouseLeave={(e) => e.target.style.color = ""}
+                  sx={{
+                    color: favorites.has(recipe.recipeId) ? "yellow" : "gray",
+                    position: "absolute",
+                    top: "8px",
+                    right: "8px",
+                    padding: "8px",
+                    transition: "color 0.3s ease",
+                  }}
+                >
+                  {favorites.has(recipe.recipeId) ? <FaStar /> : <FaRegStar />}
+                </IconButton>
+
                 <CardContent>
                   <Typography variant="h6" color="primary" gutterBottom>
                     {recipe.recipeName}
@@ -155,37 +203,40 @@ export default function RecipeSuggestion({ ingredients }) {
                     </a>
                   </Typography>
                 </CardContent>
-                <Box sx={{ padding: "1rem" }}>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={() => addMissingIngredientsToShoppingList(recipe.missedIngredients, recipe.recipeId)}
-                    disabled={recipe.missedIngredients.length === 0}
-                    fullWidth
-                    sx={{ padding: "1rem", textTransform: "none" }}
-                    startIcon={<FaCheckCircle />}
-                  >
-                    Add Missing Ingredients to Shopping List
-                  </Button>
 
-                  {/* Success Message */}
-                  {recipe.successMessage && (
-                    <Typography
-                      variant="body1"
-                      color="success.main"
-                      sx={{ marginTop: "1rem", textAlign: "center", fontWeight: "bold" }}
-                    >
-                      {recipe.successMessage}
-                    </Typography>
-                  )}
-                </Box>
+                <Box sx={{ padding: "1rem", display: "flex", justifyContent: "flex-end", alignItems: "center", flexDirection: "column", gap: 2 }}>
+                {/* Success Message */}
+                {recipe.successMessage && (
+                  <Typography
+                    variant="body1"
+                    color="success.main"
+                    sx={{ textAlign: "center", fontWeight: "bold" }}
+                  >
+                    {recipe.successMessage}
+                  </Typography>
+                )}
+
+                {/* Button to add missing ingredients to shopping list */}
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => addMissingIngredientsToShoppingList(recipe.missedIngredients, recipe.recipeId)}
+                  disabled={recipe.missedIngredients.length === 0}
+                  fullWidth
+                  sx={{ padding: "1rem", textTransform: "none" }}
+                  startIcon={<FaCheckCircle />}
+                >
+                  Add Missing Ingredients to Shopping List
+                </Button>
+              </Box>
+
               </Card>
             ))
           ) : (
             <Box sx={{ textAlign: "center", padding: 3 }}>
               <FaRegFrown size={40} color="gray" />
-              <Typography variant="body1" sx={{ fontStyle: "italic", color: "gray", marginTop: 2 }}>
-                No recipes found for the given ingredients.
+              <Typography variant="body1" sx={{ fontStyle: "italic", color: "gray" }}>
+                No recipes found.
               </Typography>
             </Box>
           )}

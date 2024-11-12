@@ -164,7 +164,7 @@ export default function RecipeSearch({ onSearch }) {
                 <IconButton
                   onClick={() => handleFavoriteClick(recipe)}
                   onMouseLeave={(e) => e.target.style.color = ""}
-                  sx={{ color: favorites.has(recipe.recipeId) ? "yellow" : "gray", marginLeft: "auto" }}
+                  sx={{ color: favorites.has(recipe.recipeId) ? "#e4e642" : "gray", marginLeft: "auto" }}
                 >
                   {favorites.has(recipe.recipeId) ? <FaStar /> : <FaRegStar />}
                 </IconButton>

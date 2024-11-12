@@ -1,17 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   Button,
   Card,
   CardContent,
   CircularProgress,
-  TextField,
   Typography,
   Box,
   Divider,
   IconButton,
   Chip,
-} from '@mui/material';
-import { MdDelete } from 'react-icons/md';
+} from "@mui/material";
+import { FaTrashAlt } from "react-icons/fa"; // Import FaTrashAlt
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
@@ -20,7 +19,7 @@ export default function RecipeList() {
   const [unplannedRecipes, setUnplannedRecipes] = useState([]);
   const [loadingAll, setLoadingAll] = useState(true);
   const [loadingUnplanned, setLoadingUnplanned] = useState(true);
-  const [searchRecipeId, setSearchRecipeId] = useState('');
+  const [searchRecipeId, setSearchRecipeId] = useState("");
   const [searchedRecipe, setSearchedRecipe] = useState(null);
   const [loadingSearch, setLoadingSearch] = useState(false);
 
@@ -33,7 +32,7 @@ export default function RecipeList() {
         setLoadingAll(false);
       })
       .catch((error) => {
-        console.error('Error fetching all recipes:', error);
+        console.error("Error fetching all recipes:", error);
         setLoadingAll(false);
       });
 
@@ -44,29 +43,29 @@ export default function RecipeList() {
         setLoadingUnplanned(false);
       })
       .catch((error) => {
-        console.error('Error fetching unplanned recipes:', error);
+        console.error("Error fetching unplanned recipes:", error);
         setLoadingUnplanned(false);
       });
   }, []);
 
   const handleDelete = (recipeId) => {
     setAllRecipes((prevRecipes) =>
-      prevRecipes.filter((recipe) => recipe.recipeId !== recipeId)
+      prevRecipes.filter((recipe) => recipe.recipeId !== recipeId),
     );
     setUnplannedRecipes((prevRecipes) =>
-      prevRecipes.filter((recipe) => recipe.recipeId !== recipeId)
+      prevRecipes.filter((recipe) => recipe.recipeId !== recipeId),
     );
-    
+
     fetch(`${domain}/api/recipes/favorites/${recipeId}`, {
-      method: 'DELETE',
+      method: "DELETE",
     })
       .then((res) => {
         if (res.status === 204) return;
-        console.error('Error deleting recipe:', res.status);
+        console.error("Error deleting recipe:", res.status);
         fetchRecipes();
       })
       .catch((error) => {
-        console.error('Error deleting recipe:', error);
+        console.error("Error deleting recipe:", error);
         fetchRecipes();
       });
   };
@@ -79,7 +78,7 @@ export default function RecipeList() {
         setAllRecipes(recipes);
       })
       .catch((error) => {
-        console.error('Error fetching all recipes:', error);
+        console.error("Error fetching all recipes:", error);
       });
 
     fetch(`${domain}/api/recipes/favorites/unplanned`)
@@ -88,22 +87,22 @@ export default function RecipeList() {
         setUnplannedRecipes(data.recipes || []);
       })
       .catch((error) => {
-        console.error('Error fetching unplanned recipes:', error);
+        console.error("Error fetching unplanned recipes:", error);
       });
   };
 
   return (
-    <Box sx={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <Box sx={{ padding: "2rem", maxWidth: "1200px", margin: "0 auto" }}>
       {/* Main Title */}
       <Typography
         variant="h3"
         gutterBottom
         align="center"
         sx={{
-          color: '#1976d2',
+          color: "#1976d2",
           fontWeight: 600,
-          marginBottom: '3rem',
-          textTransform: 'uppercase',
+          marginBottom: "3rem",
+          textTransform: "uppercase",
           letterSpacing: 1.5,
         }}
       >
@@ -111,61 +110,67 @@ export default function RecipeList() {
       </Typography>
 
       {/* All Recipes Section */}
-      <Box sx={{ marginBottom: '3rem' }}>
+      <Box sx={{ marginBottom: "3rem" }}>
         <Typography
           variant="h5"
           sx={{
             fontWeight: 600,
-            color: '#333',
-            borderBottom: '2px solid #1976d2',
-            paddingBottom: '0.5rem',
-            marginBottom: '2rem',
+            color: "#333",
+            borderBottom: "2px solid #1976d2",
+            paddingBottom: "0.5rem",
+            marginBottom: "2rem",
             letterSpacing: 0.5,
           }}
         >
           All Recipes
         </Typography>
         {loadingAll ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
             <CircularProgress />
           </Box>
         ) : (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
             {allRecipes.map((recipe) => (
               <Card
                 key={recipe.recipeId}
                 sx={{
-                  borderRadius: '12px',
+                  borderRadius: "12px",
                   boxShadow: 3,
-                  backgroundColor: '#fafafa',
-                  padding: '1rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  '&:hover': {
-                    transform: 'scale(1.03)',
-                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+                  backgroundColor: "#fafafa",
+                  padding: "1rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                  "&:hover": {
+                    transform: "scale(1.03)",
+                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
                   },
                 }}
               >
                 <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginBottom: "1rem",
+                    }}
+                  >
                     <Typography variant="h6">{recipe.recipeName}</Typography>
                     {recipe.planned && (
                       <Chip
                         label="Planned"
                         color="primary"
                         sx={{
-                          fontSize: '0.875rem',
-                          fontWeight: 'bold',
-                          borderRadius: '16px',
-                          padding: '0.2rem 0.8rem',
+                          fontSize: "0.875rem",
+                          fontWeight: "bold",
+                          borderRadius: "16px",
+                          padding: "0.2rem 0.8rem",
                         }}
                       />
                     )}
                   </Box>
 
-                  <Box sx={{ marginBottom: '1rem' }}>
+                  <Box sx={{ marginBottom: "1rem" }}>
                     <Typography variant="body2">
                       <strong>Directions:</strong> {recipe.directions}
                     </Typography>
@@ -173,26 +178,27 @@ export default function RecipeList() {
                       <strong>Notes:</strong> {recipe.notes}
                     </Typography>
                     <Typography variant="body2">
-                      <strong>Date:</strong> {recipe.date || 'N/A'}
+                      <strong>Date:</strong> {recipe.date || "N/A"}
                     </Typography>
                   </Box>
 
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                     <Button
                       variant="outlined"
                       color="error"
                       onClick={() => handleDelete(recipe.recipeId)}
                       sx={{
-                        padding: '6px 16px',
-                        borderRadius: '12px',
-                        textTransform: 'none',
-                        '&:hover': {
-                          backgroundColor: '#f44336',
-                          color: '#fff',
+                        padding: "6px 16px",
+                        borderRadius: "12px",
+                        textTransform: "none",
+                        "&:hover": {
+                          backgroundColor: "#f44336",
+                          color: "#fff",
                         },
                       }}
                     >
-                      <MdDelete size={20} />
+                      <FaTrashAlt size={20} />{" "}
+                      {/* Replaced MdDelete with FaTrashAlt */}
                     </Button>
                   </Box>
                 </CardContent>
@@ -208,44 +214,50 @@ export default function RecipeList() {
           variant="h5"
           sx={{
             fontWeight: 600,
-            color: '#333',
-            borderBottom: '2px solid #1976d2',
-            paddingBottom: '0.5rem',
-            marginBottom: '2rem',
+            color: "#333",
+            borderBottom: "2px solid #1976d2",
+            paddingBottom: "0.5rem",
+            marginBottom: "2rem",
             letterSpacing: 0.5,
           }}
         >
           Unplanned Recipes
         </Typography>
         {loadingUnplanned ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
             <CircularProgress />
           </Box>
         ) : (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
             {unplannedRecipes.map((recipe) => (
               <Card
                 key={recipe.recipeId}
                 sx={{
-                  borderRadius: '12px',
+                  borderRadius: "12px",
                   boxShadow: 3,
-                  backgroundColor: '#fafafa',
-                  padding: '1rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  '&:hover': {
-                    transform: 'scale(1.03)',
-                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+                  backgroundColor: "#fafafa",
+                  padding: "1rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                  "&:hover": {
+                    transform: "scale(1.03)",
+                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
                   },
                 }}
               >
                 <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginBottom: "1rem",
+                    }}
+                  >
                     <Typography variant="h6">{recipe.recipeName}</Typography>
                   </Box>
 
-                  <Box sx={{ marginBottom: '1rem' }}>
+                  <Box sx={{ marginBottom: "1rem" }}>
                     <Typography variant="body2">
                       <strong>Directions:</strong> {recipe.directions}
                     </Typography>
@@ -253,26 +265,27 @@ export default function RecipeList() {
                       <strong>Notes:</strong> {recipe.notes}
                     </Typography>
                     <Typography variant="body2">
-                      <strong>Date:</strong> {recipe.date || 'N/A'}
+                      <strong>Date:</strong> {recipe.date || "N/A"}
                     </Typography>
                   </Box>
 
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                     <Button
                       variant="outlined"
                       color="error"
                       onClick={() => handleDelete(recipe.recipeId)}
                       sx={{
-                        padding: '6px 16px',
-                        borderRadius: '12px',
-                        textTransform: 'none',
-                        '&:hover': {
-                          backgroundColor: '#f44336',
-                          color: '#fff',
+                        padding: "6px 16px",
+                        borderRadius: "12px",
+                        textTransform: "none",
+                        "&:hover": {
+                          backgroundColor: "#f44336",
+                          color: "#fff",
                         },
                       }}
                     >
-                      <MdDelete size={20} />
+                      <FaTrashAlt size={20} />{" "}
+                      {/* Replaced MdDelete with FaTrashAlt */}
                     </Button>
                   </Box>
                 </CardContent>

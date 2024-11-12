@@ -11,9 +11,14 @@ import {
   CardContent,
   Divider,
   Chip,
-  IconButton
+  IconButton,
 } from "@mui/material";
-import { FaSearch, FaExclamationCircle, FaStar, FaRegStar } from "react-icons/fa";
+import {
+  FaSearch,
+  FaExclamationCircle,
+  FaStar,
+  FaRegStar,
+} from "react-icons/fa";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
@@ -32,7 +37,9 @@ export default function RecipeSearch({ onSearch }) {
     setRecipes([]); // Clear previous recipes
 
     try {
-      const res = await fetch(`${domain}/api/recipes/search-keyword?keyword=${encodeURIComponent(ingredients)}`);
+      const res = await fetch(
+        `${domain}/api/recipes/search-keyword?keyword=${encodeURIComponent(ingredients)}`,
+      );
       if (!res.ok) {
         throw new Error("Failed to fetch recipes");
       }
@@ -131,14 +138,30 @@ export default function RecipeSearch({ onSearch }) {
       <Box sx={{ marginTop: "3rem" }}>
         {recipes.length > 0 ? (
           recipes.map((recipe) => (
-            <Card key={recipe.recipeId} sx={{ marginBottom: "1.5rem", borderRadius: "8px", boxShadow: 3 }}>
+            <Card
+              key={recipe.recipeId}
+              sx={{ marginBottom: "1.5rem", borderRadius: "8px", boxShadow: 3 }}
+            >
               <CardContent>
                 <Typography variant="h6" color="primary" gutterBottom>
                   {recipe.recipeName}
                 </Typography>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: "1rem", marginBottom: "1rem" }}>
-                  <Chip label={`Missing Ingredients: ${recipe.missedIngredientCount}`} color="secondary" />
-                  <Chip label={`Ingredients: ${recipe.ingredients.length}`} color="info" />
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "1rem",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  <Chip
+                    label={`Missing Ingredients: ${recipe.missedIngredientCount}`}
+                    color="secondary"
+                  />
+                  <Chip
+                    label={`Ingredients: ${recipe.ingredients.length}`}
+                    color="info"
+                  />
                 </Box>
                 <Typography variant="body2" color="text.secondary">
                   <strong>Ingredients:</strong> {recipe.ingredients.join(", ")}
@@ -150,12 +173,22 @@ export default function RecipeSearch({ onSearch }) {
                 <ul>
                   {recipe.instructions.map((instruction, index) => (
                     <li key={index}>
-                      <Typography variant="body2">{instruction.step}</Typography>
+                      <Typography variant="body2">
+                        {instruction.step}
+                      </Typography>
                     </li>
                   ))}
                 </ul>
-                <Typography variant="body2" color="primary" sx={{ marginTop: "1rem" }}>
-                  <a href={recipe.sourceUrl} target="_blank" rel="noopener noreferrer">
+                <Typography
+                  variant="body2"
+                  color="primary"
+                  sx={{ marginTop: "1rem" }}
+                >
+                  <a
+                    href={recipe.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     Full Recipe Source
                   </a>
                 </Typography>
@@ -163,8 +196,11 @@ export default function RecipeSearch({ onSearch }) {
                 {/* Star Button to add to favorites */}
                 <IconButton
                   onClick={() => handleFavoriteClick(recipe)}
-                  onMouseLeave={(e) => e.target.style.color = ""}
-                  sx={{ color: favorites.has(recipe.recipeId) ? "#e4e642" : "gray", marginLeft: "auto" }}
+                  onMouseLeave={(e) => (e.target.style.color = "")}
+                  sx={{
+                    color: favorites.has(recipe.recipeId) ? "#e4e642" : "gray",
+                    marginLeft: "auto",
+                  }}
                 >
                   {favorites.has(recipe.recipeId) ? <FaStar /> : <FaRegStar />}
                 </IconButton>

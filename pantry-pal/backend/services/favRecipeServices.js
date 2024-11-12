@@ -1,6 +1,31 @@
 import { db } from '../config/firebase.js';
 import { collection, doc, where, setDoc, getDocs, getDoc, deleteDoc, limit, orderBy, query, startAfter } from 'firebase/firestore';
 
+async function getFormattedRecipe(docData) {
+    const recipeRef = docData.recipe;
+    
+    if (!recipeRef) {
+        console.warn("Invalid recipe reference.");
+        return null;
+    }
+
+    const recipeDoc = await getDoc(recipeRef);
+    if (!recipeDoc.exists()) {
+        console.warn("Recipe document does not exist.");
+        return null;
+    }
+
+    const recipeData = recipeDoc.data();
+    return {
+        recipeId: docData.recipeId,
+        recipeName: docData.recipeName,
+        planned: docData.planned,
+        ingredients: recipeData.ingredients,
+        sourceUrl: recipeData.sourceUrl,
+        instructions: recipeData.instructions,
+        totalIngredientCount: recipeData.totalIngredientCount
+    };
+}
 
 async function getFavRecipes(uid, lim = 10, lastVisibleId = null) {    
     try {
@@ -8,7 +33,6 @@ async function getFavRecipes(uid, lim = 10, lastVisibleId = null) {
         let q = query(recipesRef, orderBy('recipeName'), limit(lim));
 
         if (lastVisibleId) {
-            // Retrieve the lastVisible document snapshot using its ID
             const lastVisibleDoc = await getDoc(doc(recipesRef, lastVisibleId));
             if (lastVisibleDoc.exists()) {
                 q = query(recipesRef, orderBy('recipeName'), startAfter(lastVisibleDoc), limit(lim));
@@ -18,95 +42,112 @@ async function getFavRecipes(uid, lim = 10, lastVisibleId = null) {
         }
 
         const snapshot = await getDocs(q);
-
         if (snapshot.empty) {
-            console.log("No more recipes in favorites for the specified page.");
-            return {
-                recipes: [],
-                lastVisible: null
-            };
-        } else {
-            const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
-            const recipes = snapshot.docs.map(doc => doc.data());
-            return {
-                recipes: recipes,
-                lastVisible: newLastVisible.id
-            };
+            console.log("No more favorite recipes found.");
+            return { recipes: [], lastVisible: null };
         }
+
+        const recipes = await Promise.all(
+            snapshot.docs.map(async (doc) => {
+                const data = doc.data();
+                return await getFormattedRecipe(data);
+            })
+        );
+
+        // Filter out null values
+        const filteredRecipes = recipes.filter(recipe => recipe !== null);
+        const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
+
+        return {
+            recipes: filteredRecipes,
+            lastVisible: newLastVisible.id
+        };
     } catch (error) {
         console.error("Error fetching paginated favorite recipes:", error);
         throw error;
     }
 }
 
-function getPlannedFavRecipes(uid, lim=10, lastVisibleRecipe=null) {
-
-    return new Promise((resolve, reject) => {
+async function getPlannedFavRecipes(uid, lim = 10, lastVisibleRecipe = null) {
+    try {
         const recipesRef = collection(db, 'Users', uid, 'FavRecipes');
-        
-        // return is planned = true
-        const plannedQuery = query(recipesRef, where('planned', '==', true), limit(lim));
-        
+        let plannedQuery = query(recipesRef, where('planned', '==', true), limit(lim));
+
         if (lastVisibleRecipe) {
-            // Retrieve the lastVisible document snapshot using its ID
-            const lastVisibleDoc = getDoc(doc(recipesRef, lastVisibleRecipe));
+            const lastVisibleDocRef = doc(recipesRef, lastVisibleRecipe);
+            const lastVisibleDoc = await getDoc(lastVisibleDocRef);
             if (lastVisibleDoc.exists()) {
                 plannedQuery = query(recipesRef, where('planned', '==', true), startAfter(lastVisibleDoc), limit(lim));
             }
         }
 
-        const get = getDocs(plannedQuery).then((snapshot) => {
-            if (snapshot.empty) {
-                console.log("No more planned recipes in favorites for the specified page.");
-                resolve([]);
-            } else {
-                const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
-                const recipes = snapshot.docs.map(doc => (doc.data()));
-                resolve({
-                    recipes: recipes,
-                    lastVisible: newLastVisible.id
-                });
-            }
-        }).catch((error) => {
-            console.error("Error fetching paginated planned favorite recipes:", error);
-            reject(error);
-        });
-    });
+        const snapshot = await getDocs(plannedQuery);
+        if (snapshot.empty) {
+            console.log("No more planned recipes in favorites for the specified page.");
+            return { recipes: [], lastVisible: null };
+        }
+
+        const recipes = await Promise.all(
+            snapshot.docs.map(async (doc) => {
+                const data = doc.data();
+                return await getFormattedRecipe(data);
+            })
+        );
+
+        // Filter out null values
+        const filteredRecipes = recipes.filter(recipe => recipe !== null);
+        const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
+
+        return {
+            recipes: filteredRecipes,
+            lastVisible: newLastVisible.id
+        };
+    } catch (error) {
+        console.error("Error fetching paginated planned favorite recipes:", error);
+        throw error;
+    }
 }
 
-function getUnPlannedFavRecipes(uid, lim=10, lastVisibleRecipe=null) {
-    return new Promise((resolve, reject) => {
+
+async function getUnPlannedFavRecipes(uid, lim = 10, lastVisibleRecipe = null) {
+    try {
         const recipesRef = collection(db, 'Users', uid, 'FavRecipes');
-        
-        // return is planned = false
-        const unplannedQuery = query(recipesRef, where('planned', '==', false), limit(lim));
-        
+        let plannedQuery = query(recipesRef, where('planned', '==', false), limit(lim));
+
         if (lastVisibleRecipe) {
-            // Retrieve the lastVisible document snapshot using its ID
-            const lastVisibleDoc = getDoc(doc(recipesRef, lastVisibleRecipe));
+            const lastVisibleDocRef = doc(recipesRef, lastVisibleRecipe);
+            const lastVisibleDoc = await getDoc(lastVisibleDocRef);
             if (lastVisibleDoc.exists()) {
-                unplannedQuery = query(recipesRef, where('planned', '==', false), startAfter(lastVisibleDoc), limit(lim));
+                plannedQuery = query(recipesRef, where('planned', '==', true), startAfter(lastVisibleDoc), limit(lim));
             }
         }
 
-        const get = getDocs(unplannedQuery).then((snapshot) => {
-            if (snapshot.empty) {
-                console.log("No more unplanned recipes in favorites for the specified page.");
-                resolve([]);
-            } else {
-                const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
-                const recipes = snapshot.docs.map(doc => (doc.data()));
-                resolve({
-                    recipes: recipes,
-                    lastVisible: newLastVisible.id
-                });
-            }
-        }).catch((error) => {
-            console.error("Error fetching paginated unplanned favorite recipes:", error);
-            reject(error);
-        });
-    });
-};
+        const snapshot = await getDocs(plannedQuery);
+        if (snapshot.empty) {
+            console.log("No more planned recipes in favorites for the specified page.");
+            return { recipes: [], lastVisible: null };
+        }
+
+        const recipes = await Promise.all(
+            snapshot.docs.map(async (doc) => {
+                const data = doc.data();
+                return await getFormattedRecipe(data);
+            })
+        );
+
+        // Filter out null values
+        const filteredRecipes = recipes.filter(recipe => recipe !== null);
+        const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
+
+        return {
+            recipes: filteredRecipes,
+            lastVisible: newLastVisible.id
+        };
+    } catch (error) {
+        console.error("Error fetching paginated planned favorite recipes:", error);
+        throw error;
+    }
+}
 
 async function getFavRecipeById(uid, recipeId) {
     try {

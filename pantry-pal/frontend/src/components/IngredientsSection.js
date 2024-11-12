@@ -24,29 +24,28 @@ export default function IngredientsSection() {
   const [loading, setLoading] = useState(true);
   const [newIngredient, setNewIngredient] = useState({
     ingredientName: "",
-    purchaseDate: new Date().toISOString().split('T')[0], // Defaults to current date
+    purchaseDate: new Date().toISOString().split("T")[0], // Defaults to current date in 'yyyy-mm-dd' format
     expirationDate: "", // Defaults to empty string
     frozen: false,
   });
-
+  const [editingIngredient, setEditingIngredient] = useState(null); // State for ingredient being edited
   const [showForm, setShowForm] = useState(false); // State to manage form visibility
 
   useEffect(() => {
     fetch(`${domain}/api/ingredients/pantry`)
       .then((response) => response.json())
       .then((data) => {
-        const processedData = data.ingredients.map((item) => ({
-          ...item,
-          purchaseDate: item.purchaseDate
-            ? new Date(item.purchaseDate).toLocaleDateString()
-            : "N/A",
-          expirationDate: item.expirationDate
-            ? new Date(item.expirationDate).toLocaleDateString()
-            : "N/A",
-        }));
+        const processedData = Array.isArray(data.ingredients)
+          ? data.ingredients.map((item) => ({
+              ...item,
+              purchaseDate: item.purchaseDate || "", // Keep the date in 'yyyy-mm-dd' format
+              expirationDate: item.expirationDate || "", // Keep the date in 'yyyy-mm-dd' format
+            }))
+          : []; // Return an empty array if ingredients is not found
+
         setIngredients(processedData);
         setLoading(false);
-      })      
+      })
       .catch((error) => {
         console.error("Error fetching ingredients:", error);
         setLoading(false);
@@ -61,13 +60,22 @@ export default function IngredientsSection() {
     }));
   };
 
-  const handleAddIngredient = (e) => {
+  const handleAddOrUpdateIngredient = (e) => {
     e.preventDefault();
 
-    fetch(`${domain}/api/ingredients/pantry`, {
-      method: "POST",
+    const method = editingIngredient ? "PATCH" : "POST";
+    const endpoint = `${domain}/api/ingredients/pantry`;
+    const requestBody = editingIngredient
+      ? {
+          ...newIngredient,
+          ingredientName: editingIngredient.ingredientName, // Preserve ingredient name for update
+        }
+      : newIngredient;
+
+    fetch(endpoint, {
+      method: method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newIngredient),
+      body: JSON.stringify(requestBody),
     })
       .then((response) => {
         if (response.ok) {
@@ -76,14 +84,30 @@ export default function IngredientsSection() {
           throw new Error("Failed to add or update ingredient.");
         }
       })
-      .then(() => {
-        setIngredients((prev) => [...prev, newIngredient]);
+      .then((data) => {
+        if (editingIngredient) {
+          // Update the ingredient in the list
+          setIngredients((prev) =>
+            prev.map((ingredient) =>
+              ingredient.ingredientName === editingIngredient.ingredientName
+                ? { ...ingredient, ...newIngredient }
+                : ingredient
+            )
+          );
+        } else {
+          // Add the new ingredient to the list
+          setIngredients((prev) => [...prev, newIngredient]);
+        }
+
+        // Reset form and state
+        setEditingIngredient(null);
         setNewIngredient({
           ingredientName: "",
-          purchaseDate: new Date().toISOString().split('T')[0], // Reset to current date
+          purchaseDate: new Date().toISOString().split("T")[0], // Reset to current date
           expirationDate: "",
           frozen: false,
         });
+        setShowForm(false);
       })
       .catch((error) => {
         console.error("Error adding/updating ingredient:", error);
@@ -109,6 +133,32 @@ export default function IngredientsSection() {
         console.error("Error deleting ingredient:", error);
       });
   };
+
+  const handleEditIngredient = (ingredient) => {
+    setEditingIngredient(ingredient); // Set ingredient to be edited
+    setNewIngredient({
+      ingredientName: ingredient.ingredientName,
+      purchaseDate: ingredient.purchaseDate,
+      expirationDate: ingredient.expirationDate,
+      frozen: ingredient.frozen,
+    });
+    setShowForm(true);
+  };
+
+  const handleToggleForm = () => {
+    if (showForm) {
+      // Reset newIngredient state when hiding the form (Cancel)
+      setNewIngredient({
+        ingredientName: "",
+        purchaseDate: new Date().toISOString().split("T")[0], // Reset to current date
+        expirationDate: "",
+        frozen: false,
+      });
+      setEditingIngredient(null); // Clear editing state
+    }
+    setShowForm((prev) => !prev);
+  };
+  
 
   return (
     <Box sx={{ padding: 3, maxWidth: "900px", margin: "0 auto" }}>
@@ -137,7 +187,7 @@ export default function IngredientsSection() {
                   <Box sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
                     <FaRegCalendarAlt style={{ marginRight: "8px", fontSize: "16px", color: "#3f51b5" }} />
                     <Typography variant="body2" sx={{ color: "#777" }}>
-                      Expiration: {ingredient.expirationDate}
+                      Expiration: {ingredient.expirationDate || "N/A"}
                     </Typography>
                   </Box>
 
@@ -145,16 +195,13 @@ export default function IngredientsSection() {
                   <Box sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
                     <FaRegCalendar style={{ marginRight: "8px", fontSize: "16px", color: "#3f51b5" }} />
                     <Typography variant="body2" sx={{ color: "#777" }}>
-                      Purchased: {ingredient.purchaseDate}
+                      Purchased: {ingredient.purchaseDate || "N/A"}
                     </Typography>
                   </Box>
 
                   {/* Frozen Status */}
                   <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <FaCheckCircle
-                      color={ingredient.frozen ? "green" : "gray"}
-                      style={{ marginRight: "8px", fontSize: "16px" }}
-                    />
+                    <FaCheckCircle color={ingredient.frozen ? "green" : "gray"} style={{ marginRight: "8px", fontSize: "16px" }} />
                     <Typography variant="body2" sx={{ color: ingredient.frozen ? "green" : "gray" }}>
                       {ingredient.frozen ? "Frozen" : "Not Frozen"}
                     </Typography>
@@ -173,7 +220,7 @@ export default function IngredientsSection() {
 
                 {/* Edit Button */}
                 <Tooltip title="Edit Ingredient" arrow>
-                  <IconButton color="primary" sx={{ marginLeft: 1 }}>
+                  <IconButton color="primary" sx={{ marginLeft: 1 }} onClick={() => handleEditIngredient(ingredient)}>
                     <MdEdit />
                   </IconButton>
                 </Tooltip>
@@ -186,63 +233,93 @@ export default function IngredientsSection() {
       {/* Toggle Button */}
       <Button
         variant="outlined"
-        onClick={() => setShowForm((prev) => !prev)}
+        onClick={handleToggleForm}
         startIcon={<FaPlus />}
         sx={{
           marginBottom: 2,
           display: "block",
           width: "100%",
-          maxWidth: "200px",
-          margin: "0 auto",
+          textAlign: "center",
+          fontSize: "1.1rem",
         }}
       >
-        {showForm ? "Hide Add Ingredient Form" : "Add Ingredient"}
+        {showForm ? "Cancel" : "Add Ingredient"}
       </Button>
 
-      {/* Conditionally render the form */}
       {showForm && (
-        <Box sx={{ backgroundColor: "#f3f3f3", padding: 3, borderRadius: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            Add or Update Ingredient
-          </Typography>
-          <form onSubmit={handleAddIngredient}>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <TextField
-                label="Ingredient Name"
-                name="ingredientName"
-                value={newIngredient.ingredientName}
+        <Box
+          component="form"
+          onSubmit={handleAddOrUpdateIngredient}
+          sx={{
+            backgroundColor: "#f9f9f9",
+            padding: 2,
+            borderRadius: 2,
+            boxShadow: 2,
+          }}
+        >
+          {/* Ingredient Name */}
+          <TextField
+            label="Ingredient Name"
+            name="ingredientName"
+            value={editingIngredient ? editingIngredient.ingredientName : newIngredient.ingredientName}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+            required
+            disabled={!!editingIngredient} // Disable if editing
+          />
+
+          {/* Purchase Date */}
+          <TextField
+            type="date"
+            label="Purchase Date"
+            name="purchaseDate"
+            value={newIngredient.purchaseDate}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+            required
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+
+          {/* Expiration Date */}
+          <TextField
+            type="date"
+            label="Expiration Date"
+            name="expirationDate"
+            value={newIngredient.expirationDate}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+
+          {/* Frozen Checkbox */}
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={newIngredient.frozen}
                 onChange={handleInputChange}
-                required
+                name="frozen"
+                color="primary"
               />
-              <TextField
-                label="Purchase Date"
-                type="date"
-                name="purchaseDate"
-                value={newIngredient.purchaseDate}
-                onChange={handleInputChange}
-              />
-              <TextField
-                label="Expiration Date"
-                type="date"
-                name="expirationDate"
-                value={newIngredient.expirationDate}
-                onChange={handleInputChange}
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox name="frozen" checked={newIngredient.frozen} onChange={handleInputChange} />
-                }
-                label="Frozen"
-              />
-              <Button variant="contained" color="primary" type="submit" fullWidth>
-                <FaPlus style={{ marginRight: "8px" }} />
-                Add Ingredient
-              </Button>
-            </Box>
-          </form>
+            }
+            label="Frozen"
+            sx={{ marginBottom: 2 }}
+          />
+
+          {/* Submit Button */}
+          <Button type="submit" variant="contained" color="primary" fullWidth sx={{ padding: 1.5 }}>
+            {editingIngredient ? "Update Ingredient" : "Add Ingredient"}
+          </Button>
         </Box>
       )}
 
+      {/* Recipe Suggestions */}
       <RecipeSuggestion ingredients={ingredients} />
     </Box>
   );

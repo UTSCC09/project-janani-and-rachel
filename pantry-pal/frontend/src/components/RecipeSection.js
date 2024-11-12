@@ -53,24 +53,56 @@ export default function RecipeList() {
   }, []);
 
   const handleDelete = (recipeId) => {
-    fetch(`${domain}/api/recipes/${recipeId}`, {
+    // Optimistically remove the recipe from the state
+    setAllRecipes((prevRecipes) =>
+      prevRecipes.filter((recipe) => recipe.recipeId !== recipeId)
+    );
+    setUnplannedRecipes((prevRecipes) =>
+      prevRecipes.filter((recipe) => recipe.recipeId !== recipeId)
+    );
+    
+    // Send the DELETE request to the backend
+    fetch(`${domain}/api/recipes/favorites/${recipeId}`, {
       method: 'DELETE',
     })
       .then((res) => {
         if (res.status === 204) {
-          setAllRecipes((prevRecipes) =>
-            prevRecipes.filter((recipe) => recipe.recipeId !== recipeId)
-          );
-          setUnplannedRecipes((prevRecipes) =>
-            prevRecipes.filter((recipe) => recipe.recipeId !== recipeId)
-          );
-          setSearchedRecipe(null);
+          // If successful, do nothing since the UI is already updated
+          return;
         } else {
+          // In case of error, restore the recipe in the state
           console.error('Error deleting recipe:', res.status);
+          // Optionally, re-fetch the recipes to restore state
+          fetchRecipes();
         }
       })
       .catch((error) => {
         console.error('Error deleting recipe:', error);
+        // In case of error, restore the recipe in the state
+        fetchRecipes();
+      });
+  };
+  
+  const fetchRecipes = () => {
+    // Re-fetch both all and unplanned recipes to restore the correct state
+    fetch(`${domain}/api/recipes/favorites`)
+      .then((res) => res.json())
+      .then((data) => {
+        const recipes = data.recipes || [];
+        setAllRecipes(recipes);
+      })
+      .catch((error) => {
+        console.error('Error fetching all recipes:', error);
+      });
+  
+    fetch(`${domain}/api/recipes/favorites/unplanned`)
+      .then((res) => res.json())
+      .then((data) => {
+        const unplannedRecipes = data.recipes || [];
+        setUnplannedRecipes(unplannedRecipes);
+      })
+      .catch((error) => {
+        console.error('Error fetching unplanned recipes:', error);
       });
   };
 

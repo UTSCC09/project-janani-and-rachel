@@ -145,7 +145,7 @@ export default function RecipeSuggestion({ ingredients }) {
                   onClick={() => handleFavoriteClick(recipe)}
                   onMouseLeave={(e) => e.target.style.color = ""}
                   sx={{
-                    color: favorites.has(recipe.recipeId) ? "yellow" : "gray",
+                    color: favorites.has(recipe.recipeId) ? "#e4e642" : "gray",
                     position: "absolute",
                     top: "8px",
                     right: "8px",

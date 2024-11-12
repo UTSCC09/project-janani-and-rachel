@@ -100,6 +100,40 @@ export default function ShoppingListSection() {
         Shopping List
       </Typography>
 
+      <Typography variant="h6" sx={{ marginBottom: "1rem", fontWeight: 600 }}>
+        Add Item to Shopping List
+      </Typography>
+
+      <Box
+        component="form"
+        onSubmit={handleAddItem}
+        sx={{ display: "flex", flexDirection: "row", gap: 2 }}
+      >
+        <TextField
+          label="Ingredient Name"
+          variant="outlined"
+          value={newItem}
+          onChange={handleInputChange}
+          fullWidth
+          required
+          sx={{ backgroundColor: "#fff", borderRadius: 1 }}
+        />
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          sx={{
+            height: "100%",
+            borderRadius: 1,
+            boxShadow: 2,
+            "&:hover": { boxShadow: 4 },
+          }}
+          startIcon={<FaPlusCircle />}
+        >
+          Add
+        </Button>
+      </Box>
+
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
           <CircularProgress />
@@ -110,6 +144,7 @@ export default function ShoppingListSection() {
           sx={{
             padding: "1rem",
             marginBottom: "1.5rem",
+            marginTop: "2rem", // Added marginTop to create more space
             backgroundColor: "#f9f9f9",
             borderRadius: 2,
           }}
@@ -148,40 +183,6 @@ export default function ShoppingListSection() {
           </List>
         </Paper>
       )}
-
-      <Typography variant="h6" sx={{ marginBottom: "1rem", fontWeight: 600 }}>
-        Add Item to Shopping List
-      </Typography>
-
-      <Box
-        component="form"
-        onSubmit={handleAddItem}
-        sx={{ display: "flex", flexDirection: "row", gap: 2 }}
-      >
-        <TextField
-          label="Ingredient Name"
-          variant="outlined"
-          value={newItem}
-          onChange={handleInputChange}
-          fullWidth
-          required
-          sx={{ backgroundColor: "#fff", borderRadius: 1 }}
-        />
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          sx={{
-            height: "100%",
-            borderRadius: 1,
-            boxShadow: 2,
-            "&:hover": { boxShadow: 4 },
-          }}
-          startIcon={<FaPlusCircle />}
-        >
-          Add
-        </Button>
-      </Box>
     </Box>
   );
 }

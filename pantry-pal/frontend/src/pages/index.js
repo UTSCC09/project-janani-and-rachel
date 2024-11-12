@@ -109,9 +109,11 @@ export default function Home() {
         className={styles.content}
         sx={{
           paddingTop: "100px",
-          paddingX: { xs: 2, sm: 4, lg: 8 },
-          maxWidth: "1200px",
+          paddingX: { xs: 1, sm: 3, md: 6 },
+          maxWidth: "100%",
+          width: { xs: "100%", sm: "90%", md: "80%" },
           margin: "0 auto",
+          overflowX: "hidden",
         }}
       >
         {activeSection === "recipes" && <RecipeSection />}

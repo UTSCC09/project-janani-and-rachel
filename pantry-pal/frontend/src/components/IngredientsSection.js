@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import RecipeSuggestion from "@/components/RecipeSuggestion";
 import {
   Box,
@@ -14,12 +14,12 @@ import {
   IconButton,
   Tooltip,
 } from "@mui/material";
-import { FaTrashAlt, FaPlus, FaCheckCircle, FaRegCalendarAlt, FaRegCalendar } from "react-icons/fa";
+import { FaTrashAlt, FaPlus, FaCheckCircle, FaRegCalendarAlt, FaRegCalendar, FaMinus } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
-
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
 export default function IngredientsSection() {
+  const formRef = useRef(null); // Create a reference for the form container
   const [ingredients, setIngredients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newIngredient, setNewIngredient] = useState({
@@ -135,7 +135,7 @@ export default function IngredientsSection() {
   };
 
   const handleEditIngredient = (ingredient) => {
-    setEditingIngredient(ingredient); // Set ingredient to be edited
+    setEditingIngredient(ingredient);
     setNewIngredient({
       ingredientName: ingredient.ingredientName,
       purchaseDate: ingredient.purchaseDate,
@@ -143,7 +143,13 @@ export default function IngredientsSection() {
       frozen: ingredient.frozen,
     });
     setShowForm(true);
+  
+    // Scroll to the form when an ingredient is being edited
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
   };
+  
 
   const handleToggleForm = () => {
     if (showForm) {
@@ -155,9 +161,15 @@ export default function IngredientsSection() {
         frozen: false,
       });
       setEditingIngredient(null); // Clear editing state
+    } else {
+      // Scroll to the form when opening it
+      setTimeout(() => {
+        formRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
     }
     setShowForm((prev) => !prev);
   };
+  
   
 
   return (
@@ -165,7 +177,7 @@ export default function IngredientsSection() {
       <Typography variant="h4" gutterBottom align="center">
         Pantry Ingredients
       </Typography>
-
+  
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <CircularProgress />
@@ -180,26 +192,23 @@ export default function IngredientsSection() {
                 <Typography variant="h6" sx={{ fontWeight: "bold", marginBottom: 1 }}>
                   {ingredient.ingredientName}
                 </Typography>
-
+  
                 {/* Expiration, Purchase Date and Frozen Status */}
                 <Box sx={{ display: "flex", flexDirection: "column", marginBottom: 1 }}>
-                  {/* Expiration Date */}
                   <Box sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
                     <FaRegCalendarAlt style={{ marginRight: "8px", fontSize: "16px", color: "#3f51b5" }} />
                     <Typography variant="body2" sx={{ color: "#777" }}>
                       Expiration: {ingredient.expirationDate || "N/A"}
                     </Typography>
                   </Box>
-
-                  {/* Purchase Date */}
+  
                   <Box sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
                     <FaRegCalendar style={{ marginRight: "8px", fontSize: "16px", color: "#3f51b5" }} />
                     <Typography variant="body2" sx={{ color: "#777" }}>
                       Purchased: {ingredient.purchaseDate || "N/A"}
                     </Typography>
                   </Box>
-
-                  {/* Frozen Status */}
+  
                   <Box sx={{ display: "flex", alignItems: "center" }}>
                     <FaCheckCircle color={ingredient.frozen ? "green" : "gray"} style={{ marginRight: "8px", fontSize: "16px" }} />
                     <Typography variant="body2" sx={{ color: ingredient.frozen ? "green" : "gray" }}>
@@ -208,20 +217,17 @@ export default function IngredientsSection() {
                   </Box>
                 </Box>
               </Box>
-
+  
               {/* Right Section: Action Buttons (Delete/Edit) */}
               <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", height: "100%" }}>
-                {/* Delete Button */}
-                <Tooltip title="Delete Ingredient" arrow>
-                  <IconButton color="error" onClick={() => handleDeleteIngredient(ingredient.ingredientName)}>
-                    <FaTrashAlt />
-                  </IconButton>
-                </Tooltip>
-
-                {/* Edit Button */}
                 <Tooltip title="Edit Ingredient" arrow>
                   <IconButton color="primary" sx={{ marginLeft: 1 }} onClick={() => handleEditIngredient(ingredient)}>
                     <MdEdit />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Delete Ingredient" arrow>
+                  <IconButton color="error" onClick={() => handleDeleteIngredient(ingredient.ingredientName)}>
+                    <FaTrashAlt />
                   </IconButton>
                 </Tooltip>
               </Box>
@@ -230,11 +236,11 @@ export default function IngredientsSection() {
         </List>
       )}
 
-      {/* Toggle Button */}
-      <Button
+        {/* Toggle Button */}
+        <Button
         variant="outlined"
         onClick={handleToggleForm}
-        startIcon={<FaPlus />}
+        startIcon={showForm ? <FaMinus /> : <FaPlus />} // Conditional icon
         sx={{
           marginBottom: 2,
           display: "block",
@@ -245,9 +251,10 @@ export default function IngredientsSection() {
       >
         {showForm ? "Cancel" : "Add Ingredient"}
       </Button>
-
+  
       {showForm && (
         <Box
+          ref={formRef} // Add the reference here
           component="form"
           onSubmit={handleAddOrUpdateIngredient}
           sx={{
@@ -268,22 +275,25 @@ export default function IngredientsSection() {
             required
             disabled={!!editingIngredient} // Disable if editing
           />
-
+  
           {/* Purchase Date */}
           <TextField
-            type="date"
-            label="Purchase Date"
-            name="purchaseDate"
-            value={newIngredient.purchaseDate}
-            onChange={handleInputChange}
-            fullWidth
-            margin="normal"
-            required
-            InputLabelProps={{
+          type="date"
+          label="Purchase Date"
+          name="purchaseDate"
+          value={newIngredient.purchaseDate}
+          onChange={handleInputChange}
+          fullWidth
+          margin="normal"
+          required
+          slotProps={{
+            inputLabel: {
               shrink: true,
-            }}
-          />
+            },
+          }}
+        />
 
+  
           {/* Expiration Date */}
           <TextField
             type="date"
@@ -293,11 +303,13 @@ export default function IngredientsSection() {
             onChange={handleInputChange}
             fullWidth
             margin="normal"
-            InputLabelProps={{
-              shrink: true,
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+              },
             }}
           />
-
+  
           {/* Frozen Checkbox */}
           <FormControlLabel
             control={
@@ -311,14 +323,14 @@ export default function IngredientsSection() {
             label="Frozen"
             sx={{ marginBottom: 2 }}
           />
-
+  
           {/* Submit Button */}
           <Button type="submit" variant="contained" color="primary" fullWidth sx={{ padding: 1.5 }}>
             {editingIngredient ? "Update Ingredient" : "Add Ingredient"}
           </Button>
         </Box>
       )}
-
+      
       {/* Recipe Suggestions */}
       <RecipeSuggestion ingredients={ingredients} />
     </Box>

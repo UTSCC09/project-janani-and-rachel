@@ -6,13 +6,13 @@ async function getFormattedRecipe(docData) {
     
     if (!recipeRef) {
         console.warn("Invalid recipe reference.");
-        return null;
+        throw null;
     }
 
     const recipeDoc = await getDoc(recipeRef);
     if (!recipeDoc.exists()) {
         console.warn("Recipe document does not exist.");
-        return null;
+        throw null;
     }
 
     const recipeData = recipeDoc.data();
@@ -27,26 +27,32 @@ async function getFormattedRecipe(docData) {
     };
 }
 
-async function getFavRecipes(uid, lim = 10, lastVisibleId = null) {    
+async function getFavRecipes(uid, lim=10, lastVisibleId=null) {    
     try {
         const recipesRef = collection(db, "Users", uid, "FavRecipes");
         let q = query(recipesRef, orderBy('recipeName'), limit(lim));
 
+        // if lastVisibleId is provided, get the last visible document and start query after that
         if (lastVisibleId) {
             const lastVisibleDoc = await getDoc(doc(recipesRef, lastVisibleId));
             if (lastVisibleDoc.exists()) {
                 q = query(recipesRef, orderBy('recipeName'), startAfter(lastVisibleDoc), limit(lim));
-            } else {
-                console.warn("No document found for lastVisibleId:", lastVisibleId);
             }
         }
 
+        // get the fav recipes
         const snapshot = await getDocs(q);
         if (snapshot.empty) {
             console.log("No more favorite recipes found.");
             return { recipes: [], lastVisible: null };
         }
 
+        // promise.all takes an array of promises and waits for them all to resolve
+            // return an array of the resolved promises
+            // snapshot.docs.map() returns an array of promises 
+                //async getFormattedRecipe returns a promise
+            // concurrently resolve all promises in the array
+        // await promise all so everything in recipes array to be resolved befor proceeding
         const recipes = await Promise.all(
             snapshot.docs.map(async (doc) => {
                 const data = doc.data();
@@ -54,13 +60,13 @@ async function getFavRecipes(uid, lim = 10, lastVisibleId = null) {
             })
         );
 
-        // Filter out null values
-        const filteredRecipes = recipes.filter(recipe => recipe !== null);
+        // get new last visible document
         const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
 
         return {
-            recipes: filteredRecipes,
-            lastVisible: newLastVisible.id
+            recipes: recipes,
+            lastVisible: newLastVisible.id,
+            numRecipes: snapshot.docs.length
         };
     } catch (error) {
         console.error("Error fetching paginated favorite recipes:", error);
@@ -68,11 +74,12 @@ async function getFavRecipes(uid, lim = 10, lastVisibleId = null) {
     }
 }
 
-async function getPlannedFavRecipes(uid, lim = 10, lastVisibleRecipe = null) {
+async function getPlannedFavRecipes(uid, lim=10, lastVisibleRecipe=null) {
     try {
         const recipesRef = collection(db, 'Users', uid, 'FavRecipes');
         let plannedQuery = query(recipesRef, where('planned', '==', true), limit(lim));
 
+        // if lastVisibleRecipe is provided, get the last visible document and start query after that
         if (lastVisibleRecipe) {
             const lastVisibleDocRef = doc(recipesRef, lastVisibleRecipe);
             const lastVisibleDoc = await getDoc(lastVisibleDocRef);
@@ -81,6 +88,7 @@ async function getPlannedFavRecipes(uid, lim = 10, lastVisibleRecipe = null) {
             }
         }
 
+        // get the planned fav recipes
         const snapshot = await getDocs(plannedQuery);
         if (snapshot.empty) {
             console.log("No more planned recipes in favorites for the specified page.");
@@ -94,13 +102,12 @@ async function getPlannedFavRecipes(uid, lim = 10, lastVisibleRecipe = null) {
             })
         );
 
-        // Filter out null values
-        const filteredRecipes = recipes.filter(recipe => recipe !== null);
         const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
 
         return {
-            recipes: filteredRecipes,
-            lastVisible: newLastVisible.id
+            recipes: recipes,
+            lastVisible: newLastVisible.id,
+            numRecipes: snapshot.docs.length
         };
     } catch (error) {
         console.error("Error fetching paginated planned favorite recipes:", error);
@@ -109,7 +116,7 @@ async function getPlannedFavRecipes(uid, lim = 10, lastVisibleRecipe = null) {
 }
 
 
-async function getUnPlannedFavRecipes(uid, lim = 10, lastVisibleRecipe = null) {
+async function getUnPlannedFavRecipes(uid, lim=10, lastVisibleRecipe=null) {
     try {
         const recipesRef = collection(db, 'Users', uid, 'FavRecipes');
         let plannedQuery = query(recipesRef, where('planned', '==', false), limit(lim));
@@ -118,14 +125,14 @@ async function getUnPlannedFavRecipes(uid, lim = 10, lastVisibleRecipe = null) {
             const lastVisibleDocRef = doc(recipesRef, lastVisibleRecipe);
             const lastVisibleDoc = await getDoc(lastVisibleDocRef);
             if (lastVisibleDoc.exists()) {
-                plannedQuery = query(recipesRef, where('planned', '==', true), startAfter(lastVisibleDoc), limit(lim));
+                plannedQuery = query(recipesRef, where('planned', '==', false), startAfter(lastVisibleDoc), limit(lim));
             }
         }
 
         const snapshot = await getDocs(plannedQuery);
         if (snapshot.empty) {
-            console.log("No more planned recipes in favorites for the specified page.");
-            return { recipes: [], lastVisible: null };
+            console.log("No planned recipes in favorites for the specified page.");
+            return { recipes: [], lastVisible: null, numRecipes: 0 };
         }
 
         const recipes = await Promise.all(
@@ -135,13 +142,12 @@ async function getUnPlannedFavRecipes(uid, lim = 10, lastVisibleRecipe = null) {
             })
         );
 
-        // Filter out null values
-        const filteredRecipes = recipes.filter(recipe => recipe !== null);
         const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
 
         return {
-            recipes: filteredRecipes,
-            lastVisible: newLastVisible.id
+            recipes: recipes,
+            lastVisible: newLastVisible.id,
+            numRecipes: snapshot.docs.length
         };
     } catch (error) {
         console.error("Error fetching paginated planned favorite recipes:", error);
@@ -156,7 +162,7 @@ async function getFavRecipeById(uid, recipeId) {
 
         if (!favRecipeDoc.exists()) {
             console.log("No such recipe in favorites!");
-            return null;
+            throw null;
         }
 
         const recipeRef = doc(db, 'Recipes', recipeId);
@@ -164,7 +170,7 @@ async function getFavRecipeById(uid, recipeId) {
 
         if (!recipeDoc.exists()) {
             console.log("No such recipe found!");
-            return null;
+            throw null;
         }
 
         console.log("Recipe found in favorites!");
@@ -179,7 +185,7 @@ async function getFavRecipeById(uid, recipeId) {
 function addFavRecipe(uid, recipe) {
     return new Promise((resolve, reject) => {
         const favRecipeRef = doc(db, 'Users', uid, 'FavRecipes', String(recipe.recipeId));
-        const recipeRef = doc(db, 'Recipes', String(recipe.recipeId)); // Updated line
+        const recipeRef = doc(db, 'Recipes', String(recipe.recipeId)); 
         const favRecipeData = {
             recipeId: recipe.recipeId,
             recipeName: recipe.recipeName,

@@ -5,16 +5,14 @@ import {
   Button,
   TextField,
   List,
-  ListItem,
   ListItemText,
   IconButton,
   CircularProgress,
   Paper,
   Card,
-  CardContent,
-  Divider,
+  Tooltip,
 } from "@mui/material";
-import { FaPlusCircle, FaTrashAlt } from "react-icons/fa"; // React Icons
+import { FaPlusCircle, FaTrashAlt, FaArrowRight } from "react-icons/fa";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
@@ -23,7 +21,6 @@ export default function ShoppingListSection() {
   const [loading, setLoading] = useState(true);
   const [newItem, setNewItem] = useState("");
 
-  // Fetch shopping list from /api/ingredients/shoppingList when the component mounts
   useEffect(() => {
     fetch(`${domain}/api/ingredients/shoppingList`)
       .then((response) => response.json())
@@ -37,16 +34,33 @@ export default function ShoppingListSection() {
       });
   }, []);
 
-  // Handle input change for the new item form
   const handleInputChange = (e) => {
     setNewItem(e.target.value);
   };
 
-  // Handle form submission to add a new item
+  const handleDeleteItem = (ingredientName) => {
+    fetch(`${domain}/api/ingredients/shoppingList`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ingredientName }),
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          setShoppingList((prev) =>
+            prev.filter((item) => item.ingredientName !== ingredientName)
+          );
+        } else {
+          throw new Error("Failed to delete item from shopping list.");
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting item from shopping list:", error);
+      });
+  };
+
   const handleAddItem = (e) => {
     e.preventDefault();
 
-    // Send POST request to add the new item to the shopping list
     fetch(`${domain}/api/ingredients/shoppingList`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -54,9 +68,7 @@ export default function ShoppingListSection() {
     })
       .then((response) => {
         if (response.status === 200) {
-          // Update shopping list with the new item
           setShoppingList((prev) => [...prev, { ingredientName: newItem }]);
-          // Reset input field
           setNewItem("");
         } else {
           throw new Error("Failed to add item to shopping list.");
@@ -67,26 +79,39 @@ export default function ShoppingListSection() {
       });
   };
 
-  // Handle deletion of an item
-  const handleDeleteItem = (ingredientName) => {
-    // Send DELETE request to remove the item from the shopping list
-    fetch(`${domain}/api/ingredients/shoppingList`, {
-      method: "DELETE",
+  const handleMoveToPantry = (ingredientName) => {
+    const today = new Date().toISOString().split("T")[0];
+
+    fetch(`${domain}/api/ingredients/pantry`, {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ingredientName }),
+      body: JSON.stringify({
+        ingredientName,
+        purchaseDate: today,
+      }),
     })
       .then((response) => {
         if (response.status === 200) {
-          // Update shopping list by removing the deleted item
+          return fetch(`${domain}/api/ingredients/shoppingList`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ingredientName }),
+          });
+        } else {
+          throw new Error("Failed to add item to pantry.");
+        }
+      })
+      .then((response) => {
+        if (response.status === 200) {
           setShoppingList((prev) =>
             prev.filter((item) => item.ingredientName !== ingredientName)
           );
         } else {
-          throw new Error("Failed to delete item from shopping list.");
+          throw new Error("Failed to remove item from shopping list.");
         }
       })
       .catch((error) => {
-        console.error("Error deleting item from shopping list:", error);
+        console.error("Error moving item to pantry:", error);
       });
   };
 
@@ -144,7 +169,7 @@ export default function ShoppingListSection() {
           sx={{
             padding: "1rem",
             marginBottom: "1.5rem",
-            marginTop: "2rem", // Added marginTop to create more space
+            marginTop: "2rem",
             backgroundColor: "#f9f9f9",
             borderRadius: 2,
           }}
@@ -170,14 +195,29 @@ export default function ShoppingListSection() {
                   primary={item.ingredientName}
                   sx={{ textDecoration: "none", fontWeight: 500 }}
                 />
-                <IconButton
-                  edge="end"
-                  onClick={() => handleDeleteItem(item.ingredientName)}
-                  color="error"
-                  sx={{ padding: "0.5rem" }}
-                >
-                  <FaTrashAlt />
-                </IconButton>
+                <Box>
+                  <Tooltip title="Move to Pantry" enterDelay={0}>
+                    <IconButton
+                      edge="end"
+                      onClick={() => handleMoveToPantry(item.ingredientName)}
+                      color="primary"
+                      sx={{ padding: "0.5rem" }}
+                    >
+                      <FaArrowRight />
+                    </IconButton>
+                  </Tooltip>
+
+                  <Tooltip title="Delete Ingredient" enterDelay={0}>
+                    <IconButton
+                      edge="end"
+                      onClick={() => handleDeleteItem(item.ingredientName)}
+                      color="error"
+                      sx={{ padding: "0.5rem" }}
+                    >
+                      <FaTrashAlt />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
               </Card>
             ))}
           </List>

@@ -34,7 +34,7 @@ export default function Home() {
       <AppBar
         position="fixed"
         sx={{
-          background: "linear-gradient(135deg, #cce7ff 30%, #e6f2ff 90%)",
+          background: "linear-gradient(135deg, #e8f4ff 30%, #f1f5f9 90%)",
           color: "#444444",
           boxShadow: "none",
         }}
@@ -56,7 +56,7 @@ export default function Home() {
                 sx={{
                   fontWeight: "bold",
                   fontSize: { xs: "1.4rem", sm: "1.6rem" },
-                  color: "#1a237e"
+                  color: "#7e91ff"
                 }}
               >
                 Pantry Pal
@@ -65,7 +65,7 @@ export default function Home() {
             <IconButton
               onClick={handleMenuOpen}
               sx={{
-                color: "#1a237e",
+                color: "#7e91ff",
                 fontSize: "1.5rem",
                 "&:hover": { backgroundColor: "rgba(26, 35, 126, 0.1)" },
               }}

@@ -28,11 +28,13 @@ export default function Home() {
   const handleSignIn = () => {
     setIsAuthenticated(true);
     setActiveSection("recipes");
+    setAnchorEl(null); // Ensure the dropdown menu is closed
   };
 
   const handleSignout = () => {
     setIsAuthenticated(false);
     setActiveSection("signin");
+    setAnchorEl(null); // Ensure the dropdown menu is closed
   };
 
   const handleMenuOpen = (event) => {
@@ -88,36 +90,31 @@ export default function Home() {
               </Typography>
             </Box>
 
-            {/* Always Visible Hamburger Menu */}
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              onClick={handleMenuOpen}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={() => setAnchorEl(null)}
-            >
-                {isAuthenticated ? (
-                [
-                  <MenuItem key="recipes" onClick={() => handleMenuClose("recipes")}>Recipes</MenuItem>,
-                  <MenuItem key="ingredients" onClick={() => handleMenuClose("ingredients")}>Ingredients</MenuItem>,
-                  <MenuItem key="shoppingList" onClick={() => handleMenuClose("shoppingList")}>Shopping List</MenuItem>,
-                  <MenuItem key="calendar" onClick={() => handleMenuClose("calendar")}>Calendar</MenuItem>,
-                  <MenuItem key="recipeSearch" onClick={() => handleMenuClose("recipeSearch")}>Recipe Search</MenuItem>,
-                  <MenuItem key="signout" onClick={handleSignout}>Sign Out</MenuItem>
-                ]
-              ) : (
-                [
-                  <MenuItem key="signin" onClick={() => handleMenuClose("signin")}>Sign In</MenuItem>,
-                  <MenuItem key="signup" onClick={() => handleMenuClose("signup")}>Sign Up</MenuItem>
-                ]
-              )}
-            </Menu>
+            {/* Hamburger Menu - Only visible if authenticated */}
+            {isAuthenticated && (
+              <>
+                <IconButton
+                  edge="start"
+                  color="inherit"
+                  aria-label="menu"
+                  onClick={handleMenuOpen}
+                >
+                  <MenuIcon />
+                </IconButton>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={() => setAnchorEl(null)}
+                >
+                  <MenuItem onClick={() => handleMenuClose("recipes")}>Recipes</MenuItem>
+                  <MenuItem onClick={() => handleMenuClose("ingredients")}>Ingredients</MenuItem>
+                  <MenuItem onClick={() => handleMenuClose("shoppingList")}>Shopping List</MenuItem>
+                  <MenuItem onClick={() => handleMenuClose("calendar")}>Calendar</MenuItem>
+                  <MenuItem onClick={() => handleMenuClose("recipeSearch")}>Recipe Search</MenuItem>
+                  <MenuItem onClick={handleSignout}>Sign Out</MenuItem>
+                </Menu>
+              </>
+            )}
           </Toolbar>
         </Container>
       </AppBar>
@@ -145,11 +142,11 @@ export default function Home() {
           </>
         ) : (
           <>
-            {activeSection === "signup" && <Signup />}
-            {activeSection === "signin" && <SignIn onSignIn={handleSignIn} />}
+            {activeSection === "signup" && <Signup onSignInClick={() => setActiveSection("signin")} />}
+            {activeSection === "signin" && <SignIn onSignIn={handleSignIn} onSignUpClick={() => setActiveSection("signup")} />}
           </>
         )}
-      </Box>
+      </Box> 
     </>
   );
 }

@@ -27,7 +27,6 @@ import {
 import { MdEdit } from "react-icons/md";
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
-
 export default function IngredientsSection() {
   const formRef = useRef(null); // Create a reference for the form container
   const [ingredients, setIngredients] = useState([]);

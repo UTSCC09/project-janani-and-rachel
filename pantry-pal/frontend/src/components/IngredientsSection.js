@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import RecipeSuggestion from "@/components/RecipeSuggestion";
 import {
   Box,
@@ -13,6 +13,8 @@ import {
   ListItemText,
   IconButton,
   Tooltip,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   FaTrashAlt,
@@ -37,27 +39,64 @@ export default function IngredientsSection() {
   });
   const [editingIngredient, setEditingIngredient] = useState(null); // State for ingredient being edited
   const [showForm, setShowForm] = useState(false); // State to manage form visibility
+  const [lastVisible, setLastVisible] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState(null); // State for error message
+  const observer = useRef();
+  const initialFetch = useRef(true);
+
+  const fetchIngredients = useCallback(
+    (lastVisible = null) => {
+      setLoading(true);
+      let url = `${domain}/api/ingredients/pantry?limit=10`;
+      if (lastVisible) {
+        url += `&lastVisibleIngredient=${lastVisible}`;
+      }
+
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => {
+          const processedData = Array.isArray(data.ingredients)
+            ? data.ingredients.map((item) => ({
+                ...item,
+                purchaseDate: item.purchaseDate || "",
+                expirationDate: item.expirationDate || "",
+              }))
+            : [];
+
+          setIngredients((prev) => [...prev, ...processedData]);
+          setLastVisible(data.lastVisible || null);
+          setHasMore(processedData.length === 10);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching ingredients:", error);
+          setLoading(false);
+        });
+    },
+    [domain]
+  );
 
   useEffect(() => {
-    fetch(`${domain}/api/ingredients/pantry`)
-      .then((response) => response.json())
-      .then((data) => {
-        const processedData = Array.isArray(data.ingredients)
-          ? data.ingredients.map((item) => ({
-              ...item,
-              purchaseDate: item.purchaseDate || "", // Keep the date in 'yyyy-mm-dd' format
-              expirationDate: item.expirationDate || "", // Keep the date in 'yyyy-mm-dd' format
-            }))
-          : []; // Return an empty array if ingredients is not found
+    if (initialFetch.current) {
+      fetchIngredients();
+      initialFetch.current = false;
+    }
+  }, [fetchIngredients]);
 
-        setIngredients(processedData);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching ingredients:", error);
-        setLoading(false);
+  const lastIngredientElementRef = useCallback(
+    (node) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          fetchIngredients(lastVisible);
+        }
       });
-  }, []);
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore, lastVisible, fetchIngredients]
+  );
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -69,6 +108,12 @@ export default function IngredientsSection() {
 
   const handleAddOrUpdateIngredient = (e) => {
     e.preventDefault();
+
+    // Check if the ingredient already exists
+    if (ingredients.some((ingredient) => ingredient.ingredientName.toLowerCase() === newIngredient.ingredientName.toLowerCase())) {
+      setError("Ingredient already exists.");
+      return;
+    }
 
     const method = editingIngredient ? "PATCH" : "POST";
     const endpoint = `${domain}/api/ingredients/pantry`;
@@ -98,8 +143,8 @@ export default function IngredientsSection() {
             prev.map((ingredient) =>
               ingredient.ingredientName === editingIngredient.ingredientName
                 ? { ...ingredient, ...newIngredient }
-                : ingredient,
-            ),
+                : ingredient
+            )
           );
         } else {
           // Add the new ingredient to the list
@@ -131,8 +176,8 @@ export default function IngredientsSection() {
         if (response.ok) {
           setIngredients((prev) =>
             prev.filter(
-              (ingredient) => ingredient.ingredientName !== ingredientName,
-            ),
+              (ingredient) => ingredient.ingredientName !== ingredientName
+            )
           );
         } else {
           throw new Error("Failed to delete ingredient.");
@@ -178,21 +223,26 @@ export default function IngredientsSection() {
     setShowForm((prev) => !prev);
   };
 
+  const handleCloseSnackbar = () => {
+    setError(null);
+  };
+
   return (
     <Box sx={{ padding: 3, maxWidth: "900px", margin: "0 auto" }}>
-      <Typography variant="h4" gutterBottom align="center" sx={{ fontWeight: 'bold', color: '#7e91ff' }}>
+      <Typography
+        variant="h4"
+        gutterBottom
+        align="center"
+        sx={{ fontWeight: "bold", color: "#7e91ff" }}
+      >
         Pantry Ingredients
       </Typography>
-  
-      {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <CircularProgress />
-        </Box>
-      ) : (
-        <List>
-          {ingredients.map((ingredient, index) => (
+
+      <List>
+        {ingredients.map((ingredient, index) => (
+          <Box key={index}>
             <ListItem
-              key={index}
+              ref={index === ingredients.length - 1 ? lastIngredientElementRef : null}
               sx={{
                 marginBottom: 2,
                 backgroundColor: "#fffae1",
@@ -216,19 +266,31 @@ export default function IngredientsSection() {
                   sx={{
                     fontWeight: "bold",
                     marginBottom: 1,
-                    color: '#ffffff', // White text color
-                    padding: '4px 8px', // Add padding inside the box
-                    backgroundColor: '#7e91ff', // Pastel purple background
+                    color: "#ffffff", // White text color
+                    padding: "4px 8px", // Add padding inside the box
+                    backgroundColor: "#7e91ff", // Pastel purple background
                     borderRadius: 2, // Rounded corners for the box
-                    display: 'inline-block', // To make sure it doesn't take full width
+                    display: "inline-block", // To make sure it doesn't take full width
                   }}
                 >
                   {ingredient.ingredientName}
                 </Typography>
-  
+
                 {/* Expiration, Purchase Date, and Frozen Status */}
-                <Box sx={{ display: "flex", flexDirection: "column", marginBottom: 1 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    marginBottom: 1,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: 0.5,
+                    }}
+                  >
                     <FaRegCalendarAlt
                       style={{
                         marginRight: "8px",
@@ -240,8 +302,14 @@ export default function IngredientsSection() {
                       Expiration: {ingredient.expirationDate || "N/A"}
                     </Typography>
                   </Box>
-  
-                  <Box sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
+
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: 0.5,
+                    }}
+                  >
                     <FaRegCalendar
                       style={{
                         marginRight: "8px",
@@ -253,19 +321,22 @@ export default function IngredientsSection() {
                       Purchased: {ingredient.purchaseDate || "N/A"}
                     </Typography>
                   </Box>
-  
+
                   <Box sx={{ display: "flex", alignItems: "center" }}>
                     <FaCheckCircle
                       color={ingredient.frozen ? "#7e91ff" : "gray"}
                       style={{ marginRight: "8px", fontSize: "16px" }}
                     />
-                    <Typography variant="body2" sx={{ color: ingredient.frozen ? "#7e91ff" : "gray" }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: ingredient.frozen ? "#7e91ff" : "gray" }}
+                    >
                       {ingredient.frozen ? "Frozen" : "Not Frozen"}
                     </Typography>
                   </Box>
                 </Box>
               </Box>
-  
+
               {/* Right Section: Action Buttons (Delete/Edit) */}
               <Box
                 sx={{
@@ -297,129 +368,258 @@ export default function IngredientsSection() {
                 </Tooltip>
               </Box>
             </ListItem>
-          ))}
-        </List>
-      )}
-  
-      {/* Toggle Button */}
-      <Button
-        variant="outlined"
-        onClick={handleToggleForm}
-        startIcon={showForm ? <FaMinus /> : <FaPlus />} // Conditional icon
-        sx={{
-          marginBottom: 2,
-          display: "block",
-          width: "100%",
-          textAlign: "center",
-          fontSize: "1.1rem",
-          color: "#7e91ff", // Button text color
-          borderColor: "#7e91ff", // Border color
-          "&:hover": {
-            backgroundColor: "#7e91ff", // Hover background
-            color: "#fff", // Hover text color
-          },
-        }}
-      >
-        {showForm ? "Cancel" : "Add Ingredient"}
-      </Button>
-  
-      {showForm && (
-        <Box
-          ref={formRef} // Add the reference here
-          component="form"
-          onSubmit={handleAddOrUpdateIngredient}
-          sx={{
-            backgroundColor: "#f9f9f9",
-            padding: 2,
-            borderRadius: 2,
-            boxShadow: 2,
-          }}
-        >
-          {/* Ingredient Name */}
-          <TextField
-            label="Ingredient Name"
-            name="ingredientName"
-            value={
-              editingIngredient
-                ? editingIngredient.ingredientName
-                : newIngredient.ingredientName
-            }
-            onChange={handleInputChange}
-            fullWidth
-            margin="normal"
-            required
-            disabled={!!editingIngredient} // Disable if editing
-          />
-  
-          {/* Purchase Date */}
-          <TextField
-            type="date"
-            label="Purchase Date"
-            name="purchaseDate"
-            value={newIngredient.purchaseDate}
-            onChange={handleInputChange}
-            fullWidth
-            margin="normal"
-            required
-            slotProps={{
-              inputLabel: {
-                shrink: true,
-              },
-            }}
-          />
-  
-          {/* Expiration Date */}
-          <TextField
-            type="date"
-            label="Expiration Date"
-            name="expirationDate"
-            value={newIngredient.expirationDate}
-            onChange={handleInputChange}
-            fullWidth
-            margin="normal"
-            slotProps={{
-              inputLabel: {
-                shrink: true,
-              },
-            }}
-          />
-  
-          {/* Frozen Checkbox */}
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={newIngredient.frozen}
-                onChange={handleInputChange}
-                name="frozen"
-                color="#7e91ff"
-              />
-            }
-            label="Frozen"
-            sx={{ marginBottom: 2 }}
-          />
-  
-          {/* Submit Button */}
-          <Button
-          type="submit"
-          variant="contained"
-          fullWidth
-          sx={{
-            padding: 1.5,
-            backgroundColor: '#7e91ff', // Custom background color (pastel purple)
-            '&:hover': {
-              backgroundColor: '#6b82e0', // Custom hover background color
-            },
-          }}
-        >
-          {editingIngredient ? "Update Ingredient" : "Add Ingredient"}
-        </Button>
+            {editingIngredient === ingredient && (
+              <Box
+                ref={formRef} // Add the reference here
+                component="form"
+                onSubmit={handleAddOrUpdateIngredient}
+                sx={{
+                  backgroundColor: "#f9f9f9",
+                  padding: 2,
+                  borderRadius: 2,
+                  boxShadow: 2,
+                  marginTop: 2,
+                }}
+              >
+                {/* Ingredient Name */}
+                <TextField
+                  label="Ingredient Name"
+                  name="ingredientName"
+                  value={
+                    editingIngredient
+                      ? editingIngredient.ingredientName
+                      : newIngredient.ingredientName
+                  }
+                  onChange={handleInputChange}
+                  fullWidth
+                  margin="normal"
+                  required
+                  disabled={!!editingIngredient} // Disable if editing
+                />
 
+                {/* Purchase Date */}
+                <TextField
+                  type="date"
+                  label="Purchase Date"
+                  name="purchaseDate"
+                  value={newIngredient.purchaseDate}
+                  onChange={handleInputChange}
+                  fullWidth
+                  margin="normal"
+                  required
+                  slotProps={{
+                    inputLabel: {
+                      shrink: true,
+                    },
+                  }}
+                />
+
+                {/* Expiration Date */}
+                <TextField
+                  type="date"
+                  label="Expiration Date"
+                  name="expirationDate"
+                  value={newIngredient.expirationDate}
+                  onChange={handleInputChange}
+                  fullWidth
+                  margin="normal"
+                  slotProps={{
+                    inputLabel: {
+                      shrink: true,
+                    },
+                  }}
+                />
+
+                {/* Frozen Checkbox */}
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={newIngredient.frozen}
+                      onChange={handleInputChange}
+                      name="frozen"
+                      color="#7e91ff"
+                    />
+                  }
+                  label="Frozen"
+                  sx={{ marginBottom: 2 }}
+                />
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  variant="contained"
+                  fullWidth
+                  sx={{
+                    padding: 1.5,
+                    backgroundColor: "#7e91ff", // Custom background color (pastel purple)
+                    "&:hover": {
+                      backgroundColor: "#6b82e0", // Custom hover background color
+                    },
+                  }}
+                >
+                  {editingIngredient ? "Update Ingredient" : "Add Ingredient"}
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => {
+                    setEditingIngredient(null);
+                    setShowForm(false);
+                  }}
+                  startIcon={<FaMinus />}
+                  sx={{
+                    marginTop: 2,
+                    display: "block",
+                    width: "100%",
+                    textAlign: "center",
+                    fontSize: "0.9rem",
+                    color: "#7e91ff", // Button text color
+                    borderColor: "#7e91ff", // Border color
+                    "&:hover": {
+                      backgroundColor: "#7e91ff", // Hover background
+                      color: "#fff", // Hover text color
+                    },
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Box>
+            )}
+          </Box>
+        ))}
+      </List>
+      {loading && (
+        <Box sx={{ display: "flex", justifyContent: "center", marginTop: 2 }}>
+          <CircularProgress />
         </Box>
       )}
-  
+
+      {!editingIngredient && (
+        <>
+          <Button
+            variant="outlined"
+            onClick={handleToggleForm}
+            startIcon={showForm ? <FaMinus /> : <FaPlus />} // Conditional icon
+            sx={{
+              marginBottom: 2,
+              display: "block",
+              width: "100%",
+              textAlign: "center",
+              fontSize: "1.1rem",
+              color: "#7e91ff", // Button text color
+              borderColor: "#7e91ff", // Border color
+              "&:hover": {
+                backgroundColor: "#7e91ff", // Hover background
+                color: "#fff", // Hover text color
+              },
+            }}
+          >
+            {showForm ? "Cancel" : "Add Ingredient"}
+          </Button>
+
+          {showForm && (
+            <Box
+              ref={formRef} // Add the reference here
+              component="form"
+              onSubmit={handleAddOrUpdateIngredient}
+              sx={{
+                backgroundColor: "#f9f9f9",
+                padding: 2,
+                borderRadius: 2,
+                boxShadow: 2,
+                marginTop: 2,
+              }}
+            >
+              {/* Ingredient Name */}
+              <TextField
+                label="Ingredient Name"
+                name="ingredientName"
+                value={newIngredient.ingredientName}
+                onChange={handleInputChange}
+                fullWidth
+                margin="normal"
+                required
+              />
+
+              {/* Purchase Date */}
+              <TextField
+                type="date"
+                label="Purchase Date"
+                name="purchaseDate"
+                value={newIngredient.purchaseDate}
+                onChange={handleInputChange}
+                fullWidth
+                margin="normal"
+                required
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                  },
+                }}
+              />
+
+              {/* Expiration Date */}
+              <TextField
+                type="date"
+                label="Expiration Date"
+                name="expirationDate"
+                value={newIngredient.expirationDate}
+                onChange={handleInputChange}
+                fullWidth
+                margin="normal"
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                  },
+                }}
+              />
+
+              {/* Frozen Checkbox */}
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={newIngredient.frozen}
+                    onChange={handleInputChange}
+                    name="frozen"
+                    color="#7e91ff"
+                  />
+                }
+                label="Frozen"
+                sx={{ marginBottom: 2 }}
+              />
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                sx={{
+                  padding: 1.5,
+                  backgroundColor: "#7e91ff", // Custom background color (pastel purple)
+                  "&:hover": {
+                    backgroundColor: "#6b82e0", // Custom hover background color
+                  },
+                }}
+              >
+                Add Ingredient
+              </Button>
+            </Box>
+          )}
+        </>
+      )}
+
       {/* Recipe Suggestions */}
       <RecipeSuggestion ingredients={ingredients} />
+
+      {/* Error Snackbar */}
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
+          {error}
+        </Alert>
+      </Snackbar>
     </Box>
   );
-  
 }

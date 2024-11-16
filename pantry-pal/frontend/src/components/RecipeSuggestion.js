@@ -189,6 +189,7 @@ export default function RecipeSuggestion({ ingredients }) {
                   borderRadius: "8px",
                   boxShadow: 3,
                   position: "relative",
+                  backgroundColor: "#fffae1",
                 }}
               >
                 <IconButton
@@ -207,9 +208,20 @@ export default function RecipeSuggestion({ ingredients }) {
                 </IconButton>
 
                 <CardContent>
-                  <Typography variant="h6" color="primary" gutterBottom>
-                    {recipe.recipeName}
-                  </Typography>
+                <Typography
+                variant="h6"
+                sx={{
+                  color: "#ffffff", 
+                  backgroundColor: "#7e91ff", 
+                  padding: "8px", 
+                  borderRadius: "4px", 
+                  marginBottom: "1rem",
+                  width: "665px",
+                }}
+                gutterBottom
+              >
+                {recipe.recipeName}
+              </Typography>
                   <Box
                     sx={{
                       display: "flex",
@@ -220,10 +232,11 @@ export default function RecipeSuggestion({ ingredients }) {
                   >
                     <Chip
                       label={`Missing Ingredients: ${recipe.missedIngredientCount}`}
-                      color="secondary"
+                      sx={{ backgroundColor: "#7e91ff", color: "#ffffff" }}
                     />
                     <Chip
                       label={`Ingredients: ${recipe.ingredients.length}`}
+                      sx={{ backgroundColor: "#7e91ff", color: "#ffffff" }}
                       color="info"
                     />
                   </Box>
@@ -256,6 +269,15 @@ export default function RecipeSuggestion({ ingredients }) {
                   )}
 
                   <Divider sx={{ marginY: "1rem" }} />
+                  <Box
+                  sx={{
+                    backgroundColor: "white",
+                    padding: "16px",
+                    borderRadius: "8px",
+                    boxShadow: 1,
+                    marginBottom: "1rem",
+                  }}
+                >
                   <Typography variant="body2" color="text.secondary">
                     <strong>Instructions:</strong>
                   </Typography>
@@ -268,19 +290,7 @@ export default function RecipeSuggestion({ ingredients }) {
                       </li>
                     ))}
                   </ul>
-                  <Typography
-                    variant="body2"
-                    color="primary"
-                    sx={{ marginTop: "1rem" }}
-                  >
-                    <a
-                      href={recipe.sourceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Full Recipe Source
-                    </a>
-                  </Typography>
+                </Box>
                 </CardContent>
 
                 <Box
@@ -305,7 +315,6 @@ export default function RecipeSuggestion({ ingredients }) {
 
                   <Button
                     variant="contained"
-                    color="secondary"
                     onClick={() =>
                       addMissingIngredientsToShoppingList(
                         recipe.missedIngredients,
@@ -314,7 +323,12 @@ export default function RecipeSuggestion({ ingredients }) {
                     }
                     disabled={recipe.missedIngredients.length === 0}
                     fullWidth
-                    sx={{ padding: "1rem", textTransform: "none" }}
+                    sx={{ padding: "1rem", textTransform: "none",               color: "#7e91ff", // Button text color
+                      color: "#ffffff", // Button text color
+                      backgroundColor: "#7e91ff", // Button background color
+                      "&:hover": {
+                        backgroundColor: "#fffae1", // Button background color on hover
+                      }, }}
                     startIcon={<FaCheckCircle />}
                   >
                     Add Missing Ingredients to Shopping List

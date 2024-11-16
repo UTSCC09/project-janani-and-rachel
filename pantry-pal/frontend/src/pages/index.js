@@ -1,17 +1,39 @@
 import { useState } from "react";
 import Head from "next/head";
-import RecipeSection from "@/components/RecipeSection";
+import {
+  AppBar,
+  Toolbar,
+  Container,
+  Box,
+  Typography,
+  IconButton,
+  Menu,
+  MenuItem,
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import Signup from "@/components/Signup";
+import SignIn from "@/components/Signin";
 import IngredientsSection from "@/components/IngredientsSection";
+import RecipeSection from "@/components/RecipeSection";
 import ShoppingListSection from "@/components/ShoppingListSection";
 import CalendarSection from "@/components/CalendarSection";
 import RecipeSearch from "@/components/RecipeSearch";
-import { Menu, MenuItem, IconButton, AppBar, Toolbar, Typography, Container, Box } from "@mui/material";
-import { FaBars } from "react-icons/fa";
 import styles from "@/styles/Home.module.css";
 
 export default function Home() {
-  const [activeSection, setActiveSection] = useState("recipes");
+  const [activeSection, setActiveSection] = useState("signin");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleSignIn = () => {
+    setIsAuthenticated(true);
+    setActiveSection("recipes");
+  };
+
+  const handleSignout = () => {
+    setIsAuthenticated(false);
+    setActiveSection("signin");
+  };
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -26,7 +48,10 @@ export default function Home() {
     <>
       <Head>
         <title>Pantry Pal</title>
-        <meta name="description" content="Plan meals, track ingredients, and create shopping lists." />
+        <meta
+          name="description"
+          content="Plan meals, track ingredients, and create shopping lists."
+        />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -34,16 +59,16 @@ export default function Home() {
       <AppBar
         position="fixed"
         sx={{
-          background: "linear-gradient(135deg, #e8f4ff 30%, #f1f5f9 90%)",
+          background: "linear-gradient(135deg, #fdfabf 30%, #f6f7ef 90%)",
           color: "#444444",
           boxShadow: "none",
         }}
       >
         <Container maxWidth="lg">
           <Toolbar disableGutters sx={{ justifyContent: "space-between", padding: "0 1rem" }}>
-            {/* Make the Pantry Pal logo clickable */}
+            {/* Pantry Pal Logo */}
             <Box
-              onClick={() => setActiveSection("recipes")}
+              onClick={() => setActiveSection(isAuthenticated ? "recipes" : "signin")}
               sx={{
                 cursor: "pointer",
                 display: "flex",
@@ -56,54 +81,48 @@ export default function Home() {
                 sx={{
                   fontWeight: "bold",
                   fontSize: { xs: "1.4rem", sm: "1.6rem" },
-                  color: "#7e91ff"
+                  color: "#7e91ff",
                 }}
               >
                 Pantry Pal
               </Typography>
             </Box>
+
+            {/* Always Visible Hamburger Menu */}
             <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="menu"
               onClick={handleMenuOpen}
-              sx={{
-                color: "#7e91ff",
-                fontSize: "1.5rem",
-                "&:hover": { backgroundColor: "rgba(26, 35, 126, 0.1)" },
-              }}
             >
-              <FaBars />
+              <MenuIcon />
             </IconButton>
             <Menu
               anchorEl={anchorEl}
               open={Boolean(anchorEl)}
               onClose={() => setAnchorEl(null)}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              sx={{
-                mt: 1.5,
-                "& .MuiPaper-root": {
-                  borderRadius: "8px",
-                  boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
-                  minWidth: "180px",
-                },
-              }}
             >
-              <MenuItem onClick={() => handleMenuClose("recipes")}>Favorite Recipes</MenuItem>
-              <MenuItem onClick={() => handleMenuClose("ingredients")}>Ingredients</MenuItem>
-              <MenuItem onClick={() => handleMenuClose("shoppingList")}>Shopping List</MenuItem>
-              <MenuItem onClick={() => handleMenuClose("calendar")}>Calendar</MenuItem>
-              <MenuItem onClick={() => handleMenuClose("recipeSearch")}>Search Recipes</MenuItem>
+              {isAuthenticated ? (
+                <>
+                  <MenuItem onClick={() => handleMenuClose("recipes")}>Recipes</MenuItem>
+                  <MenuItem onClick={() => handleMenuClose("ingredients")}>Ingredients</MenuItem>
+                  <MenuItem onClick={() => handleMenuClose("shoppingList")}>Shopping List</MenuItem>
+                  <MenuItem onClick={() => handleMenuClose("calendar")}>Calendar</MenuItem>
+                  <MenuItem onClick={() => handleMenuClose("recipeSearch")}>Recipe Search</MenuItem>
+                  <MenuItem onClick={handleSignout}>Sign Out</MenuItem>
+                </>
+              ) : (
+                <>
+                  <MenuItem onClick={() => handleMenuClose("signin")}>Sign In</MenuItem>
+                  <MenuItem onClick={() => handleMenuClose("signup")}>Sign Up</MenuItem>
+                </>
+              )}
             </Menu>
           </Toolbar>
         </Container>
       </AppBar>
 
-      {/* Content Section with Padding to Prevent Overlap */}
+      {/* Main Content */}
       <Box
         component="main"
         className={styles.content}
@@ -116,11 +135,20 @@ export default function Home() {
           overflowX: "hidden",
         }}
       >
-        {activeSection === "recipes" && <RecipeSection />}
-        {activeSection === "ingredients" && <IngredientsSection />}
-        {activeSection === "shoppingList" && <ShoppingListSection />}
-        {activeSection === "calendar" && <CalendarSection />}
-        {activeSection === "recipeSearch" && <RecipeSearch onSearch={() => {}} />}
+        {isAuthenticated ? (
+          <>
+            {activeSection === "recipes" && <RecipeSection />}
+            {activeSection === "ingredients" && <IngredientsSection />}
+            {activeSection === "shoppingList" && <ShoppingListSection />}
+            {activeSection === "calendar" && <CalendarSection />}
+            {activeSection === "recipeSearch" && <RecipeSearch onSearch={() => {}} />}
+          </>
+        ) : (
+          <>
+            {activeSection === "signup" && <Signup />}
+            {activeSection === "signin" && <SignIn onSignIn={handleSignIn} />}
+          </>
+        )}
       </Box>
     </>
   );

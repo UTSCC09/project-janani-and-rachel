@@ -1,27 +1,27 @@
 import { useState } from "react";
 import { Box, TextField, Button, Typography, Snackbar, Alert } from "@mui/material";
 
-export default function SignIn({ onSignIn }) {
+export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  const handleSignIn = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/auth/signin`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
       if (response.ok) {
-        setSuccess("Sign in successful!");
+        console.log("Signup successful!");
+        setSuccess("Signup successful!");
         setEmail("");
         setPassword("");
-        onSignIn();
       } else {
-        throw new Error("Sign in failed.");
+        throw new Error("Signup failed.");
       }
     } catch (error) {
       setError(error.message);
@@ -36,9 +36,9 @@ export default function SignIn({ onSignIn }) {
   return (
     <Box sx={{ padding: 3, maxWidth: "400px", margin: "0 auto" }}>
       <Typography variant="h4" gutterBottom align="center" sx={{ fontWeight: "bold", color: "#7e91ff" }}>
-        Sign In
+        Signup
       </Typography>
-      <Box component="form" onSubmit={handleSignIn} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Box component="form" onSubmit={handleSignup} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <TextField
           label="Email"
           type="email"
@@ -56,7 +56,7 @@ export default function SignIn({ onSignIn }) {
           required
         />
         <Button type="submit" variant="contained" sx={{ backgroundColor: "#7e91ff", "&:hover": { backgroundColor: "#6b82e0" } }}>
-          Sign In
+          Signup
         </Button>
       </Box>
       <Snackbar open={!!error || !!success} autoHideDuration={6000} onClose={handleCloseSnackbar}>

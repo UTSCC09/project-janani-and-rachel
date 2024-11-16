@@ -8,7 +8,9 @@ export const router = express.Router();
 
 router.get('/pantry', (req, res, next) => {
     const uid = 'Janani'; // for testing purposes
-    getPantry(uid).then((pantry) => {
+    const limit = parseInt(req.query.limit) || 10;
+    const lastVisibleIngredient = req.query.lastVisibleIngredient || null;
+    getPantry(uid, page, lastVisibleIngredient).then((pantry) => {
         res.json(pantry);
     }).catch((error) => {
         console.error("Error getting pantry: ", error);

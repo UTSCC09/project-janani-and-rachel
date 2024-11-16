@@ -2,7 +2,7 @@ import { db } from '../config/firebase.js';
 import { collection, doc, setDoc, updateDoc, getDocs, getDoc, deleteDoc, limit, orderBy, query, startAfter } 
     from 'firebase/firestore';
 
-export async function getPantry(uid, lim = 10, lastVisibleIngredient = null) {
+export async function getPantry(uid, lim=10, lastVisibleIngredient=null) {
     try {
         const pantryRef = collection(db, 'Users', uid, 'Pantry');
         let q = query(pantryRef, orderBy('ingredientName'), limit(lim)); 
@@ -11,11 +11,10 @@ export async function getPantry(uid, lim = 10, lastVisibleIngredient = null) {
             // Retrieve the lastVisible document snapshot using its ID
             const lastVisibleDoc = await getDoc(doc(pantryRef, lastVisibleIngredient));
             if (lastVisibleDoc.exists()) {
-                q = query(pantryRef, orderBy('name'), startAfter(lastVisibleDoc), limit(limitNumber));
+                q = query(pantryRef, orderBy('ingredientName'), startAfter(lastVisibleDoc), limit(limitNumber));
             }
         }
 
-        // Retrieve the data
         const snapshot = await getDocs(q);
   
         if (snapshot.empty) {
@@ -23,7 +22,7 @@ export async function getPantry(uid, lim = 10, lastVisibleIngredient = null) {
             return [];
         }
   
-        // Set the last document in this page as the new lastVisible
+        // last visible ingredient on this page
         const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
 
         return {
@@ -37,7 +36,7 @@ export async function getPantry(uid, lim = 10, lastVisibleIngredient = null) {
     }
 }
 
-export async function addToPantry(uid, ingredientName, purchaseDate = new Date(), expirationDate = null, frozen = false) {
+export async function addToPantry(uid, ingredientName, purchaseDate=new Date(), expirationDate=null, frozen=false) {
     try {
         const pantryRef = doc(db, 'Users', uid, 'Pantry', ingredientName);
       

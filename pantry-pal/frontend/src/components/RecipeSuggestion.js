@@ -146,7 +146,7 @@ export default function RecipeSuggestion({ ingredients }) {
           fontWeight: 600,
           borderRadius: "8px",
           boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
-          backgroundImage: "linear-gradient(45deg, #2196f3, #21cbf3)",
+          backgroundImage: "linear-gradient(45deg, #7e91ff, #FFF7CB)",
           color: "white",
           transition: "all 0.3s ease",
           "&:hover": {

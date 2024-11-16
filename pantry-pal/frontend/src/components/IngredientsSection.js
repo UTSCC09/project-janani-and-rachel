@@ -180,10 +180,10 @@ export default function IngredientsSection() {
 
   return (
     <Box sx={{ padding: 3, maxWidth: "900px", margin: "0 auto" }}>
-      <Typography variant="h4" gutterBottom align="center">
+      <Typography variant="h4" gutterBottom align="center" sx={{ fontWeight: 'bold', color: '#7e91ff' }}>
         Pantry Ingredients
       </Typography>
-
+  
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <CircularProgress />
@@ -195,7 +195,7 @@ export default function IngredientsSection() {
               key={index}
               sx={{
                 marginBottom: 2,
-                backgroundColor: "#ffffff",
+                backgroundColor: "#fffae1",
                 borderRadius: 2,
                 padding: 2,
                 display: "flex",
@@ -213,72 +213,59 @@ export default function IngredientsSection() {
                 {/* Ingredient Name */}
                 <Typography
                   variant="h6"
-                  sx={{ fontWeight: "bold", marginBottom: 1 }}
+                  sx={{
+                    fontWeight: "bold",
+                    marginBottom: 1,
+                    color: '#ffffff', // White text color
+                    padding: '4px 8px', // Add padding inside the box
+                    backgroundColor: '#7e91ff', // Pastel purple background
+                    borderRadius: 2, // Rounded corners for the box
+                    display: 'inline-block', // To make sure it doesn't take full width
+                  }}
                 >
                   {ingredient.ingredientName}
                 </Typography>
-
-                {/* Expiration, Purchase Date and Frozen Status */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    marginBottom: 1,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      marginBottom: 0.5,
-                    }}
-                  >
+  
+                {/* Expiration, Purchase Date, and Frozen Status */}
+                <Box sx={{ display: "flex", flexDirection: "column", marginBottom: 1 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
                     <FaRegCalendarAlt
                       style={{
                         marginRight: "8px",
                         fontSize: "16px",
-                        color: "#3f51b5",
+                        color: "#7e91ff",
                       }}
                     />
                     <Typography variant="body2" sx={{ color: "#777" }}>
                       Expiration: {ingredient.expirationDate || "N/A"}
                     </Typography>
                   </Box>
-
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      marginBottom: 0.5,
-                    }}
-                  >
+  
+                  <Box sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>
                     <FaRegCalendar
                       style={{
                         marginRight: "8px",
                         fontSize: "16px",
-                        color: "#3f51b5",
+                        color: "#7e91ff",
                       }}
                     />
                     <Typography variant="body2" sx={{ color: "#777" }}>
                       Purchased: {ingredient.purchaseDate || "N/A"}
                     </Typography>
                   </Box>
-
+  
                   <Box sx={{ display: "flex", alignItems: "center" }}>
                     <FaCheckCircle
-                      color={ingredient.frozen ? "green" : "gray"}
+                      color={ingredient.frozen ? "#7e91ff" : "gray"}
                       style={{ marginRight: "8px", fontSize: "16px" }}
                     />
-                    <Typography
-                      variant="body2"
-                      sx={{ color: ingredient.frozen ? "green" : "gray" }}
-                    >
+                    <Typography variant="body2" sx={{ color: ingredient.frozen ? "#7e91ff" : "gray" }}>
                       {ingredient.frozen ? "Frozen" : "Not Frozen"}
                     </Typography>
                   </Box>
                 </Box>
               </Box>
-
+  
               {/* Right Section: Action Buttons (Delete/Edit) */}
               <Box
                 sx={{
@@ -313,7 +300,7 @@ export default function IngredientsSection() {
           ))}
         </List>
       )}
-
+  
       {/* Toggle Button */}
       <Button
         variant="outlined"
@@ -325,11 +312,17 @@ export default function IngredientsSection() {
           width: "100%",
           textAlign: "center",
           fontSize: "1.1rem",
+          color: "#7e91ff", // Button text color
+          borderColor: "#7e91ff", // Border color
+          "&:hover": {
+            backgroundColor: "#7e91ff", // Hover background
+            color: "#fff", // Hover text color
+          },
         }}
       >
         {showForm ? "Cancel" : "Add Ingredient"}
       </Button>
-
+  
       {showForm && (
         <Box
           ref={formRef} // Add the reference here
@@ -357,7 +350,7 @@ export default function IngredientsSection() {
             required
             disabled={!!editingIngredient} // Disable if editing
           />
-
+  
           {/* Purchase Date */}
           <TextField
             type="date"
@@ -374,7 +367,7 @@ export default function IngredientsSection() {
               },
             }}
           />
-
+  
           {/* Expiration Date */}
           <TextField
             type="date"
@@ -390,7 +383,7 @@ export default function IngredientsSection() {
               },
             }}
           />
-
+  
           {/* Frozen Checkbox */}
           <FormControlLabel
             control={
@@ -398,28 +391,35 @@ export default function IngredientsSection() {
                 checked={newIngredient.frozen}
                 onChange={handleInputChange}
                 name="frozen"
-                color="primary"
+                color="#7e91ff"
               />
             }
             label="Frozen"
             sx={{ marginBottom: 2 }}
           />
-
+  
           {/* Submit Button */}
           <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            sx={{ padding: 1.5 }}
-          >
-            {editingIngredient ? "Update Ingredient" : "Add Ingredient"}
-          </Button>
+          type="submit"
+          variant="contained"
+          fullWidth
+          sx={{
+            padding: 1.5,
+            backgroundColor: '#7e91ff', // Custom background color (pastel purple)
+            '&:hover': {
+              backgroundColor: '#6b82e0', // Custom hover background color
+            },
+          }}
+        >
+          {editingIngredient ? "Update Ingredient" : "Add Ingredient"}
+        </Button>
+
         </Box>
       )}
-
+  
       {/* Recipe Suggestions */}
       <RecipeSuggestion ingredients={ingredients} />
     </Box>
   );
+  
 }

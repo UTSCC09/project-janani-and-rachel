@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
   Button,
   Card,
@@ -6,9 +6,7 @@ import {
   CircularProgress,
   Typography,
   Box,
-  Divider,
-  IconButton,
-  Chip,
+  Container,
 } from "@mui/material";
 import { FaTrashAlt } from "react-icons/fa"; // Import FaTrashAlt
 
@@ -16,284 +14,210 @@ const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
 export default function RecipeList() {
   const [allRecipes, setAllRecipes] = useState([]);
-  const [unplannedRecipes, setUnplannedRecipes] = useState([]);
-  const [loadingAll, setLoadingAll] = useState(true);
-  const [loadingUnplanned, setLoadingUnplanned] = useState(true);
-  const [searchRecipeId, setSearchRecipeId] = useState("");
-  const [searchedRecipe, setSearchedRecipe] = useState(null);
-  const [loadingSearch, setLoadingSearch] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [lastVisible, setLastVisible] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const observer = useRef();
+  const initialFetch = useRef(true);
+
+  const fetchRecipes = useCallback(
+    (lastVisible = null) => {
+      setLoading(true);
+      let url = `${domain}/api/recipes/favorites?limit=10`;
+      if (lastVisible) {
+        url += `&lastVisible=${lastVisible}`;
+      }
+
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => {
+          const processedData = Array.isArray(data.recipes)
+            ? data.recipes.map((item) => ({
+                ...item,
+              }))
+            : [];
+
+          setAllRecipes((prev) => [...prev, ...processedData]);
+          setLastVisible(data.lastVisible || null);
+          setHasMore(processedData.length === 10);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching recipes:", error);
+          setLoading(false);
+        });
+    },
+    [domain]
+  );
 
   useEffect(() => {
-    fetch(`${domain}/api/recipes/favorites`)
-      .then((res) => res.json())
-      .then((data) => {
-        const recipes = data.recipes || [];
-        setAllRecipes(recipes);
-        setLoadingAll(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching all recipes:", error);
-        setLoadingAll(false);
-      });
+    if (initialFetch.current) {
+      fetchRecipes();
+      initialFetch.current = false;
+    }
+  }, [fetchRecipes]);
 
-    fetch(`${domain}/api/recipes/favorites/unplanned`)
-      .then((res) => res.json())
-      .then((data) => {
-        setUnplannedRecipes(data.recipes || []);
-        setLoadingUnplanned(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching unplanned recipes:", error);
-        setLoadingUnplanned(false);
+  const lastRecipeElementRef = useCallback(
+    (node) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          fetchRecipes(lastVisible);
+        }
       });
-  }, []);
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore, lastVisible, fetchRecipes]
+  );
 
   const handleDelete = (recipeId) => {
-    setAllRecipes((prevRecipes) =>
-      prevRecipes.filter((recipe) => recipe.recipeId !== recipeId),
-    );
-    setUnplannedRecipes((prevRecipes) =>
-      prevRecipes.filter((recipe) => recipe.recipeId !== recipeId),
-    );
-
+    // Send DELETE request to the backend
     fetch(`${domain}/api/recipes/favorites/${recipeId}`, {
       method: "DELETE",
     })
-      .then((res) => {
-        if (res.status === 204) return;
-        console.error("Error deleting recipe:", res.status);
-        fetchRecipes();
+      .then((response) => {
+        if (response.ok) {
+          // Update the UI by removing the deleted recipe from the list
+          setAllRecipes((prevRecipes) =>
+            prevRecipes.filter((recipe) => recipe.recipeId !== recipeId)
+          );
+        } else {
+          console.error("Failed to delete the recipe");
+        }
       })
       .catch((error) => {
         console.error("Error deleting recipe:", error);
-        fetchRecipes();
-      });
-  };
-
-  const fetchRecipes = () => {
-    fetch(`${domain}/api/recipes/favorites`)
-      .then((res) => res.json())
-      .then((data) => {
-        const recipes = data.recipes || [];
-        setAllRecipes(recipes);
-      })
-      .catch((error) => {
-        console.error("Error fetching all recipes:", error);
-      });
-
-    fetch(`${domain}/api/recipes/favorites/unplanned`)
-      .then((res) => res.json())
-      .then((data) => {
-        setUnplannedRecipes(data.recipes || []);
-      })
-      .catch((error) => {
-        console.error("Error fetching unplanned recipes:", error);
       });
   };
 
   return (
-    <Box sx={{ padding: "2rem", maxWidth: "1200px", margin: "0 auto" }}>
-      {/* Main Title */}
-      <Typography
-        variant="h3"
-        gutterBottom
-        align="center"
-        sx={{
-          color: "#1976d2",
-          fontWeight: 600,
-          marginBottom: "3rem",
-          textTransform: "uppercase",
-          letterSpacing: 1.5,
-        }}
-      >
-        My Favorite Recipes
-      </Typography>
-
-      {/* All Recipes Section */}
-      <Box sx={{ marginBottom: "3rem" }}>
+    <Container maxWidth="md">
+      {/* Title Styled as Normal Text */}
+      <Box sx={{ marginBottom: 6 }}>
         <Typography
-          variant="h5"
+          variant="h2"
+          component="div"
           sx={{
-            fontWeight: 600,
-            color: "#333",
-            borderBottom: "2px solid #1976d2",
-            paddingBottom: "0.5rem",
-            marginBottom: "2rem",
-            letterSpacing: 0.5,
+            fontWeight: "bold",
+            fontSize: "3rem",
+            color: "#7e91ff",
+            textAlign: "center",
+            letterSpacing: "2px",
+            lineHeight: 1.2,
+            textShadow: "2px 2px 8px rgba(0, 0, 0, 0.1)",
           }}
         >
-          All Recipes
+          Favorite Recipes
         </Typography>
-        {loadingAll ? (
-          <Box sx={{ display: "flex", justifyContent: "center" }}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <Box sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-            {allRecipes.map((recipe) => (
-              <Card
-                key={recipe.recipeId}
-                sx={{
-                  borderRadius: "12px",
-                  boxShadow: 3,
-                  backgroundColor: "#fafafa",
-                  padding: "1rem",
-                  display: "flex",
-                  flexDirection: "column",
-                  transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                  "&:hover": {
-                    transform: "scale(1.03)",
-                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
-                  },
-                }}
-              >
-                <CardContent>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginBottom: "1rem",
-                    }}
-                  >
-                    <Typography variant="h6">{recipe.recipeName}</Typography>
-                    {recipe.planned && (
-                      <Chip
-                        label="Planned"
-                        color="primary"
-                        sx={{
-                          fontSize: "0.875rem",
-                          fontWeight: "bold",
-                          borderRadius: "16px",
-                          padding: "0.2rem 0.8rem",
-                        }}
-                      />
-                    )}
-                  </Box>
-
-                  <Box sx={{ marginBottom: "1rem" }}>
-                    <Typography variant="body2">
-                      <strong>Directions:</strong> {recipe.directions}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Notes:</strong> {recipe.notes}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Date:</strong> {recipe.date || "N/A"}
-                    </Typography>
-                  </Box>
-
-                  <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={() => handleDelete(recipe.recipeId)}
-                      sx={{
-                        padding: "6px 16px",
-                        borderRadius: "12px",
-                        textTransform: "none",
-                        "&:hover": {
-                          backgroundColor: "#f44336",
-                          color: "#fff",
-                        },
-                      }}
-                    >
-                      <FaTrashAlt size={20} />{" "}
-                      {/* Replaced MdDelete with FaTrashAlt */}
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            ))}
-          </Box>
-        )}
       </Box>
 
-      {/* Unplanned Recipes Section */}
+      {/* Recipe Cards */}
       <Box>
-        <Typography
-          variant="h5"
-          sx={{
-            fontWeight: 600,
-            color: "#333",
-            borderBottom: "2px solid #1976d2",
-            paddingBottom: "0.5rem",
-            marginBottom: "2rem",
-            letterSpacing: 0.5,
-          }}
-        >
-          Unplanned Recipes
-        </Typography>
-        {loadingUnplanned ? (
-          <Box sx={{ display: "flex", justifyContent: "center" }}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <Box sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-            {unplannedRecipes.map((recipe) => (
-              <Card
-                key={recipe.recipeId}
+        {allRecipes.map((recipe, index) => (
+          <Card
+            key={recipe.recipeId}
+            ref={index === allRecipes.length - 1 ? lastRecipeElementRef : null}
+            sx={{
+              borderRadius: "16px",
+              boxShadow: 3,
+              backgroundColor: "#fffae1", // Light pastel background for cards
+              padding: "1.5rem",
+              display: "flex",
+              flexDirection: "column",
+              transition: "transform 0.3s ease, box-shadow 0.3s ease",
+              marginBottom: "1.5rem", // Reduced margin for better spacing
+              position: "relative", // For absolute positioning of the button
+              "&:hover": {
+                transform: "scale(1.05)",
+                boxShadow: "0 6px 15px rgba(0, 0, 0, 0.1)",
+              },
+            }}
+          >
+            {/* Delete Button in Top Right Corner */}
+            <Box sx={{ position: "absolute", top: "8px", right: "8px" }}>
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={() => handleDelete(recipe.recipeId)}
                 sx={{
-                  borderRadius: "12px",
-                  boxShadow: 3,
-                  backgroundColor: "#fafafa",
-                  padding: "1rem",
-                  display: "flex",
-                  flexDirection: "column",
-                  transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                  padding: "8px 16px",
+                  border: "none",
+                  textTransform: "none",
+                  color: "#f44336",
                   "&:hover": {
-                    transform: "scale(1.03)",
-                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
+                    backgroundColor: "#f44336",
+                    color: "#fff",
                   },
                 }}
               >
-                <CardContent>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginBottom: "1rem",
-                    }}
-                  >
-                    <Typography variant="h6">{recipe.recipeName}</Typography>
-                  </Box>
+                <FaTrashAlt size={20} />
+              </Button>
+            </Box>
 
-                  <Box sx={{ marginBottom: "1rem" }}>
-                    <Typography variant="body2">
-                      <strong>Directions:</strong> {recipe.directions}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Notes:</strong> {recipe.notes}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Date:</strong> {recipe.date || "N/A"}
-                    </Typography>
-                  </Box>
+            <CardContent>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: "1.5rem",
+                }}
+              >
+                <Box
+                  sx={{
+                    backgroundColor: "#7e91ff", // Background color for the recipe name
+                    padding: "8px 16px", // Adjust padding for better visual balance
+                    borderRadius: "8px", // Optional: rounded corners for the background
+                    maxWidth: "70%", // Limit width to avoid text overflow
+                  }}
+                >
+                  <Typography variant="h5" sx={{ fontWeight: "600", color: "#fff" }}>
+                    {recipe.recipeName}
+                  </Typography>
+                </Box>
+              </Box>
 
-                  <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={() => handleDelete(recipe.recipeId)}
-                      sx={{
-                        padding: "6px 16px",
-                        borderRadius: "12px",
-                        textTransform: "none",
-                        "&:hover": {
-                          backgroundColor: "#f44336",
-                          color: "#fff",
-                        },
-                      }}
-                    >
-                      <FaTrashAlt size={20} />{" "}
-                      {/* Replaced MdDelete with FaTrashAlt */}
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            ))}
-          </Box>
-        )}
+              {/* Notes Section */}
+              <Box sx={{ marginBottom: "1rem" }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: "500",
+                    color: "#7e91ff", // Soft purple for notes
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  <strong>Notes:</strong>
+                </Typography>
+                <Typography variant="body2">
+                  {recipe.notes || "No notes available"}
+                </Typography>
+              </Box>
+
+              {/* Date Section */}
+              <Box sx={{ marginBottom: "1.5rem" }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: "500",
+                    color: "#7e91ff", // Soft purple for date
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  <strong>Date:</strong> {recipe.date || "N/A"}
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        ))}
       </Box>
-    </Box>
+
+      {/* Loading Spinner */}
+      {loading && (
+        <Box sx={{ display: "flex", justifyContent: "center", marginTop: 2 }}>
+          <CircularProgress sx={{ color: "#D8A6FF" }} /> {/* Purple color for loading */}
+        </Box>
+      )}
+    </Container>
   );
 }

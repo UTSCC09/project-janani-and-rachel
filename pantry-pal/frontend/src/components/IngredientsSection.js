@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import RecipeSuggestion from "@/components/RecipeSuggestion";
 import {
   Box,
   TextField,
@@ -9,6 +10,7 @@ import {
   CircularProgress,
   List,
   ListItem,
+  ListItemText,
   IconButton,
   Tooltip,
   Snackbar,
@@ -24,6 +26,7 @@ import {
 } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
+
 
 export default function IngredientsSection() {
   const formRef = useRef(null); // Create a reference for the form container
@@ -610,6 +613,9 @@ export default function IngredientsSection() {
           )}
         </>
       )}
+
+      {/* Recipe Suggestions */}
+      <RecipeSuggestion ingredients={ingredients} />
 
       {/* Error Snackbar */}
       <Snackbar

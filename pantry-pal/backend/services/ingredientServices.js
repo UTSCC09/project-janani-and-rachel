@@ -107,7 +107,7 @@ export async function getShoppingList(uid, lim=10, lastVisibleIngredient = null)
             // Retrieve the lastVisible document snapshot using its ID
             const lastVisibleDoc = await getDoc(doc(shoppingListRef, lastVisibleIngredient));
             if (lastVisibleDoc.exists()) {
-                q = query(shoppingListRef, orderBy('name'), startAfter(lastVisibleDoc), limit(limitNumber));
+                q = query(shoppingListRef, orderBy('name'), startAfter(lastVisibleDoc), limit(lim));
             }
         }
 

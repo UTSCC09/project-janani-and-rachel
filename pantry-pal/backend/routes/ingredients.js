@@ -48,7 +48,9 @@ router.delete('/pantry', (req, res, next) => {
 
 router.get('/shoppingList', (req, res, next) => {
     const uid = 'Janani'; // for testing purposes
-    getShoppingList(uid).then((shoppingList) => {
+    const limit = parseInt(req.query.limit) || 10;
+    const lastVisibleIngredient = req.query.lastVisibleIngredient || null;
+    getShoppingList(uid, limit, lastVisibleIngredient).then((shoppingList) => {
         res.json(shoppingList);
     }).catch((error) => {
         console.error("Error getting shopping list: ", error);

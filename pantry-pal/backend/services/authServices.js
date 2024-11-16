@@ -33,7 +33,7 @@ export async function signInWithEmail(email, password) {
     }
 }
 
-export async function signOutWithEmail() {
+export async function signOutOfWebsite() {
     try {
         await signOut(auth);
         //console.log("User signed out successfully.");

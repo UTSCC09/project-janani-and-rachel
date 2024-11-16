@@ -1,11 +1,11 @@
 import express from 'express';
-import { signUpWithEmail, signInWithEmail, signOutWithEmail, isAuth } from '../services/authServices.js';
+import { signUpWithEmail, signInWithEmail, signOutOfWebsite } from '../services/authServices.js';
 
 export const router = express.Router();
 
-router.post('/signup', (req, res, next) => {
+router.post('/signup-with-email', (req, res, next) => {
     if (!req.body.email || !req.body.password) {
-        return res.status(400).json({ error: "Email and password are required." });
+        return res.status(404).json({ error: "Email and password are required." });
     }
     const { email, password } = req.body;
     signUpWithEmail(email, password)
@@ -17,9 +17,9 @@ router.post('/signup', (req, res, next) => {
         });
 });
 
-router.post('/signin', (req, res, next) => {
+router.post('/signin-with-email', (req, res, next) => {
     if (!req.body.email || !req.body.password) {
-        return res.status(400).json({ error: "Email and password are required."});
+        return res.status(404).json({ error: "Email and password are required."});
     }
     const { email, password } = req.body;
     signInWithEmail(email, password)
@@ -32,7 +32,7 @@ router.post('/signin', (req, res, next) => {
 });
 
 router.post('/signout', (req, res, next) => {
-    signOutWithEmail()
+    signOutOfWebsite()
         .then(() => {
             return res.status(200).json({ message: "User signed out successfully." });
         }).catch((error) => {

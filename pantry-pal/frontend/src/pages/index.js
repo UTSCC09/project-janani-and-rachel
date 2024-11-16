@@ -34,7 +34,7 @@ export default function Home() {
       <AppBar
         position="fixed"
         sx={{
-          background: "linear-gradient(135deg, #e8f4ff 30%, #f1f5f9 90%)",
+          background: "linear-gradient(135deg, #fdfabf 30%, #f6f7ef 90%)",
           color: "#444444",
           boxShadow: "none",
         }}

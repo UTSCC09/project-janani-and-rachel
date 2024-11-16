@@ -102,20 +102,20 @@ export default function Home() {
               open={Boolean(anchorEl)}
               onClose={() => setAnchorEl(null)}
             >
-              {isAuthenticated ? (
-                <>
-                  <MenuItem onClick={() => handleMenuClose("recipes")}>Recipes</MenuItem>
-                  <MenuItem onClick={() => handleMenuClose("ingredients")}>Ingredients</MenuItem>
-                  <MenuItem onClick={() => handleMenuClose("shoppingList")}>Shopping List</MenuItem>
-                  <MenuItem onClick={() => handleMenuClose("calendar")}>Calendar</MenuItem>
-                  <MenuItem onClick={() => handleMenuClose("recipeSearch")}>Recipe Search</MenuItem>
-                  <MenuItem onClick={handleSignout}>Sign Out</MenuItem>
-                </>
+                {isAuthenticated ? (
+                [
+                  <MenuItem key="recipes" onClick={() => handleMenuClose("recipes")}>Recipes</MenuItem>,
+                  <MenuItem key="ingredients" onClick={() => handleMenuClose("ingredients")}>Ingredients</MenuItem>,
+                  <MenuItem key="shoppingList" onClick={() => handleMenuClose("shoppingList")}>Shopping List</MenuItem>,
+                  <MenuItem key="calendar" onClick={() => handleMenuClose("calendar")}>Calendar</MenuItem>,
+                  <MenuItem key="recipeSearch" onClick={() => handleMenuClose("recipeSearch")}>Recipe Search</MenuItem>,
+                  <MenuItem key="signout" onClick={handleSignout}>Sign Out</MenuItem>
+                ]
               ) : (
-                <>
-                  <MenuItem onClick={() => handleMenuClose("signin")}>Sign In</MenuItem>
-                  <MenuItem onClick={() => handleMenuClose("signup")}>Sign Up</MenuItem>
-                </>
+                [
+                  <MenuItem key="signin" onClick={() => handleMenuClose("signin")}>Sign In</MenuItem>,
+                  <MenuItem key="signup" onClick={() => handleMenuClose("signup")}>Sign Up</MenuItem>
+                ]
               )}
             </Menu>
           </Toolbar>

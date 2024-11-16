@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import RecipeSuggestion from "@/components/RecipeSuggestion";
 import {
   Box,
   TextField,
@@ -10,7 +9,6 @@ import {
   CircularProgress,
   List,
   ListItem,
-  ListItemText,
   IconButton,
   Tooltip,
   Snackbar,
@@ -110,7 +108,7 @@ export default function IngredientsSection() {
     e.preventDefault();
 
     // Check if the ingredient already exists
-    if (ingredients.some((ingredient) => ingredient.ingredientName.toLowerCase() === newIngredient.ingredientName.toLowerCase())) {
+    if (!editingIngredient && ingredients.some((ingredient) => ingredient.ingredientName.toLowerCase() === newIngredient.ingredientName.toLowerCase())) {
       setError("Ingredient already exists.");
       return;
     }
@@ -464,6 +462,12 @@ export default function IngredientsSection() {
                   onClick={() => {
                     setEditingIngredient(null);
                     setShowForm(false);
+                    setNewIngredient({
+                      ingredientName: "",
+                      purchaseDate: new Date().toISOString().split("T")[0], // Reset to current date
+                      expirationDate: "",
+                      frozen: false,
+                    });
                   }}
                   startIcon={<FaMinus />}
                   sx={{
@@ -606,9 +610,6 @@ export default function IngredientsSection() {
           )}
         </>
       )}
-
-      {/* Recipe Suggestions */}
-      <RecipeSuggestion ingredients={ingredients} />
 
       {/* Error Snackbar */}
       <Snackbar

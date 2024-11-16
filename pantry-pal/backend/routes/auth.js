@@ -31,7 +31,7 @@ router.post('/signin-with-email', (req, res, next) => {
         });
 });
 
-router.post('/signout', (req, res, next) => {
+router.get('/signout', (req, res, next) => {
     signOutOfWebsite()
         .then(() => {
             return res.status(200).json({ message: "User signed out successfully." });

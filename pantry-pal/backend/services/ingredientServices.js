@@ -1,5 +1,6 @@
 import { db } from '../config/firebase.js';
-import { collection, doc, setDoc, updateDoc, getDocs, getDoc, deleteDoc, limit, orderBy, query, startAfter } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc, getDocs, getDoc, deleteDoc, limit, orderBy, query, startAfter } 
+    from 'firebase/firestore';
 
 export async function getPantry(uid, lim = 10, lastVisibleIngredient = null) {
     try {

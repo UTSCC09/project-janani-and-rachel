@@ -11,7 +11,7 @@ export async function getPantry(uid, lim=10, lastVisibleIngredient=null) {
             // Retrieve the lastVisible document snapshot using its ID
             const lastVisibleDoc = await getDoc(doc(pantryRef, lastVisibleIngredient));
             if (lastVisibleDoc.exists()) {
-                q = query(pantryRef, orderBy('ingredientName'), startAfter(lastVisibleDoc), limit(limitNumber));
+                q = query(pantryRef, orderBy('ingredientName'), startAfter(lastVisibleDoc), limit(lim));
             }
         }
 

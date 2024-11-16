@@ -10,7 +10,7 @@ router.get('/pantry', (req, res, next) => {
     const uid = 'Janani'; // for testing purposes
     const limit = parseInt(req.query.limit) || 10;
     const lastVisibleIngredient = req.query.lastVisibleIngredient || null;
-    getPantry(uid, page, lastVisibleIngredient).then((pantry) => {
+    getPantry(uid, limit, lastVisibleIngredient).then((pantry) => {
         res.json(pantry);
     }).catch((error) => {
         console.error("Error getting pantry: ", error);

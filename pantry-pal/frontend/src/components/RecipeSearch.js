@@ -85,10 +85,10 @@ export default function RecipeSearch({ onSearch }) {
 
   return (
     <Box sx={{ padding: "2rem", maxWidth: 1000, margin: "auto" }}>
-      <Typography variant="h4" gutterBottom textAlign="center" color="primary">
+      <Typography variant="h4" gutterBottom textAlign="center" sx={{ fontWeight: "bold", color: "#7e91ff" }}>
         Search Recipes by Keyword
       </Typography>
-      <Paper elevation={6} sx={{ padding: "2rem", borderRadius: "8px" }}>
+      <Paper elevation={6} sx={{ padding: "2rem", borderRadius: "8px", backgroundColor: "#fffae1" }}>
         <TextField
           label="Enter a keyword (e.g., strawberry)"
           variant="outlined"
@@ -99,20 +99,19 @@ export default function RecipeSearch({ onSearch }) {
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <FaSearch color="#1976d2" />
+                <FaSearch color="#7e91ff" />
               </InputAdornment>
             ),
           }}
-          sx={{ marginBottom: "1.5rem" }}
+          sx={{ marginBottom: "1.5rem", backgroundColor: "#fff", borderRadius: 1 }}
         />
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <Button
             onClick={handleSearch}
             variant="contained"
-            color="primary"
             disabled={loading}
             startIcon={loading ? <CircularProgress size={24} /> : <FaSearch />}
-            sx={{ padding: "0.8rem 2rem", fontWeight: "bold" }}
+            sx={{ padding: "0.8rem 2rem", fontWeight: "bold", backgroundColor: "#7e91ff", "&:hover": { backgroundColor: "#6b82e0" } }}
           >
             {loading ? "Searching..." : "Search Recipes"}
           </Button>
@@ -140,10 +139,10 @@ export default function RecipeSearch({ onSearch }) {
           recipes.map((recipe) => (
             <Card
               key={recipe.recipeId}
-              sx={{ marginBottom: "1.5rem", borderRadius: "8px", boxShadow: 3 }}
+              sx={{ marginBottom: "1.5rem", borderRadius: "8px", boxShadow: 3, backgroundColor: "#fffae1" }}
             >
               <CardContent>
-                <Typography variant="h6" color="primary" gutterBottom>
+                <Typography variant="h6" sx={{ fontWeight: "bold", color: "#7e91ff" }} gutterBottom>
                   {recipe.recipeName}
                 </Typography>
                 <Box
@@ -156,29 +155,31 @@ export default function RecipeSearch({ onSearch }) {
                 >
                   <Chip
                     label={`Missing Ingredients: ${recipe.missedIngredientCount}`}
-                    color="secondary"
+                    sx={{ backgroundColor: "#7e91ff", color: "#fff" }}
                   />
                   <Chip
                     label={`Ingredients: ${recipe.ingredients.length}`}
-                    color="info"
+                    sx={{ backgroundColor: "#7e91ff", color: "#fff" }}
                   />
                 </Box>
                 <Typography variant="body2" color="text.secondary">
                   <strong>Ingredients:</strong> {recipe.ingredients.join(", ")}
                 </Typography>
                 <Divider sx={{ marginY: "1rem" }} />
-                <Typography variant="body2" color="text.secondary">
-                  <strong>Instructions:</strong>
-                </Typography>
-                <ul>
-                  {recipe.instructions.map((instruction, index) => (
-                    <li key={index}>
-                      <Typography variant="body2">
-                        {instruction.step}
-                      </Typography>
-                    </li>
-                  ))}
-                </ul>
+                <Paper elevation={3} sx={{ padding: "1rem", backgroundColor: "#fff", borderRadius: "8px" }}>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Instructions:</strong>
+                  </Typography>
+                  <ul>
+                    {recipe.instructions.map((instruction, index) => (
+                      <li key={index}>
+                        <Typography variant="body2">
+                          {instruction.step}
+                        </Typography>
+                      </li>
+                    ))}
+                  </ul>
+                </Paper>
                 <Typography
                   variant="body2"
                   color="primary"

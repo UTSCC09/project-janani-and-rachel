@@ -1,5 +1,5 @@
 import express from 'express';
-import { router as favRecipeRoutes } from './favorites.js';
+import { router as favRecipeRoutes } from './favRecipes.js';
 import { searchRecipesByKeyword, searchRecipesByMaxMatching, searchRecipesByMinMissing} 
     from '../../services/searchRecipeServices.js';
 

@@ -28,7 +28,7 @@ services:
 
   # React frontend
   frontend:
-    image: frontend
+    image: pp-frontend
     container_name: frontend
     restart: always
     environment:
@@ -41,7 +41,7 @@ services:
 
   # express backend
   backend:
-    image: backend
+    image: pp-backend
     container_name: backend
     restart: always
     environment:

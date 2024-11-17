@@ -59,5 +59,3 @@ services:
       - SPOONACULAR_API_KEY=${SPOONACULAR_API_KEY}
       # backend stuff
       - FRONTEND_URL=${FRONTEND_URL}
-    ports:
-      - "8080:5000"

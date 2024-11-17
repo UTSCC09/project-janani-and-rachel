@@ -25,7 +25,9 @@ export default function ShoppingListSection() {
     // Fetch shopping list data from the backend or other source
     const fetchShoppingList = async () => {
       try {
-        const response = await fetch(`${domain}/api/ingredients/shopping-list`); // Adjust the API endpoint as needed
+        const response = await fetch(`${domain}/api/ingredients/shopping-list`, {
+          headers: {"Authorization": `Bearer ${localStorage.getItem("idToken")}`}
+        }); 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -48,7 +50,8 @@ export default function ShoppingListSection() {
   const handleDeleteItem = (ingredientName) => {
     fetch(`${domain}/api/ingredients/shopping-list/${encodeURIComponent(ingredientName)}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json",
+                  "Authorization": `Bearer ${localStorage.getItem("idToken")}`},
     })
       .then((response) => {
         if (response.status === 200) {
@@ -69,7 +72,8 @@ export default function ShoppingListSection() {
 
     fetch(`${domain}/api/ingredients/shopping-list`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", 
+                 "Authorization": `Bearer ${localStorage.getItem("idToken")}` },
       body: JSON.stringify({ ingredientName: newItem }),
     })
       .then((response) => {
@@ -90,7 +94,9 @@ export default function ShoppingListSection() {
 
     fetch(`${domain}/api/ingredients/pantry`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json",
+                  "Authorization": `Bearer ${localStorage.getItem("idToken")}`
+       },
       body: JSON.stringify({
         ingredientName,
         purchaseDate: today,
@@ -100,7 +106,9 @@ export default function ShoppingListSection() {
         if (response.status === 200) {
           return fetch(`${domain}/api/ingredients/shopping-list/${encodeURIComponent(ingredientName)}`, {
             method: "DELETE",
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("idToken")}`
+             }
           });
         } else {
           throw new Error("Failed to add item to pantry.");

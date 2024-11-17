@@ -1,9 +1,17 @@
 import { Button } from "@mui/material";
+import { signOuts } from "firebase/auth";
+import { auth } from "../../config/firebase";
 
 export default function Signout({ onSignout }) {
-  const handleSignout = () => {
-    // Clear user session or token
-    onSignout();
+  const handleSignout = async () => {
+    try {
+      await signOut(auth);
+      // Clear user session or token
+      localStorage.removeItem("idToken"); // Remove the token from localStorage
+      onSignout();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   return (

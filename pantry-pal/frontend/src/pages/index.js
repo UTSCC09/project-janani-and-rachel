@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Head from "next/head";
 import {
   AppBar,
@@ -24,6 +24,15 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState("signin");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+
+  useEffect(() => {
+    // Check if the token is present in localStorage
+    const token = localStorage.getItem("idToken");
+    if (token) {
+      setIsAuthenticated(true);
+      setActiveSection("recipes"); // Set the default section for authenticated users
+    }
+  }, []);
 
   const handleSignIn = () => {
     setIsAuthenticated(true);

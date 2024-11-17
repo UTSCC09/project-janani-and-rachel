@@ -39,6 +39,11 @@ export default function RecipeSearch({ onSearch }) {
     try {
       const res = await fetch(
         `${domain}/api/recipes/search-keyword?keyword=${encodeURIComponent(ingredients)}`,
+        {
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+          },
+        }
       );
       if (!res.ok) {
         throw new Error("Failed to fetch recipes");
@@ -60,6 +65,7 @@ export default function RecipeSearch({ onSearch }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
         },
         body: JSON.stringify({
           recipeId: recipe.recipeId,

@@ -28,7 +28,11 @@ export default function RecipeList() {
         url += `&lastVisible=${lastVisible}`;
       }
 
-      fetch(url)
+      fetch(url, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+        }
+      })
         .then((response) => response.json())
         .then((data) => {
           const processedData = Array.isArray(data.recipes)
@@ -75,6 +79,9 @@ export default function RecipeList() {
     // Send DELETE request to the backend
     fetch(`${domain}/api/recipes/favorites/${encodeURIComponent(recipeId)}`, {
       method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+      }
     })
       .then((response) => {
         if (response.ok) {

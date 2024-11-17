@@ -13,6 +13,9 @@ export default function Signin({ onSignIn, onSignUpClick }) {
     e.preventDefault();
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const idToken = await userCredential.user.getIdToken();
+      // save the token to local storage
+      localStorage.setItem("idToken", idToken);
       setSuccess("Sign in successful!");
       setEmail("");
       setPassword("");

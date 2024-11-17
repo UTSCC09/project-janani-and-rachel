@@ -53,7 +53,11 @@ export default function IngredientsSection() {
         url += `&lastVisibleIngredient=${lastVisible}`;
       }
 
-      fetch(url)
+      fetch(url, {
+        headers: {
+          'Authorization':`Bearer ${localStorage.getItem('token')}`
+        }
+      })
         .then((response) => response.json())
         .then((data) => {
           const processedData = Array.isArray(data.ingredients)
@@ -126,7 +130,8 @@ export default function IngredientsSection() {
 
     fetch(endpoint, {
       method: method,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json",
+                 "Authorization":`Bearer ${localStorage.getItem('token')}`},
       body: JSON.stringify(requestBody),
     })
       .then((response) => {
@@ -169,7 +174,9 @@ export default function IngredientsSection() {
   const handleDeleteIngredient = (ingredientName) => {
     fetch(`${domain}/api/ingredients/pantry/${encodeURIComponent(ingredientName)}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json",
+                  "Authorization":`Bearer ${localStorage.getItem('token')}`
+       }
     })
       .then((response) => {
         if (response.ok) {

@@ -38,8 +38,10 @@ export default function RecipeSuggestion({ ingredients }) {
     setSuggestedRecipes([]); // Clear previous suggestions
 
     try {
-      const response = await fetch(
-        `${domain}/api/recipes/search-most-matching`,
+      const response = await fetch(`${domain}/api/recipes/search-most-matching`, 
+        {
+          headers: {"Authorization": `Bearer ${localStorage.getItem("idToken")}`},
+        }
       );
       if (!response.ok) {
         throw new Error("Failed to fetch suggested recipes");
@@ -66,6 +68,7 @@ export default function RecipeSuggestion({ ingredients }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
         },
         body: JSON.stringify({
           recipeId: recipe.recipeId,
@@ -101,6 +104,7 @@ export default function RecipeSuggestion({ ingredients }) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
           },
           body: JSON.stringify({ ingredientName: ingredient }),
         });

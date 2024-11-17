@@ -227,6 +227,22 @@ export default function IngredientsSection() {
     setError(null);
   };
 
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "N/A";
+    if (timestamp.seconds !== undefined && timestamp.nanoseconds !== undefined) {
+      const date = new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
+      if (isNaN(date.getTime())) {
+        return "Invalid Date";
+      }
+      return date.toLocaleDateString();
+    }
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) {
+      return "Invalid Date";
+    }
+    return date.toLocaleDateString();
+  };
+
   return (
     <Box sx={{ padding: 3, maxWidth: "900px", margin: "0 auto" }}>
       <Typography
@@ -299,7 +315,7 @@ export default function IngredientsSection() {
                       }}
                     />
                     <Typography variant="body2" sx={{ color: "#777" }}>
-                      Expiration: {ingredient.expirationDate || "N/A"}
+                      Expiration: {formatDate(ingredient.expirationDate) || "N/A"}
                     </Typography>
                   </Box>
 
@@ -318,7 +334,7 @@ export default function IngredientsSection() {
                       }}
                     />
                     <Typography variant="body2" sx={{ color: "#777" }}>
-                      Purchased: {ingredient.purchaseDate || "N/A"}
+                      Purchased: {formatDate(ingredient.purchaseDate) || "N/A"}
                     </Typography>
                   </Box>
 

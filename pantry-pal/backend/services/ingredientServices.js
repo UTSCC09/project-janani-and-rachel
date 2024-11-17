@@ -1,187 +1,119 @@
 import { db } from '../config/firebase.js';
-import { collection, doc, setDoc, updateDoc, getDocs, getDoc, deleteDoc, limit, orderBy, query, startAfter } 
-    from 'firebase/firestore';
 
 export async function getPantry(uid, lim=10, lastVisibleIngredient=null) {
-    try {
-        const pantryRef = collection(db, 'Users', uid, 'Pantry');
-        let q = query(pantryRef, orderBy('ingredientName'), limit(lim)); 
-  
-        if (lastVisibleIngredient) {
-            // Retrieve the lastVisible document snapshot using its ID
-            const lastVisibleDoc = await getDoc(doc(pantryRef, lastVisibleIngredient));
-            if (lastVisibleDoc.exists()) {
-                q = query(pantryRef, orderBy('ingredientName'), startAfter(lastVisibleDoc), limit(lim));
-            }
-        }
+    const pantryRef = db.collection('Users').doc(uid).collection('Pantry');
+    let q = pantryRef.orderBy('ingredientName').limit(lim);
 
-        const snapshot = await getDocs(q);
-  
-        if (snapshot.empty) {
-            console.log("No more ingredients in pantry for the specified page.");
-            return [];
+    if (lastVisibleIngredient) {
+        // retrieve the last visible ingredient if it exists
+        const lastVisibleDoc = await pantryRef.doc(lastVisibleIngredient).get();
+        if (lastVisibleDoc.exists) {
+            q = pantryRef.orderBy('ingredientName').startAfter(lastVisibleDoc).limit(lim);
         }
-  
-        // last visible ingredient on this page
-        const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
-
-        return {
-            ingredients: snapshot.docs.map(doc => (doc.data())),
-            lastVisible: newLastVisible.id  // Return the new lastVisible ID for the next page
-        };
-    } 
-    catch (error) {
-        console.error("Error fetching paginated pantry ingredients:", error);
-        throw error;
     }
+
+    const snapshot = await q.get();
+
+    if (snapshot.empty) {
+        console.log("No more ingredients in pantry for the specified page.");
+        return [];
+    }
+
+    // new last visible ingredient on this page
+    const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
+
+    return {
+        ingredients: snapshot.docs.map(doc => doc.data()),
+        lastVisible: newLastVisible.id,  // return the new last visible ingredient to use for the next page
+        numIngredients: snapshot.docs.length
+    };
 }
 
 export async function addToPantry(uid, ingredientName, purchaseDate=new Date(), expirationDate=null, frozen=false) {
-    try {
-        const pantryRef = doc(db, 'Users', uid, 'Pantry', ingredientName);
-      
-        const ingredientData = {
-            ingredientName: ingredientName,
-            purchaseDate: purchaseDate,
-            expirationDate: expirationDate,
-            frozen: frozen
-        };
-  
-        await setDoc(pantryRef, ingredientData);
-  
-        console.log(`Ingredient '${ingredientName}' added to pantry for user ${uid}.`);
-        return ingredientData; // return the data for confirmation if needed
-    } 
-    catch (error) {
-        console.error("Error adding ingredient to pantry:", error);
-        throw error;
-    }
+    const pantryRef = db.collection('Users').doc(uid).collection('Pantry').doc(ingredientName);
+    const ingredientData = {
+        ingredientName,
+        purchaseDate,
+        expirationDate,
+        frozen
+    };
+    await pantryRef.set(ingredientData);
+    return ingredientData;
 }
 
 export async function modifyInPantry(uid, ingredient) {
-    try {
-        const pantryRef = doc(db, 'Users', uid, 'Pantry', ingredient.ingredientName);
-        
-        await updateDoc(pantryRef, ingredient);
-  
-        console.log(`Ingredient '${ingredient.ingredientName}' modified in pantry for user ${uid}.`);
-        return ingredient; // return the data for confirmation if needed
+    const pantryRef = db.collection('Users').doc(uid).collection('Pantry').doc(ingredient.ingredientName);
+    const ingredientData = await pantryRef.get();
+    if (!ingredientData.exists) {
+        throw { status: 404, message: "Ingredient does not exist in pantry." };
     }
-    catch (error) {
-        console.error("Error modifying ingredient in pantry:", error);
-        throw error;
-    }
+    await pantryRef.update(ingredient);
+    const newIngredientData = await pantryRef.get();
+    return newIngredientData.data();
 }
 
-export async function removeFromPantry(uid, ingredientId) {
-    const ingredientRef = doc(db, 'Users', uid, 'Pantry', ingredientId);
-    try {
-        // Get the document before deleting
-        const ingredientDoc = await getDoc(ingredientRef);
-      
-        if (!ingredientDoc.exists) {
-            throw new Error(`Ingredient with ID ${ingredientId} not found in pantry.`);
-        }
-  
-        // Store the data of the ingredient to return it after deletion
-        const deletedIngredient = ingredientDoc.data();
-  
-        // Delete the document
-        await deleteDoc(ingredientRef);
-  
-        console.log("Ingredient deleted from pantry with ID:", ingredientId);
-        return deletedIngredient;
-    } 
-    catch (error) {
-        console.error("Error deleting ingredient from pantry:", error);
-        throw error;
+export async function removeFromPantry(uid, ingredientName) {
+    const pantryRef = db.collection('Users').doc(uid).collection('Pantry').doc(ingredientName);
+    const ingredientData = await pantryRef.get();
+    if (!ingredientData.exists) {
+        throw { status: 404, message: "Ingredient does not exist in pantry." };
     }
+    await pantryRef.delete();
+    return ingredientData.data();
 }
 
 export async function getShoppingList(uid, lim=10, lastVisibleIngredient = null) {
-    try {
-        const shoppingListRef = collection(db, 'Users', uid, 'ShoppingList');
-        let q = query(shoppingListRef, orderBy('ingredientName'), limit(lim)); // base query with limit
-        
-        if (lastVisibleIngredient) {
-            // Retrieve the lastVisible document snapshot using its ID
-            const lastVisibleDoc = await getDoc(doc(shoppingListRef, lastVisibleIngredient));
-            if (lastVisibleDoc.exists()) {
-                q = query(shoppingListRef, orderBy('ingredientName'), startAfter(lastVisibleDoc), limit(lim));
-            }
-        }
+    const shoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList');
+    let q = shoppingListRef.orderBy('ingredientName').limit(lim);
 
-        // Retrieve the data
-        const snapshot = await getDocs(q);
-  
-        if (snapshot.empty) {
-            console.log("No more ingredients in shopping list for the specified page.");
-            return [];
+    if (lastVisibleIngredient) {
+        const lastVisibleDoc = await shoppingListRef.doc(lastVisibleIngredient).get();
+        if (lastVisibleDoc.exists) {
+            q = shoppingListRef.orderBy('ingredientName').startAfter(lastVisibleDoc).limit(lim);
         }
-  
-        return snapshot.docs.map(doc => doc.data());
-    } catch (error) {
-        console.error("Error fetching paginated shopping list ingredients:", error);
-        throw error;
     }
-};
+
+    const snapshot = await q.get();
+
+    if (snapshot.empty) {
+        console.log("No more ingredients in shopping list for the specified page.");
+        return [];
+    }
+
+    const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
+    return {
+        ingredients: snapshot.docs.map(doc => doc.data()),
+        lastVisible: newLastVisible.id,
+        numIngredients: snapshot.docs.length
+    };
+}
 
 export async function addToShoppingList(uid, ingredientName) {
-    try {
-        const shoppingListRef = doc(db, 'Users', uid, 'ShoppingList', ingredientName);
-      
-        const ingredientData = {
-            ingredientName: ingredientName,
-        };
-  
-        await setDoc(shoppingListRef, ingredientData);
-  
-        console.log(`Ingredient '${ingredientName}' added to shopping list for user ${uid}.`);
-        return ingredientData; // return the data for confirmation if needed
-    } 
-    catch (error) {
-        console.error("Error adding ingredient to shopping list:", error);
-        throw error;
-    }
-};
+    const shoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList').doc(ingredientName);
+    const ingredientData = { 
+        ingredientName: ingredientName 
+    };
+    await shoppingListRef.set(ingredientData);
+    return ingredientData;
+}
 
 export async function modifyInShoppingCart(uid, ingredient) {
-    try {
-        const shoppingListRef = doc(db, 'Users', uid, 'ShoppingList', ingredient.ingredientName);
-        
-        updateDoc(shoppingListRef, ingredient);
-  
-        console.log(`Ingredient '${ingredient.ingredientName}' modified in shopping list for user ${uid}.`);
-        return ingredient; // return the data for confirmation if needed
+    const shoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList').doc(ingredient.ingredientName);
+    const ingredientData = shoppingListRef.get();
+    if (!ingredientData.exists) {
+        throw { status: 404, message: "Ingredient does not exist in shopping list."};
     }
-    catch (error) {
-        console.error("Error modifying ingredient in shopping list:", error);
-        throw error;
-    }
-};
-export async function removeFromShoppingCart(uid, ingredientName) {
-    try {
-        const ingredientRef = doc(db, 'Users', uid, 'ShoppingList', ingredientName);
-      
-        // Get the document before deleting
-        const ingredientDoc = await getDoc(ingredientRef);
-      
-        if (!ingredientDoc.exists) {
-            throw new Error(`Ingredient with ID ${ingredientName} not found in shopping list.`);
-        }
-  
-        // Store the data of the ingredient to return it after deletion
-        const deletedIngredient = ingredientDoc.data();
-  
-        // Delete the document
-        await deleteDoc(ingredientRef);
-  
-        console.log("Ingredient deleted from shopping list with ID:", ingredientName);
-        return deletedIngredient;
-    }
-    catch (error) {
-        console.error("Error deleting ingredient from shopping list:", error);
-        throw error;
-    }
-};
+    await shoppingListRef.update(ingredient);
+    const newIngredientData = shoppingListRef.get();
+    return newIngredientData.data();
+}
 
+export async function removeFromShoppingCart(uid, ingredientName) {
+    const shoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList').doc(ingredientName);
+    const ingredientData = await shoppingListRef.get();
+    if (!ingredientData.exists) {
+        throw { status: 404, message: "Ingredient does not exist in shopping list."};
+    }
+    await shoppingListRef.delete();
+    return ingredientData.data();
+}

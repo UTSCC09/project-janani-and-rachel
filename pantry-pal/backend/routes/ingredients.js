@@ -13,7 +13,8 @@ router.get('/pantry', (req, res, next) => {
     getPantry(uid, limit, lastVisibleIngredient).then((pantry) => {
         res.json(pantry);
     }).catch((error) => {
-        console.error("Error getting pantry: ", error);
+        res.status(error.status || 500)
+            .json({ error: error.message || "An error occurred while fetching pantry." });
     });
 });
 
@@ -23,7 +24,8 @@ router.post('/pantry', (req, res, next) => {
     addToPantry(uid, ingredientName, purchaseDate, expirationDate, frozen).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
-        console.error("Error adding to pantry: ", error);
+        res.status(error.status || 500)
+            .json({ error: error.message || "An error occurred while adding to pantry." });
     });
 });
 
@@ -32,56 +34,62 @@ router.patch('/pantry', (req, res, next) => {
     modifyInPantry(uid, req.body).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
-        console.error("Error modifying in pantry: ", error);
+        res.status(error.status || 500)
+            .json({ error: error.message || "An error occurred while modifying in pantry." });
     });
 });
 
-router.delete('/pantry', (req, res, next) => {
+router.delete('/pantry/:ingredientName', (req, res, next) => {
     const uid = 'Janani'; // for testing purposes
-    const ingredientName = req.body.ingredientName;
+    const ingredientName = req.params.ingredientName;
     removeFromPantry(uid, ingredientName).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
-        console.error("Error removing from pantry: ", error);
+        res.status(error.status || 500)
+            .json({ error: error.message || "An error occurred while removing from pantry." });
     });
 });
 
-router.get('/shoppingList', (req, res, next) => {
+router.get('/shopping-list', (req, res, next) => {
     const uid = 'Janani'; // for testing purposes
     const limit = parseInt(req.query.limit) || 10;
     const lastVisibleIngredient = req.query.lastVisibleIngredient || null;
     getShoppingList(uid, limit, lastVisibleIngredient).then((shoppingList) => {
         res.json(shoppingList);
     }).catch((error) => {
-        console.error("Error getting shopping list: ", error);
+        res.status(error.status || 500)
+            .json({ error: error.message || "An error occurred while fetching shopping list." });
     });
 });
 
-router.post('/shoppingList', (req, res, next) => {
+router.post('/shopping-list', (req, res, next) => {
     const uid = 'Janani'; // for testing purposes
     const { ingredientName } = req.body;
     addToShoppingList(uid, ingredientName).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
-        console.error("Error adding to shopping list: ", error);
+        res.status(error.status || 500)
+            .json({ error: error.message || "An error occurred while adding to shopping list." });
     });
 });
 
-router.patch('/shoppingList', (req, res, next) => {
+router.patch('/shopping-list', (req, res, next) => {
     const uid = 'Janani'; // for testing purposes
     modifyInShoppingCart(uid, req.body).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
-        console.error("Error modifying in shopping list: ", error);
+        res.status(error.status || 500)
+            .json({ error: error.message || "An error occurred while modifying in shopping list." });
     });
 });
 
-router.delete('/shoppingList', (req, res, next) => {
+router.delete('/shopping-list/:ingredientName', (req, res, next) => {
     const uid = 'Janani'; // for testing purposes
-    const ingredientName = req.body.ingredientName;
+    const ingredientName = req.params.ingredientName;
     removeFromShoppingCart(uid, ingredientName).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
-        console.error("Error removing from shopping list: ", error);
+        res.status(error.status || 500)
+            .json({ error: error.message || "An error occurred while removing from shopping list." });
     });
 });

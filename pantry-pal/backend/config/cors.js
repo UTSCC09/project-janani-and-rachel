@@ -1,6 +1,6 @@
 // for cross domain requests
 const corsConfig = {
-    origin: ['http://localhost:3000', 'http://rachelpan.me'],  
+    origin: [process.env.FRONTEND_URL],  
     // Allow requests from this origin (frontend)
     // second origin is the internal ip of our vm
     credentials: true, // Allow cookies to be sent from the frontend

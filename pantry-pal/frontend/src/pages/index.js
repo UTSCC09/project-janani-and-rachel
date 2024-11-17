@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import Signup from "@/components/Signup";
-import SignIn from "@/components/Signin";
+import Signin from "@/components/Signin";
 import IngredientsSection from "@/components/IngredientsSection";
 import RecipeSection from "@/components/RecipeSection";
 import ShoppingListSection from "@/components/ShoppingListSection";
@@ -143,7 +143,7 @@ export default function Home() {
         ) : (
           <>
             {activeSection === "signup" && <Signup onSignInClick={() => setActiveSection("signin")} />}
-            {activeSection === "signin" && <SignIn onSignIn={handleSignIn} onSignUpClick={() => setActiveSection("signup")} />}
+            {activeSection === "signin" && <Signin onSignIn={handleSignIn} onSignUpClick={() => setActiveSection("signup")} />}
           </>
         )}
       </Box> 

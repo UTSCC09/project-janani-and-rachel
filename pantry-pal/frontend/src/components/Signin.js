@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Box, TextField, Button, Typography, Snackbar, Alert, Link, Paper } from "@mui/material";
 
-export default function SignIn({ onSignIn, onSignUpClick }) {
+export default function Signin({ onSignIn, onSignUpClick }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);

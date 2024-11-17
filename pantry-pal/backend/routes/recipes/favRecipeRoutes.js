@@ -1,15 +1,16 @@
 // backend/routes/recipes.js
-// this route is for real time sharing of recipes between users
-// might need to import collection, getDocs from 'firebase/firestore/lite';
 import express from 'express';
 import { getFavRecipes, getPlannedFavRecipes, getUnPlannedFavRecipes, getFavRecipeById, addFavRecipe, removeFavRecipe } 
 from '../../services/favRecipeServices.js'; 
+import { verifyToken } from '../../middleware/authMiddleware.js';
 
 export const router = express.Router();
 
+router.use(verifyToken);
+
 // Route to get all favorited recipes
 router.get('/', (req, res, next) => {
-    const uid = "Janani";
+    const uid = req.uid;
     const { limit=10, lastVisible=null } = req.query;
     getFavRecipes(uid, limit, lastVisible)
         .then((recipes) => {
@@ -24,7 +25,7 @@ router.get('/', (req, res, next) => {
 
 // Route to planned recipes
 router.get('/planned', (req, res, next) => {
-    const uid = "Janani";
+    const uid = req.uid;
     const { limit=10, lastVisible=null } = req.query;
     getPlannedFavRecipes(uid, limit, lastVisible)
         .then((recipes) => {
@@ -37,7 +38,7 @@ router.get('/planned', (req, res, next) => {
 });
 
 router.get('/unplanned', (req, res, next) => {
-    const uid = "Janani";
+    const uid = req.uid;
     const { limit=10, lastVisible=null } = req.query;
     getUnPlannedFavRecipes(uid, limit, lastVisible)
         .then((recipes) => {
@@ -50,10 +51,11 @@ router.get('/unplanned', (req, res, next) => {
 });
 
 router.get('/:recipeId', async (req, res) => {
+    const uid = req.uid;
     if (!req.params.recipeId) {
         return res.status(400).json({ error: "Recipe ID is required." });
     }
-    getFavRecipeById("Janani", req.params.recipeId)
+    getFavRecipeById(uid, req.params.recipeId)
         .then((recipe) => {
             return res.status(200).json(recipe);
         }).catch((error) => {
@@ -66,7 +68,7 @@ router.get('/:recipeId', async (req, res) => {
 
 router.post('/', (req, res, next) => {
     // add recipe to favorites
-    const uid = "Janani";
+    const uid = req.uid;
     // req.body formated as response from search recipes
     addFavRecipe(uid, req.body)
         .then((recipe) => {
@@ -80,7 +82,7 @@ router.post('/', (req, res, next) => {
 
 router.delete('/:recipeId', (req, res, next) => {
     // remove recipe from favorites
-    const uid = "Janani";
+    const uid = req.uid;
     if (!req.params.recipeId) {
         return res.status(400).json({ error: "Recipe ID is required." });
     }

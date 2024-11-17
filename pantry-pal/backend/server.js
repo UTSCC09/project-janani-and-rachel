@@ -1,9 +1,9 @@
 // backend/server.js
 import 'dotenv/config';
 import express from 'express';
-import { router as recipeRoutes } from './routes/recipes/recipes.js';
-import { router as ingredientRoutes } from './routes/ingredients.js';
-import { router as authRoutes } from './routes/auth.js';
+import { router as recipeRoutes } from './routes/recipes/recipeRoutes.js';
+import { router as ingredientRoutes } from './routes/ingredientRoutes.js';
+import { router as authRoutes } from './routes/authRoutes.js';
 import cors from 'cors';
 import corsConfig from './config/cors.js';
 

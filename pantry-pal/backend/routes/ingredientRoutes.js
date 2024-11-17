@@ -3,11 +3,14 @@ import { getPantry, addToPantry, removeFromPantry, modifyInPantry }
     from '../services/ingredientServices.js';
 import { getShoppingList, addToShoppingList, removeFromShoppingCart, modifyInShoppingCart } 
     from '../services/ingredientServices.js';
+import { verifyToken } from '../middleware/authMiddleware.js';
 
 export const router = express.Router();
 
+router.use(verifyToken);
+
 router.get('/pantry', (req, res, next) => {
-    const uid = 'Janani'; // for testing purposes
+    const uid = req.uid;
     const limit = parseInt(req.query.limit) || 10;
     const lastVisibleIngredient = req.query.lastVisibleIngredient || null;
     getPantry(uid, limit, lastVisibleIngredient).then((pantry) => {
@@ -19,7 +22,7 @@ router.get('/pantry', (req, res, next) => {
 });
 
 router.post('/pantry', (req, res, next) => {
-    const uid = 'Janani'; // for testing purposes
+    const uid = req.uid;
     const { ingredientName, purchaseDate, expirationDate, frozen } = req.body;
     addToPantry(uid, ingredientName, purchaseDate, expirationDate, frozen).then((ingredient) => {
         res.json(ingredient);
@@ -30,7 +33,7 @@ router.post('/pantry', (req, res, next) => {
 });
 
 router.patch('/pantry', (req, res, next) => {
-    const uid = 'Janani'; // for testing purposes
+    const uid = req.uid;
     modifyInPantry(uid, req.body).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
@@ -40,7 +43,7 @@ router.patch('/pantry', (req, res, next) => {
 });
 
 router.delete('/pantry/:ingredientName', (req, res, next) => {
-    const uid = 'Janani'; // for testing purposes
+    const uid = req.uid;
     const ingredientName = req.params.ingredientName;
     removeFromPantry(uid, ingredientName).then((ingredient) => {
         res.json(ingredient);
@@ -51,7 +54,7 @@ router.delete('/pantry/:ingredientName', (req, res, next) => {
 });
 
 router.get('/shopping-list', (req, res, next) => {
-    const uid = 'Janani'; // for testing purposes
+    const uid = req.uid;
     const limit = parseInt(req.query.limit) || 10;
     const lastVisibleIngredient = req.query.lastVisibleIngredient || null;
     getShoppingList(uid, limit, lastVisibleIngredient).then((shoppingList) => {
@@ -63,7 +66,7 @@ router.get('/shopping-list', (req, res, next) => {
 });
 
 router.post('/shopping-list', (req, res, next) => {
-    const uid = 'Janani'; // for testing purposes
+    const uid = req.uid;
     const { ingredientName } = req.body;
     addToShoppingList(uid, ingredientName).then((ingredient) => {
         res.json(ingredient);
@@ -74,7 +77,7 @@ router.post('/shopping-list', (req, res, next) => {
 });
 
 router.patch('/shopping-list', (req, res, next) => {
-    const uid = 'Janani'; // for testing purposes
+    const uid = req.uid;
     modifyInShoppingCart(uid, req.body).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
@@ -84,7 +87,7 @@ router.patch('/shopping-list', (req, res, next) => {
 });
 
 router.delete('/shopping-list/:ingredientName', (req, res, next) => {
-    const uid = 'Janani'; // for testing purposes
+    const uid = req.uid;
     const ingredientName = req.params.ingredientName;
     removeFromShoppingCart(uid, ingredientName).then((ingredient) => {
         res.json(ingredient);

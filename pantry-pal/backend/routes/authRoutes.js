@@ -1,5 +1,5 @@
 import express from 'express';
-import { signUpWithEmail, signInWithEmail, signOutOfWebsite } from '../services/authServices.js';
+import { signUpWithEmail, signInWithEmail, signOutUser } from '../services/authServices.js';
 
 export const router = express.Router();
 

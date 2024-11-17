@@ -1,11 +1,13 @@
 import express from 'express';
-import { router as favRecipeRoutes } from './favRecipes.js';
+import { router as favRecipeRoutes } from './favRecipeRoutes.js';
 import { searchRecipesByKeyword, searchRecipesByMaxMatching, searchRecipesByMinMissing} 
     from '../../services/searchRecipeServices.js';
+import { verifyToken } from '../../middleware/authMiddleware.js';
 
 export const router = express.Router();
 
 router.use('/favorites', favRecipeRoutes);
+router.use(verifyToken);
 
 // SEARCH RECIPES
 router.get('/search-keyword', (req, res, next) => {

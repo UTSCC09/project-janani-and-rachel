@@ -48,8 +48,6 @@ export default function RecipeSuggestion({ ingredients }) {
       const data = await response.json();
       setSuggestedRecipes(data);
       setShowRecipes(true);
-      console.log("called findSuggestedRecipes at url: ", `${domain}/api/recipes/search-most-matching`);
-
       // Scroll to the results section
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: "smooth" });

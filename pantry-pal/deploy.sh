@@ -15,6 +15,6 @@ docker build -t pp-backend .
 echo "going out of backend and into pantry-pal directory"
 cd ..
 docker compose down --remove-orphans
-docker rmi $(docker images --filter "dangling=true" -q --no-tru+nc)
+docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
 docker compose up -d
 

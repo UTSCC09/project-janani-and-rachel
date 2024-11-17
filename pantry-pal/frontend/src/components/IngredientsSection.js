@@ -167,10 +167,9 @@ export default function IngredientsSection() {
   };
 
   const handleDeleteIngredient = (ingredientName) => {
-    fetch(`${domain}/api/ingredients/pantry`, {
+    fetch(`${domain}/api/ingredients/pantry/${encodeURIComponent(ingredientName)}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ingredientName }),
+      headers: { "Content-Type": "application/json" }
     })
       .then((response) => {
         if (response.ok) {
@@ -226,6 +225,29 @@ export default function IngredientsSection() {
   const handleCloseSnackbar = () => {
     setError(null);
   };
+
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "N/A";
+  
+    let date;
+    if (timestamp.seconds !== undefined && timestamp.nanoseconds !== undefined) {
+      date = new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
+    } else {
+      date = new Date(timestamp);
+    }
+  
+    if (isNaN(date.getTime())) {
+      return "Invalid Date";
+    }
+  
+    // Format the date in Eastern Standard Time (EST)
+    const options = { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" };
+    return new Intl.DateTimeFormat("en-US", options).format(
+      new Date(date.toLocaleString("en-US", { timeZone: "UTC" }))
+    );
+  };
+  
+  
 
   return (
     <Box sx={{ padding: 3, maxWidth: "900px", margin: "0 auto" }}>
@@ -299,7 +321,7 @@ export default function IngredientsSection() {
                       }}
                     />
                     <Typography variant="body2" sx={{ color: "#777" }}>
-                      Expiration: {ingredient.expirationDate || "N/A"}
+                      Expiration: {formatDate(ingredient.expirationDate) || "N/A"}
                     </Typography>
                   </Box>
 
@@ -318,7 +340,7 @@ export default function IngredientsSection() {
                       }}
                     />
                     <Typography variant="body2" sx={{ color: "#777" }}>
-                      Purchased: {ingredient.purchaseDate || "N/A"}
+                      Purchased: {formatDate(ingredient.purchaseDate) || "N/A"}
                     </Typography>
                   </Box>
 

@@ -37,7 +37,7 @@ services:
       # certificate information for let's encrypt
       - LETSENCRYPT_HOST=${FRONTEND_DOMAIN}
     ports:
-      - "80:3000"
+      - 80:3000
 
   # express backend
   backend:
@@ -62,4 +62,4 @@ services:
       # backend stuff
       - FRONTEND_URL=${FRONTEND_URL}
   ports:
-    - "8080:5000"
+    - 8080:5000

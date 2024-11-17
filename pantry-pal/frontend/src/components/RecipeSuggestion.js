@@ -48,6 +48,7 @@ export default function RecipeSuggestion({ ingredients }) {
       const data = await response.json();
       setSuggestedRecipes(data);
       setShowRecipes(true);
+      console.log("called findSuggestedRecipes at url: ", `${domain}/api/recipes/search-most-matching`);
 
       // Scroll to the results section
       setTimeout(() => {
@@ -323,7 +324,7 @@ export default function RecipeSuggestion({ ingredients }) {
                     }
                     disabled={recipe.missedIngredients.length === 0}
                     fullWidth
-                    sx={{ padding: "1rem", textTransform: "none",               color: "#7e91ff", // Button text color
+                    sx={{ padding: "1rem", textTransform: "none", color: "#7e91ff", // Button text color
                       color: "#ffffff", // Button text color
                       backgroundColor: "#7e91ff", // Button background color
                       "&:hover": {

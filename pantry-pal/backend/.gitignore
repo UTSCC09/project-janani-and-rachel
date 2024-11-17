@@ -38,3 +38,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Firebase service account key
+config/pantry-pal-7ccff-firebase-adminsdk-wf4ap-e4d9fcdb25.json

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Box, TextField, Button, Typography, Snackbar, Alert, Link, Paper } from "@mui/material";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../config/firebase";
 
 export default function Signin({ onSignIn, onSignUpClick }) {
   const [email, setEmail] = useState("");
@@ -10,19 +12,11 @@ export default function Signin({ onSignIn, onSignUpClick }) {
   const handleSignIn = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/auth/signin-with-email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      if (response.ok) {
-        setSuccess("Sign in successful!");
-        setEmail("");
-        setPassword("");
-        onSignIn();
-      } else {
-        throw new Error("Sign in failed.");
-      }
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      setSuccess("Sign in successful!");
+      setEmail("");
+      setPassword("");
+      onSignIn();
     } catch (error) {
       setError(error.message);
     }
@@ -75,3 +69,7 @@ export default function Signin({ onSignIn, onSignUpClick }) {
     </Box>
   );
 }
+// get the token
+// store the token in local storaeg
+// send the token in the header of every request
+// if the token is not present, redirect to the signin page

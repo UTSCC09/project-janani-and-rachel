@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Box, TextField, Button, Typography, Snackbar, Alert, Link, Paper } from "@mui/material";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../config/firebase.js";
 
 export default function Signup({ onSignInClick }) {
   const [email, setEmail] = useState("");
@@ -10,18 +12,10 @@ export default function Signup({ onSignInClick }) {
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_DOMAIN}/api/auth/signup-with-email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      if (response.ok) {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         setSuccess("Signup successful!");
         setEmail("");
         setPassword("");
-      } else {
-        throw new Error("Signup failed.");
-      }
     } catch (error) {
       setError(error.message);
     }

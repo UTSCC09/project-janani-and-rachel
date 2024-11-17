@@ -167,10 +167,9 @@ export default function IngredientsSection() {
   };
 
   const handleDeleteIngredient = (ingredientName) => {
-    fetch(`${domain}/api/ingredients/pantry`, {
+    fetch(`${domain}/api/ingredients/pantry/${encodeURIComponent(ingredientName)}`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ingredientName }),
+      headers: { "Content-Type": "application/json" }
     })
       .then((response) => {
         if (response.ok) {

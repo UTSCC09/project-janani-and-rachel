@@ -22,16 +22,23 @@ export default function ShoppingListSection() {
   const [newItem, setNewItem] = useState("");
 
   useEffect(() => {
-    fetch(`${domain}/api/ingredients/shoppingList`)
-      .then((response) => response.json())
-      .then((data) => {
-        setShoppingList(data);
-        setLoading(false);
-      })
-      .catch((error) => {
+    // Fetch shopping list data from the backend or other source
+    const fetchShoppingList = async () => {
+      try {
+        const response = await fetch(`${domain}/api/ingredients/shopping-list`); // Adjust the API endpoint as needed
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setShoppingList(data.ingredients); // Access the ingredients array from the response data
+      } catch (error) {
         console.error("Error fetching shopping list:", error);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchShoppingList();
   }, []);
 
   const handleInputChange = (e) => {
@@ -39,10 +46,9 @@ export default function ShoppingListSection() {
   };
 
   const handleDeleteItem = (ingredientName) => {
-    fetch(`${domain}/api/ingredients/shoppingList`, {
+    fetch(`${domain}/api/ingredients/shopping-list/${encodeURIComponent(ingredientName)}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ingredientName }),
     })
       .then((response) => {
         if (response.status === 200) {
@@ -61,7 +67,7 @@ export default function ShoppingListSection() {
   const handleAddItem = (e) => {
     e.preventDefault();
 
-    fetch(`${domain}/api/ingredients/shoppingList`, {
+    fetch(`${domain}/api/ingredients/shopping-list`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ingredientName: newItem }),
@@ -92,10 +98,9 @@ export default function ShoppingListSection() {
     })
       .then((response) => {
         if (response.status === 200) {
-          return fetch(`${domain}/api/ingredients/shoppingList`, {
+          return fetch(`${domain}/api/ingredients/shopping-list/${encodeURIComponent(ingredientName)}`, {
             method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ingredientName }),
+            headers: { "Content-Type": "application/json" }
           });
         } else {
           throw new Error("Failed to add item to pantry.");

@@ -23,7 +23,7 @@ export default function RecipeList() {
   const fetchRecipes = useCallback(
     (lastVisible = null) => {
       setLoading(true);
-      let url = `${domain}/api/recipes/favorites?limit=10`;
+      let url = `${domain}/api/recipes/favorites?`;
       if (lastVisible) {
         url += `&lastVisible=${lastVisible}`;
       }
@@ -73,7 +73,7 @@ export default function RecipeList() {
 
   const handleDelete = (recipeId) => {
     // Send DELETE request to the backend
-    fetch(`${domain}/api/recipes/favorites/${recipeId}`, {
+    fetch(`${domain}/api/recipes/favorites/${encodeURIComponent(recipeId)}`, {
       method: "DELETE",
     })
       .then((response) => {

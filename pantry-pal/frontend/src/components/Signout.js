@@ -17,3 +17,7 @@ export default function Signout({ onSignout }) {
     </Button>
   );
 }
+
+// on signout, clear the token
+// use the firebase logout function
+// on signout, redirect to the home page

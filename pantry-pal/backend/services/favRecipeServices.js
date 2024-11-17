@@ -29,19 +29,19 @@ async function getFormattedRecipe(docData) {
 
 async function getFavRecipes(uid, lim=10, lastVisibleId=null) {    
     try {
-        const recipesRef = collection(db, "Users", uid, "FavRecipes");
-        let q = query(recipesRef, orderBy('recipeName'), limit(lim));
+        const recipesRef = db.collection("Users").doc(uid).collection("FavRecipes");
+        let q = recipesRef.orderBy('recipeName').limit(lim);
 
         // if lastVisibleId is provided, get the last visible document and start query after that
         if (lastVisibleId) {
-            const lastVisibleDoc = await getDoc(doc(recipesRef, lastVisibleId));
-            if (lastVisibleDoc.exists()) {
-                q = query(recipesRef, orderBy('recipeName'), startAfter(lastVisibleDoc), limit(lim));
+            const lastVisibleDoc = await recipesRef.doc(lastVisibleId).get();
+            if (lastVisibleDoc.exists) {
+                q = recipesRef.orderBy('recipeName').startAfter(lastVisibleDoc).limit(lim);
             }
         }
 
         // get the fav recipes
-        const snapshot = await getDocs(q);
+        const snapshot = await q.get();
         if (snapshot.empty) {
             console.log("No more favorite recipes found.");
             return { recipes: [], lastVisible: null };
@@ -76,15 +76,14 @@ async function getFavRecipes(uid, lim=10, lastVisibleId=null) {
 
 async function getPlannedFavRecipes(uid, lim=10, lastVisibleRecipe=null) {
     try {
-        const recipesRef = collection(db, 'Users', uid, 'FavRecipes');
-        let plannedQuery = query(recipesRef, where('planned', '==', true), limit(lim));
+        const recipesRef = db.collection("Users").doc(uid).collection("FavRecipes");
+        let q = recipesRef.where('planned', '==', true).limit(lim);
 
-        // if lastVisibleRecipe is provided, get the last visible document and start query after that
-        if (lastVisibleRecipe) {
-            const lastVisibleDocRef = doc(recipesRef, lastVisibleRecipe);
-            const lastVisibleDoc = await getDoc(lastVisibleDocRef);
-            if (lastVisibleDoc.exists()) {
-                plannedQuery = query(recipesRef, where('planned', '==', true), startAfter(lastVisibleDoc), limit(lim));
+        // if lastVisibleId is provided, get the last visible document and start query after that
+        if (lastVisibleId) {
+            const lastVisibleDoc = await recipesRef.doc(lastVisibleId).get();
+            if (lastVisibleDoc.exists) {
+                q = recipesRef.where('planned', '==', true).startAfter(lastVisibleDoc).limit(lim);
             }
         }
 
@@ -115,21 +114,21 @@ async function getPlannedFavRecipes(uid, lim=10, lastVisibleRecipe=null) {
     }
 }
 
-
-async function getUnPlannedFavRecipes(uid, lim=10, lastVisibleRecipe=null) {
+async function getUnPlannedFavRecipes(uid, lim = 10, lastVisibleId = null) {
     try {
-        const recipesRef = collection(db, 'Users', uid, 'FavRecipes');
-        let plannedQuery = query(recipesRef, where('planned', '==', false), limit(lim));
+        const recipesRef = db.collection("Users").doc(uid).collection("FavRecipes");
+        let q = recipesRef.where('planned', '==', false).limit(lim);
 
-        if (lastVisibleRecipe) {
-            const lastVisibleDocRef = doc(recipesRef, lastVisibleRecipe);
-            const lastVisibleDoc = await getDoc(lastVisibleDocRef);
-            if (lastVisibleDoc.exists()) {
-                plannedQuery = query(recipesRef, where('planned', '==', false), startAfter(lastVisibleDoc), limit(lim));
+        // if lastVisibleId is provided, get the last visible document and start query after that
+        if (lastVisibleId) {
+            const lastVisibleDoc = await recipesRef.doc(lastVisibleId).get();
+            if (lastVisibleDoc.exists) {
+                q = recipesRef.where('planned', '==', false).startAfter(lastVisibleDoc).limit(lim);
             }
         }
 
-        const snapshot = await getDocs(plannedQuery);
+        // get the unplanned fav recipes
+        const snapshot = await q.get();
         if (snapshot.empty) {
             console.log("No planned recipes in favorites for the specified page.");
             return { recipes: [], lastVisible: null, numRecipes: 0 };

@@ -16,6 +16,7 @@ router.get('/pantry', (req, res, next) => {
     getPantry(uid, limit, lastVisibleIngredient).then((pantry) => {
         res.json(pantry);
     }).catch((error) => {
+        console.error("Error fetching pantry:", error);
         res.status(error.status || 500)
             .json({ error: error.message || "An error occurred while fetching pantry." });
     });
@@ -27,6 +28,7 @@ router.post('/pantry', (req, res, next) => {
     addToPantry(uid, ingredientName, purchaseDate, expirationDate, frozen).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
+        console.error("Error adding to pantry:", error);
         res.status(error.status || 500)
             .json({ error: error.message || "An error occurred while adding to pantry." });
     });
@@ -37,6 +39,7 @@ router.patch('/pantry', (req, res, next) => {
     modifyInPantry(uid, req.body).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
+        console.error("Error modifying in pantry:", error);
         res.status(error.status || 500)
             .json({ error: error.message || "An error occurred while modifying in pantry." });
     });
@@ -48,6 +51,7 @@ router.delete('/pantry/:ingredientName', (req, res, next) => {
     removeFromPantry(uid, ingredientName).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
+        console.error("Error removing from pantry:", error);
         res.status(error.status || 500)
             .json({ error: error.message || "An error occurred while removing from pantry." });
     });
@@ -60,6 +64,7 @@ router.get('/shopping-list', (req, res, next) => {
     getShoppingList(uid, limit, lastVisibleIngredient).then((shoppingList) => {
         res.json(shoppingList);
     }).catch((error) => {
+        console.error("Error fetching shopping list:", error);
         res.status(error.status || 500)
             .json({ error: error.message || "An error occurred while fetching shopping list." });
     });
@@ -71,6 +76,7 @@ router.post('/shopping-list', (req, res, next) => {
     addToShoppingList(uid, ingredientName).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
+        console.error("Error adding to shopping list:", error);
         res.status(error.status || 500)
             .json({ error: error.message || "An error occurred while adding to shopping list." });
     });
@@ -81,6 +87,7 @@ router.patch('/shopping-list', (req, res, next) => {
     modifyInShoppingCart(uid, req.body).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
+        console.error("Error modifying in shopping list:", error);
         res.status(error.status || 500)
             .json({ error: error.message || "An error occurred while modifying in shopping list." });
     });
@@ -92,6 +99,7 @@ router.delete('/shopping-list/:ingredientName', (req, res, next) => {
     removeFromShoppingCart(uid, ingredientName).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
+        console.error("Error removing from shopping list:", error);
         res.status(error.status || 500)
             .json({ error: error.message || "An error occurred while removing from shopping list." });
     });

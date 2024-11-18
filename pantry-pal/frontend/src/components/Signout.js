@@ -8,6 +8,7 @@ export default function Signout({ onSignout }) {
       await signOut(auth);
       // Clear user session or token
       localStorage.removeItem("idToken"); // Remove the token from localStorage
+      localStorage.removeItem("accessToken"); // Remove the access token from localStorage
       onSignout();
     } catch (error) {
       console.error("Error signing out:", error);

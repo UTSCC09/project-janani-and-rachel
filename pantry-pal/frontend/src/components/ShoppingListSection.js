@@ -26,13 +26,15 @@ export default function ShoppingListSection() {
     const fetchShoppingList = async () => {
       try {
         const response = await fetch(`${domain}/api/ingredients/shopping-list`, {
-          headers: {"Authorization": `Bearer ${localStorage.getItem("idToken")}`}
-        }); 
+          headers: { "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+                    "GoogleAccessToken": localStorage.getItem('accessToken')
+                   },
+        });
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        setShoppingList(data.ingredients); // Access the ingredients array from the response data
+        setShoppingList(data.ingredients || []); // Ensure shoppingList is always an array
       } catch (error) {
         console.error("Error fetching shopping list:", error);
       } finally {
@@ -51,7 +53,10 @@ export default function ShoppingListSection() {
     fetch(`${domain}/api/ingredients/shopping-list/${encodeURIComponent(ingredientName)}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json",
-                  "Authorization": `Bearer ${localStorage.getItem("idToken")}`},
+                  "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+                  "GoogleAccessToken": localStorage.getItem('accessToken')
+                },
+
     })
       .then((response) => {
         if (response.status === 200) {
@@ -73,7 +78,9 @@ export default function ShoppingListSection() {
     fetch(`${domain}/api/ingredients/shopping-list`, {
       method: "POST",
       headers: { "Content-Type": "application/json", 
-                 "Authorization": `Bearer ${localStorage.getItem("idToken")}` },
+                 "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+                 "GoogleAccessToken": localStorage.getItem('accessToken')
+                },
       body: JSON.stringify({ ingredientName: newItem }),
     })
       .then((response) => {
@@ -95,8 +102,9 @@ export default function ShoppingListSection() {
     fetch(`${domain}/api/ingredients/pantry`, {
       method: "POST",
       headers: { "Content-Type": "application/json",
-                  "Authorization": `Bearer ${localStorage.getItem("idToken")}`
-       },
+                  "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+                  "GoogleAccessToken": localStorage.getItem('accessToken')
+                },
       body: JSON.stringify({
         ingredientName,
         purchaseDate: today,
@@ -107,8 +115,9 @@ export default function ShoppingListSection() {
           return fetch(`${domain}/api/ingredients/shopping-list/${encodeURIComponent(ingredientName)}`, {
             method: "DELETE",
             headers: { "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("idToken")}`
-             }
+                        "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+                        "GoogleAccessToken": localStorage.getItem('accessToken')
+                      },
           });
         } else {
           throw new Error("Failed to add item to pantry.");

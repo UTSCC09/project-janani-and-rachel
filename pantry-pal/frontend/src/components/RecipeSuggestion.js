@@ -40,7 +40,9 @@ export default function RecipeSuggestion({ ingredients }) {
     try {
       const response = await fetch(`${domain}/api/recipes/search-most-matching`, 
         {
-          headers: {"Authorization": `Bearer ${localStorage.getItem("idToken")}`},
+          headers: {"Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+                    'GoogleAccessToken': localStorage.getItem('accessToken')
+                    }
         }
       );
       if (!response.ok) {
@@ -69,6 +71,7 @@ export default function RecipeSuggestion({ ingredients }) {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+          'GoogleAccessToken': localStorage.getItem('accessToken')
         },
         body: JSON.stringify({
           recipeId: recipe.recipeId,
@@ -105,6 +108,7 @@ export default function RecipeSuggestion({ ingredients }) {
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+            'GoogleAccessToken': localStorage.getItem('accessToken')
           },
           body: JSON.stringify({ ingredientName: ingredient }),
         });

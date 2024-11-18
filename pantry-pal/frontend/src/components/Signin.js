@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Box, TextField, Button, Typography, Snackbar, Alert, Link, Paper } from "@mui/material";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../config/firebase";
 
 export default function Signin({ onSignIn, onSignUpClick }) {
@@ -19,6 +19,29 @@ export default function Signin({ onSignIn, onSignUpClick }) {
       setSuccess("Sign in successful!");
       setEmail("");
       setPassword("");
+      onSignIn();
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const idToken = await result.user.getIdToken();
+      // save the token to local storage
+      localStorage.setItem("idToken", idToken);
+
+      // Get the OAuth 2.0 access token to access Google APIs
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const accessToken = credential.accessToken;
+
+      // save the access token to local storage to use google api tools
+      localStorage.setItem("accessToken", accessToken);
+
+      // save the access token to local storage to use google api tools
+      setSuccess("Sign in with Google successful!");
       onSignIn();
     } catch (error) {
       setError(error.message);
@@ -57,6 +80,14 @@ export default function Signin({ onSignIn, onSignUpClick }) {
             Sign In
           </Button>
         </Box>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleGoogleSignIn}
+          sx={{ marginTop: 2, backgroundColor: "#db4437", "&:hover": { backgroundColor: "#c23321" } }}
+        >
+          Sign In with Google
+        </Button>
         <Typography variant="body2" align="center" sx={{ marginTop: 2 }}>
           Don't have an account?{" "}
           <Link href="#" onClick={onSignUpClick} sx={{ color: "#7e91ff", fontWeight: "bold" }}>

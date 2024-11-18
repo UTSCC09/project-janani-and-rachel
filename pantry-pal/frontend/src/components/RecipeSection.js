@@ -9,6 +9,7 @@ import {
   Container,
 } from "@mui/material";
 import { FaTrashAlt } from "react-icons/fa"; // Import FaTrashAlt
+// import { response } from "express";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
@@ -31,6 +32,7 @@ export default function RecipeList() {
       fetch(url, {
         headers: {
           "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+          'GoogleAccessToken': localStorage.getItem('accessToken')
         }
       })
         .then((response) => response.json())
@@ -81,6 +83,7 @@ export default function RecipeList() {
       method: "DELETE",
       headers: {
         "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+        'GoogleAccessToken': localStorage.getItem('accessToken')
       }
     })
       .then((response) => {

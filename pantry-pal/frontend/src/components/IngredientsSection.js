@@ -55,7 +55,8 @@ export default function IngredientsSection() {
 
       fetch(url, {
         headers: {
-          'Authorization':`Bearer ${localStorage.getItem('token')}`
+          'Authorization':`Bearer ${localStorage.getItem('idToken')}`,
+          'GoogleAccessToken': localStorage.getItem('accessToken')
         }
       })
         .then((response) => response.json())
@@ -131,10 +132,14 @@ export default function IngredientsSection() {
     fetch(endpoint, {
       method: method,
       headers: { "Content-Type": "application/json",
-                 "Authorization":`Bearer ${localStorage.getItem('token')}`},
+                 "Authorization":`Bearer ${localStorage.getItem('idToken')}`,
+                 'GoogleAccessToken': localStorage.getItem('accessToken')
+                },
+                 
       body: JSON.stringify(requestBody),
     })
       .then((response) => {
+        console.log(response);
         if (response.ok) {
           return response.json();
         } else {
@@ -175,8 +180,9 @@ export default function IngredientsSection() {
     fetch(`${domain}/api/ingredients/pantry/${encodeURIComponent(ingredientName)}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json",
-                  "Authorization":`Bearer ${localStorage.getItem('token')}`
-       }
+                  "Authorization":`Bearer ${localStorage.getItem('idToken')}`,
+                  'GoogleAccessToken': localStorage.getItem('accessToken')
+               }
     })
       .then((response) => {
         if (response.ok) {

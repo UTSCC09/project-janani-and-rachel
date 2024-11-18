@@ -42,6 +42,7 @@ export default function RecipeSearch({ onSearch }) {
         {
           headers: {
             "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+            'GoogleAccessToken': localStorage.getItem('accessToken')
           },
         }
       );
@@ -66,6 +67,7 @@ export default function RecipeSearch({ onSearch }) {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+          'GoogleAccessToken': localStorage.getItem('accessToken')
         },
         body: JSON.stringify({
           recipeId: recipe.recipeId,

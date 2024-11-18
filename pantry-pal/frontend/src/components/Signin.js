@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Box, TextField, Button, Typography, Snackbar, Alert, Link, Paper } from "@mui/material";
-import { signInWithEmailAndPassword, getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { auth } from "../../config/firebase";
+import { Box, TextField, Button, Typography, Snackbar, Alert, Link, Paper, Divider } from "@mui/material";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "../../config/firebase"; // Adjust the import path as needed
 
 export default function Signin({ onSignIn, onSignUpClick }) {
   const [email, setEmail] = useState("");
@@ -40,12 +40,16 @@ export default function Signin({ onSignIn, onSignUpClick }) {
       // save the access token to local storage to use google api tools
       localStorage.setItem("accessToken", accessToken);
 
-      // save the access token to local storage to use google api tools
       setSuccess("Sign in with Google successful!");
       onSignIn();
     } catch (error) {
       setError(error.message);
     }
+  };
+
+  const onForgotPasswordClick = () => {
+    // Handle forgot password logic here
+    console.log("Forgot password clicked");
   };
 
   const handleCloseSnackbar = () => {
@@ -79,22 +83,28 @@ export default function Signin({ onSignIn, onSignUpClick }) {
           <Button type="submit" variant="contained" sx={{ backgroundColor: "#7e91ff", "&:hover": { backgroundColor: "#6b82e0" } }}>
             Sign In
           </Button>
-        </Box>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleGoogleSignIn}
-          sx={{ marginTop: 2, backgroundColor: "#db4437", "&:hover": { backgroundColor: "#c23321" } }}
-        >
-          Sign In with Google
-        </Button>
-        <Typography variant="body2" align="center" sx={{ marginTop: 2 }}>
-          Don't have an account?{" "}
-          <Link href="#" onClick={onSignUpClick} sx={{ color: "#7e91ff", fontWeight: "bold" }}>
-            Sign up
+          <Typography variant="body2" align="right" sx={{ marginTop: 1 }}>
+          <Link href="#" onClick={onForgotPasswordClick} sx={{ color: "#7e91ff" }}>
+            Forgot your password?
           </Link>
         </Typography>
-      </Paper>
+        </Box>
+        <Divider sx={{ marginY: 2 }}>Or Sign In/Up With</Divider>
+      <Box display="flex" justifyContent="center" alignItems="center">
+        <Button
+          onClick={handleGoogleSignIn}
+          sx={{ padding: 0, minWidth: 'auto', backgroundColor: "transparent", "&:hover": { backgroundColor: "transparent" } }}
+        >
+          <img src="https://hackaday.com/wp-content/uploads/2016/08/google-g-logo.png" alt="Sign In with Google" style={{ width: '24px', height: '24px' }} />
+        </Button>
+      </Box>
+      <Typography variant="body2" align="center" sx={{ marginTop: 2 }}>
+        Don't have an account?{" "}
+        <Link href="#" onClick={onSignUpClick} sx={{ color: "#7e91ff", fontWeight: "bold" }}>
+          Sign up
+        </Link>
+      </Typography>
+        </Paper>
       <Snackbar open={!!error || !!success} autoHideDuration={6000} onClose={handleCloseSnackbar}>
         <Alert onClose={handleCloseSnackbar} severity={error ? "error" : "success"} sx={{ width: '100%' }}>
           {error || success}
@@ -103,7 +113,3 @@ export default function Signin({ onSignIn, onSignUpClick }) {
     </Box>
   );
 }
-// get the token
-// store the token in local storaeg
-// send the token in the header of every request
-// if the token is not present, redirect to the signin page

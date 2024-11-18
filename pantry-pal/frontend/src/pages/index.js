@@ -44,6 +44,8 @@ export default function Home() {
     setIsAuthenticated(false);
     setActiveSection("signin");
     setAnchorEl(null); // Ensure the dropdown menu is closed
+    localStorage.removeItem("idToken");
+    localStorage.removeItem("accessToken");
   };
 
   const handleMenuOpen = (event) => {

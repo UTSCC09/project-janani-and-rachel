@@ -1,5 +1,5 @@
 import { Button } from "@mui/material";
-import { signOuts } from "firebase/auth";
+import { signOut } from "firebase/auth";
 import { auth } from "../../config/firebase";
 
 export default function Signout({ onSignout }) {

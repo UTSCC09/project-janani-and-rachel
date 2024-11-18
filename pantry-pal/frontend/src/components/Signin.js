@@ -15,7 +15,12 @@ export default function Signin({ onSignIn, onSignUpClick }) {
     e.preventDefault();
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const idToken = await userCredential.user.getIdToken();
+      const user = userCredential.user;
+      if (!user.emailVerified) {
+        setError("Please verify your email before signing in.");
+        return;
+      }
+      const idToken = await user.getIdToken();
       // save the token to local storage
       localStorage.setItem("idToken", idToken);
       setSuccess("Sign in successful!");
@@ -35,7 +40,7 @@ export default function Signin({ onSignIn, onSignUpClick }) {
       // save the token to local storage
       localStorage.setItem("idToken", idToken);
 
-      // Get the OAuth 2.0 access toyken to access Google APIs
+      // Get the OAuth 2.0 access token to access Google APIs
       const credential = GoogleAuthProvider.credentialFromResult(result);
       const accessToken = credential.accessToken;
 

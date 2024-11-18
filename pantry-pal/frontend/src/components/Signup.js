@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Box, TextField, Button, Typography, Snackbar, Alert, Link, Paper } from "@mui/material";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { auth } from "../../config/firebase.js";
 
 export default function Signup({ onSignInClick }) {
@@ -13,9 +13,11 @@ export default function Signup({ onSignInClick }) {
     e.preventDefault();
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        setSuccess("Signup successful!");
-        setEmail("");
-        setPassword("");
+      const user = userCredential.user;
+      await sendEmailVerification(user);
+      setSuccess("Signup successful! Please check your email to verify your account.");
+      setEmail("");
+      setPassword("");
     } catch (error) {
       setError(error.message);
     }

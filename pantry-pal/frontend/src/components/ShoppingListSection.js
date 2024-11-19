@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -15,139 +15,156 @@ import {
 import { FaPlusCircle, FaTrashAlt, FaArrowRight } from "react-icons/fa";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
+const PURPLE = "#7e91ff";
+const YELLOW = "#fffae1";
 
 export default function ShoppingListSection() {
   const [shoppingList, setShoppingList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newItem, setNewItem] = useState("");
+  const [lastVisible, setLastVisible] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const observer = useRef();
+
+  const fetchMoreItems = useCallback(async () => {
+    if (!hasMore) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`${domain}/api/ingredients/shopping-list?lastVisibleIngredient=${lastVisible}`, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+          "GoogleAccessToken": localStorage.getItem('accessToken')
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      if (data.ingredients && Array.isArray(data.ingredients)) {
+        setShoppingList((prevItems) => {
+          const newItems = data.ingredients.filter(
+            (item) => !prevItems.some((prevItem) => prevItem.ingredientName === item.ingredientName)
+          );
+          return [...prevItems, ...newItems];
+        });
+        setLastVisible(data.lastVisible);
+        setHasMore(data.ingredients.length > 0);
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error("Error fetching more items:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [lastVisible, hasMore]);
 
   useEffect(() => {
-    // Fetch shopping list data from the backend or other source
-    const fetchShoppingList = async () => {
-      try {
-        const response = await fetch(`${domain}/api/ingredients/shopping-list`, {
-          headers: { "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-                    "GoogleAccessToken": localStorage.getItem('accessToken')
-                   },
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setShoppingList(data.ingredients || []); // Ensure shoppingList is always an array
-      } catch (error) {
-        console.error("Error fetching shopping list:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchMoreItems();
+  }, [fetchMoreItems]);
 
-    fetchShoppingList();
-  }, []);
+  const lastItemRef = useCallback(
+    (node) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          fetchMoreItems();
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, fetchMoreItems]
+  );
 
   const handleInputChange = (e) => {
     setNewItem(e.target.value);
   };
 
-  const handleDeleteItem = (ingredientName) => {
-    fetch(`${domain}/api/ingredients/shopping-list/${encodeURIComponent(ingredientName)}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json",
-                  "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-                  "GoogleAccessToken": localStorage.getItem('accessToken')
-                },
-
-    })
-      .then((response) => {
-        if (response.status === 200) {
-          setShoppingList((prev) =>
-            prev.filter((item) => item.ingredientName !== ingredientName)
-          );
-        } else {
-          throw new Error("Failed to delete item from shopping list.");
-        }
-      })
-      .catch((error) => {
-        console.error("Error deleting item from shopping list:", error);
+  const handleDeleteItem = async (ingredientName) => {
+    try {
+      const response = await fetch(`${domain}/api/ingredients/shopping-list/${encodeURIComponent(ingredientName)}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+          "GoogleAccessToken": localStorage.getItem('accessToken')
+        },
       });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      setShoppingList((prevItems) => prevItems.filter(item => item.ingredientName !== ingredientName));
+    } catch (error) {
+      console.error("Error deleting item:", error);
+    }
   };
 
-  const handleAddItem = (e) => {
+  const handleAddItem = async (e) => {
     e.preventDefault();
-
-    fetch(`${domain}/api/ingredients/shopping-list`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", 
-                 "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-                 "GoogleAccessToken": localStorage.getItem('accessToken')
-                },
-      body: JSON.stringify({ ingredientName: newItem }),
-    })
-      .then((response) => {
-        if (response.status === 200) {
-          setShoppingList((prev) => [...prev, { ingredientName: newItem }]);
-          setNewItem("");
-        } else {
-          throw new Error("Failed to add item to shopping list.");
-        }
-      })
-      .catch((error) => {
-        console.error("Error adding item to shopping list:", error);
+    try {
+      const response = await fetch(`${domain}/api/ingredients/shopping-list`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+          "GoogleAccessToken": localStorage.getItem('accessToken')
+        },
+        body: JSON.stringify({ ingredientName: newItem }),
       });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      setShoppingList((prevItems) => [...prevItems, { ingredientName: newItem }]);
+      setNewItem("");
+    } catch (error) {
+      console.error("Error adding item to shopping list:", error);
+    }
   };
 
-  const handleMoveToPantry = (ingredientName) => {
+  const handleMoveToPantry = async (ingredientName) => {
     const today = new Date().toISOString().split("T")[0];
-
-    fetch(`${domain}/api/ingredients/pantry`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json",
-                  "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-                  "GoogleAccessToken": localStorage.getItem('accessToken')
-                },
-      body: JSON.stringify({
-        ingredientName,
-        purchaseDate: today,
-      }),
-    })
-      .then((response) => {
-        if (response.status === 200) {
-          return fetch(`${domain}/api/ingredients/shopping-list/${encodeURIComponent(ingredientName)}`, {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json",
-                        "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-                        "GoogleAccessToken": localStorage.getItem('accessToken')
-                      },
-          });
-        } else {
-          throw new Error("Failed to add item to pantry.");
-        }
-      })
-      .then((response) => {
-        if (response.status === 200) {
-          setShoppingList((prev) =>
-            prev.filter((item) => item.ingredientName !== ingredientName)
-          );
-        } else {
-          throw new Error("Failed to remove item from shopping list.");
-        }
-      })
-      .catch((error) => {
-        console.error("Error moving item to pantry:", error);
+    try {
+      const response = await fetch(`${domain}/api/ingredients/pantry`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+          "GoogleAccessToken": localStorage.getItem('accessToken')
+        },
+        body: JSON.stringify({
+          ingredientName,
+          purchaseDate: today,
+        }),
       });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      await fetch(`${domain}/api/ingredients/shopping-list/${encodeURIComponent(ingredientName)}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+          "GoogleAccessToken": localStorage.getItem('accessToken')
+        },
+      });
+      setShoppingList((prevItems) => prevItems.filter(item => item.ingredientName !== ingredientName));
+    } catch (error) {
+      console.error("Error moving item to pantry:", error);
+    }
   };
 
   return (
-    <Box sx={{ padding: "2rem", maxWidth: 600, margin: "auto" }}>
+    <Box sx={{ padding: "2rem", maxWidth: 800, margin: "auto" }}>
       <Typography
         variant="h4"
         gutterBottom
-        sx={{ fontWeight: 600, textAlign: "center" }}
+        sx={{ fontWeight: 600, textAlign: "center", color: PURPLE }}
       >
         Shopping List
       </Typography>
 
-      <Typography variant="h6" sx={{ marginBottom: "1rem", fontWeight: 600 }}>
+      <Typography variant="h6" sx={{ marginBottom: "1rem", fontWeight: 600, color: PURPLE}}>
         Add Item to Shopping List
       </Typography>
 
@@ -174,6 +191,8 @@ export default function ShoppingListSection() {
             borderRadius: 1,
             boxShadow: 2,
             "&:hover": { boxShadow: 4 },
+            backgroundColor: PURPLE, 
+            "&:hover": { backgroundColor: "#6b82e0" }, // Darker shade on hover
           }}
           startIcon={<FaPlusCircle />}
         >
@@ -181,7 +200,7 @@ export default function ShoppingListSection() {
         </Button>
       </Box>
 
-      {loading ? (
+      {loading && shoppingList.length === 0 ? (
         <Box sx={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
           <CircularProgress />
         </Box>
@@ -192,7 +211,7 @@ export default function ShoppingListSection() {
             padding: "1rem",
             marginBottom: "1.5rem",
             marginTop: "2rem",
-            backgroundColor: "#f9f9f9",
+            backgroundColor: YELLOW,
             borderRadius: 2,
           }}
         >
@@ -212,10 +231,11 @@ export default function ShoppingListSection() {
                   backgroundColor: "#fff",
                   "&:hover": { boxShadow: 6 },
                 }}
+                ref={index === shoppingList.length - 1 ? lastItemRef : null}
               >
                 <ListItemText
                   primary={item.ingredientName}
-                  sx={{ textDecoration: "none", fontWeight: 500 }}
+                  sx={{ textDecoration: "none", fontWeight: 500, color: "#333" }}
                 />
                 <Box>
                   <Tooltip title="Move to Pantry" enterDelay={0}>
@@ -223,7 +243,7 @@ export default function ShoppingListSection() {
                       edge="end"
                       onClick={() => handleMoveToPantry(item.ingredientName)}
                       color="primary"
-                      sx={{ padding: "0.5rem" }}
+                      sx={{ padding: "0.5rem", color: PURPLE }}
                     >
                       <FaArrowRight />
                     </IconButton>
@@ -243,6 +263,11 @@ export default function ShoppingListSection() {
               </Card>
             ))}
           </List>
+          {loading && (
+            <Box sx={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
+              <CircularProgress />
+            </Box>
+          )}
         </Paper>
       )}
     </Box>

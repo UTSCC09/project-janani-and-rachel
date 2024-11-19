@@ -97,7 +97,7 @@ export default function Signin({ onSignIn, onSignUpClick }) {
                 </Link>
               </Typography>
             </Box>
-            <Divider sx={{ marginY: 2 }}>Or Sign In</Divider>
+            <Divider sx={{ marginY: 2 }}>Or Sign In With</Divider>
             <Box display="flex" justifyContent="center" alignItems="center">
               <Button
                 onClick={handleGoogleSignIn}

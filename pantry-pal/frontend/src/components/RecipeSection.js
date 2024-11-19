@@ -121,7 +121,7 @@ export default function RecipeList() {
           Favorite Recipes
         </Typography>
       </Box>
-
+  
       {/* Recipe Cards */}
       <Box>
         {allRecipes.map((recipe, index) => (
@@ -137,56 +137,32 @@ export default function RecipeList() {
               flexDirection: "column",
               transition: "transform 0.3s ease, box-shadow 0.3s ease",
               marginBottom: "1.5rem", // Reduced margin for better spacing
-              position: "relative", // For absolute positioning of the button
+              position: "relative", // Enables absolute positioning for children
               "&:hover": {
                 transform: "scale(1.05)",
                 boxShadow: "0 6px 15px rgba(0, 0, 0, 0.1)",
               },
             }}
           >
-            {/* Delete Button in Top Right Corner */}
-            <Box sx={{ position: "absolute", top: "8px", right: "8px" }}>
-              <Button
-                variant="outlined"
-                color="error"
-                onClick={() => handleDelete(recipe.recipeId)}
-                sx={{
-                  padding: "8px 16px",
-                  border: "none",
-                  textTransform: "none",
-                  color: "#f44336",
-                  "&:hover": {
-                    backgroundColor: "#f44336",
-                    color: "#fff",
-                  },
-                }}
-              >
-                <FaTrashAlt size={20} />
-              </Button>
-            </Box>
-
             <CardContent>
+              {/* Recipe Title Spanning the Card */}
               <Box
                 sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginBottom: "1.5rem",
+                  backgroundColor: "#7e91ff", // Background color for the recipe name
+                  padding: "8px 16px", // Adjust padding for better visual balance
+                  borderRadius: "8px", // Rounded corners
+                  width: "95%", // Ensure full width
+                  marginBottom: "1.5rem", // Spacing below title
                 }}
               >
-                <Box
-                  sx={{
-                    backgroundColor: "#7e91ff", // Background color for the recipe name
-                    padding: "8px 16px", // Adjust padding for better visual balance
-                    borderRadius: "8px", // Optional: rounded corners for the background
-                    maxWidth: "70%", // Limit width to avoid text overflow
-                  }}
+                <Typography
+                  variant="h5"
+                  sx={{ fontWeight: "600", color: "#fff", textAlign: "center" }}
                 >
-                  <Typography variant="h5" sx={{ fontWeight: "600", color: "#fff" }}>
-                    {recipe.recipeName}
-                  </Typography>
-                </Box>
+                  {recipe.recipeName}
+                </Typography>
               </Box>
-
+  
               {/* Notes Section */}
               <Box sx={{ marginBottom: "1rem" }}>
                 <Typography
@@ -203,7 +179,7 @@ export default function RecipeList() {
                   {recipe.notes || "No notes available"}
                 </Typography>
               </Box>
-
+  
               {/* Date Section */}
               <Box sx={{ marginBottom: "1.5rem" }}>
                 <Typography
@@ -218,10 +194,38 @@ export default function RecipeList() {
                 </Typography>
               </Box>
             </CardContent>
+  
+            {/* Delete Button */}
+            <Box
+              sx={{
+                position: "absolute",
+                bottom: "16px",
+                right: "16px",
+              }}
+            >
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={() => handleDelete(recipe.recipeId)}
+                sx={{
+                  padding: "8px 16px",
+                  border: "none",
+                  textTransform: "none",
+                  color: "#f44336",
+                  "&:hover": {
+                    backgroundColor: "rgba(244, 67, 54, 0.15)", // Subtle red hover background
+                    transform: "scale(1.1)", // Slightly scale up the icon
+                    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)", // Add subtle shadow
+                  },
+                }}
+              >
+                <FaTrashAlt size={20} />
+              </Button>
+            </Box>
           </Card>
         ))}
       </Box>
-
+  
       {/* Loading Spinner */}
       {loading && (
         <Box sx={{ display: "flex", justifyContent: "center", marginTop: 2 }}>
@@ -230,4 +234,6 @@ export default function RecipeList() {
       )}
     </Container>
   );
+  
+  
 }

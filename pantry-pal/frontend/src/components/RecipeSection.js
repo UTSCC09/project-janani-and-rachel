@@ -35,8 +35,12 @@ export default function RecipeList() {
           'GoogleAccessToken': localStorage.getItem('accessToken')
         }
       })
-        .then((response) => response.json())
+      .then((response) => {
+        //console.log("Response:", response); // Log the response
+        return response.json();
+      })
         .then((data) => {
+          console.log(data);
           const processedData = Array.isArray(data.recipes)
             ? data.recipes.map((item) => ({
                 ...item,
@@ -101,6 +105,12 @@ export default function RecipeList() {
       });
   };
 
+  const [expandedRecipeId, setExpandedRecipeId] = useState(null);
+
+  const toggleInstructions = (recipeId) => {
+    setExpandedRecipeId(expandedRecipeId === recipeId ? null : recipeId);
+  };
+
   return (
     <Container maxWidth="md">
       {/* Title Styled as Normal Text */}
@@ -162,6 +172,38 @@ export default function RecipeList() {
                   {recipe.recipeName}
                 </Typography>
               </Box>
+
+              <Box
+                    sx={{
+                      marginBottom: "1rem",
+                      backgroundColor: "#fff", // White background for the box
+                      padding: "1rem",
+                      borderRadius: 2,
+                      boxShadow: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: "500",
+                        color: "#7e91ff", // Soft purple for instructions
+                        marginBottom: "0.5rem",
+                      }}
+                    >
+                      <strong>Instructions:</strong>
+                    </Typography>
+                    {Array.isArray(recipe.instructions) ? (
+                      recipe.instructions.map((instruction, idx) => (
+                        <Typography key={idx} variant="body2" sx={{ color: "#000000" }}>
+                          {instruction.number}. {instruction.step}
+                        </Typography>
+                      ))
+                    ) : (
+                      <Typography variant="body2" sx={{ color: "#7e91ff" }}>
+                        {recipe.instructions || "No instructions available"}
+                      </Typography>
+                    )}
+                  </Box>
   
               {/* Notes Section */}
               <Box sx={{ marginBottom: "1rem" }}>
@@ -193,6 +235,8 @@ export default function RecipeList() {
                   <strong>Date:</strong> {recipe.date || "N/A"}
                 </Typography>
               </Box>
+
+              {/* Instructions Section */}
             </CardContent>
   
             {/* Delete Button */}

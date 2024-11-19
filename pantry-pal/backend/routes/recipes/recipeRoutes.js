@@ -47,8 +47,4 @@ router.get('/search-least-missing', (req, res, next) => {
     }
 });
 
-// maybe put this in favorites 
-router.get('/:recipeId/pantry-comparison', (req, res, next) => {});
-// can prolly just use pantry comparison for this
-router.get('/:recipeId/missing-ingredients', (req, res, next) => {});
 

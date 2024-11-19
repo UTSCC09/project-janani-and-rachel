@@ -1,5 +1,6 @@
 import { db } from '../config/firebase.js';
-//import { collection, doc, where, setDoc, getDocs, getDoc, deleteDoc, limit, orderBy, query, startAfter } from 'firebase/firestore';
+import { getPantry } from './ingredientServices.js';
+import { genAI } from '../config/gemini.js';
 
 async function getFormattedRecipe(favRecipeDocData) {
     const recipeRef = favRecipeDocData.recipe;
@@ -191,4 +192,67 @@ async function removeFavRecipe(uid, recipeId) {
     return favRecipeData; 
 }
 
-export { getFavRecipes, getPlannedFavRecipes, getUnPlannedFavRecipes, getFavRecipeById, addFavRecipe, removeFavRecipe };
+async function pantryComparison(uid, recipeId) {
+    const recipe = await getFavRecipeById(uid, recipeId);
+    const recipeIngredients = recipe.ingredients;
+    const pantry = await getPantry(uid, 1000);
+    const pantryIngredients = pantry.ingredients.map(ingredient => ingredient.ingredientName);
+    const schema = {
+        "type": "object",
+        "properties": {
+        "ingredients": {
+            "type": "array",
+            "items": {
+            "type": "string"
+            }
+        }
+        },
+        "description": "Return a list of the ingredients"
+    };
+    
+    const model = genAI.getGenerativeModel({
+        model: "gemini-1.5-pro",
+        generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: schema
+        }
+    });
+
+    const missingIngredientsPrompt = `Given a list of the ingredients in the pantry and a list of the ingredients in the recipe,
+        determine a list of the ingredients in the recipe missing from the pantry.
+        If there is an ingredient in the recipe that is similar to an ingredient in the pantry, do not consider that ingredient as missing.
+        For example, if the recipe contains the ingredient called caster sugar and we have the ingredient called sugar in the pantry, then caster sugar is not missing. Do not include it in the list of missing ingredients.
+        Recipe Ingredients: ${recipeIngredients}
+        Pantry Ingredients: ${pantryIngredients}`;
+
+    const matchingIngredientsPrompt = `Given a list of the ingredients in the pantry and a list of the ingredients in the recipe,
+        determine a list of the ingredients in the pantry that are either the same or really similar to an ingredient in the recipe.
+        For example, steak and beef are not very similar. If I have steak and the recipe calls for beef, do not include steak. But, ground beef and beef are very similar. If we have ground beef in the pantry, and the recipe asks for beef, then we include ground beef in the list of matching ingredients.
+        Likewise, if the recipe contains the ingredient called caster sugar and we have the ingredient called sugar in the pantry, then sugar is similar to caster sugar.
+        Recipe Ingredients: ${recipeIngredients}
+        Pantry Ingredients: ${pantryIngredients}`;
+    
+    
+    try {
+        let matchingIngredientsResult = [];
+        let missingIngredientsResult = [];
+        [missingIngredientsResult, matchingIngredientsResult] = await Promise.all([
+            model.generateContent(missingIngredientsPrompt),
+            model.generateContent(matchingIngredientsPrompt)
+        ]);
+        
+        console.log(missingIngredientsResult.response.text());
+        console.log(matchingIngredientsResult.response.text());
+        return { 
+            missingIngredients: JSON.parse(missingIngredientsResult.response.text()).ingredients, 
+            matchingIngredients: JSON.parse(matchingIngredientsResult.response.text()).ingredients 
+        };
+    }
+    catch (error) {
+        console.error("Error comparing pantry to recipe ingredients:", error);
+        throw { error: "An error occurred while comparing pantry to recipe ingredients.", ingredients: recipeIngredients };
+    }    
+}
+
+
+export { getFavRecipes, getPlannedFavRecipes, getUnPlannedFavRecipes, getFavRecipeById, addFavRecipe, removeFavRecipe, pantryComparison };

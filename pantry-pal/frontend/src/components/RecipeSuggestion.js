@@ -103,7 +103,7 @@ export default function RecipeSuggestion({ ingredients }) {
   ) => {
     try {
       for (let ingredient of missedIngredients) {
-        const response = await fetch(`${domain}/api/ingredients/shoppingList`, {
+        const response = await fetch(`${domain}/api/ingredients/shopping-list`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -112,6 +112,7 @@ export default function RecipeSuggestion({ ingredients }) {
           },
           body: JSON.stringify({ ingredientName: ingredient }),
         });
+        console.log(response);
 
         if (!response.ok) {
           throw new Error("Failed to add ingredient to shopping list");

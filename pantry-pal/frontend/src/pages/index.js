@@ -153,7 +153,7 @@ export default function Home() {
           </>
         ) : (
           <>
-            {activeSection === "signup" && <Signup onSignInClick={() => setActiveSection("signin")} />}
+            {activeSection === "signup" && <Signup onSignInClick={() => setActiveSection("signin")} onRecipeSectionClick={() => { setActiveSection("recipes"); setIsAuthenticated(true); }} />}
             {activeSection === "signin" && <Signin onSignIn={handleSignIn} onSignUpClick={() => setActiveSection("signup")} />}
           </>
         )}

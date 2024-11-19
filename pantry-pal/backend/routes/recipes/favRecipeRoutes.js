@@ -1,6 +1,6 @@
 // backend/routes/recipes.js
 import express from 'express';
-import { getFavRecipes, getPlannedFavRecipes, getUnPlannedFavRecipes, getFavRecipeById, addFavRecipe, removeFavRecipe } 
+import { getFavRecipes, getPlannedFavRecipes, getUnPlannedFavRecipes, getFavRecipeById, addFavRecipe, removeFavRecipe, pantryComparison } 
 from '../../services/favRecipeServices.js'; 
 import { verifyToken } from '../../middleware/authMiddleware.js';
 
@@ -93,6 +93,23 @@ router.delete('/:recipeId', (req, res, next) => {
         }).catch((error) => {
             res.status(error.status || 500)
                .json({ error: error.message || "An error occurred while removing recipe from favorites." });
+        });
+});
+
+router.get('/:recipeId/pantry-comparison', (req, res, next) => {
+    const uid = req.uid;
+    if (!req.params.recipeId) {
+        return res.status(400).json({ error: "Recipe ID is required." });
+    }
+    pantryComparison(uid, req.params.recipeId)
+        .then((comparison) => {
+            return res.status(200).json(comparison);
+        }).catch((error) => {
+            res.status(error.status || 500)
+                .json({ 
+                    error: error.message || "An error occurred while comparing recipe to pantry.",
+                    allIngredients: error.ingredients || []
+                 });
         });
 });
 

@@ -118,7 +118,7 @@ export default function Home() {
                   onClose={() => setAnchorEl(null)}
                 >
                   <MenuItem onClick={() => handleMenuClose("recipes")}>Recipes</MenuItem>
-                  <MenuItem onClick={() => handleMenuClose("ingredients")}>Ingredients</MenuItem>
+                  <MenuItem onClick={() => handleMenuClose("ingredients")}>My Pantry</MenuItem>
                   <MenuItem onClick={() => handleMenuClose("shoppingList")}>Shopping List</MenuItem>
                   <MenuItem onClick={() => handleMenuClose("calendar")}>Calendar</MenuItem>
                   <MenuItem onClick={() => handleMenuClose("recipeSearch")}>Recipe Search</MenuItem>

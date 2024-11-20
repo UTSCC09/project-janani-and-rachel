@@ -19,6 +19,7 @@ import {
   FaStar,
   FaRegStar,
 } from "react-icons/fa";
+import FavoriteButton from "./FavouriteButton";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
@@ -200,36 +201,27 @@ export default function RecipeSuggestion({ ingredients }) {
                   backgroundColor: "#fffae1",
                 }}
               >
-                <IconButton
-                  onClick={() => handleFavoriteClick(recipe)}
-                  onMouseLeave={(e) => (e.target.style.color = "")}
-                  sx={{
-                    color: favorites.has(recipe.recipeId) ? "#e4e642" : "gray",
-                    position: "absolute",
-                    top: "8px",
-                    right: "8px",
-                    padding: "8px",
-                    transition: "color 0.3s ease",
-                  }}
-                >
-                  {favorites.has(recipe.recipeId) ? <FaStar /> : <FaRegStar />}
-                </IconButton>
-
                 <CardContent>
-                <Typography
-                variant="h6"
-                sx={{
-                  color: "#ffffff", 
-                  backgroundColor: "#7e91ff", 
-                  padding: "8px", 
-                  borderRadius: "4px", 
-                  marginBottom: "1rem",
-                  width: "665px",
-                }}
-                gutterBottom
-              >
-                {recipe.recipeName}
-              </Typography>
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <Typography
+      variant="h6"
+      sx={{
+        color: "#ffffff",
+        backgroundColor: "#7e91ff",
+        padding: "8px",
+        borderRadius: "4px",
+        marginBottom: "1rem",
+        flexGrow: 1, // Allow the title to take up available space
+      }}
+      gutterBottom
+    >
+      {recipe.recipeName}
+    </Typography>
+    <FavoriteButton
+      isFavorite={favorites.has(recipe.recipeId)}
+      onClick={() => handleFavoriteClick(recipe)}
+    />
+  </Box>
                   <Box
                     sx={{
                       display: "flex",
@@ -320,6 +312,8 @@ export default function RecipeSuggestion({ ingredients }) {
                       {recipe.successMessage}
                     </Typography>
                   )}
+
+       
 
                   <Button
                     variant="contained"

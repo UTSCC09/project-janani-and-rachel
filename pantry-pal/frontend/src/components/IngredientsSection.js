@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import RecipeSuggestion from "@/components/RecipeSuggestion";
+import DeleteButton from "./DeleteButton"
+
 import {
   Box,
   TextField,
@@ -17,7 +19,6 @@ import {
   Alert,
 } from "@mui/material";
 import {
-  FaTrashAlt,
   FaPlus,
   FaCheckCircle,
   FaRegCalendarAlt,
@@ -391,16 +392,7 @@ export default function IngredientsSection() {
                     <MdEdit />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title="Delete Ingredient" arrow>
-                  <IconButton
-                    color="error"
-                    onClick={() =>
-                      handleDeleteIngredient(ingredient.ingredientName)
-                    }
-                  >
-                    <FaTrashAlt />
-                  </IconButton>
-                </Tooltip>
+                <DeleteButton onClick={() => handleDeleteIngredient(ingredient.ingredientName)} />
               </Box>
             </ListItem>
             {editingIngredient === ingredient && (

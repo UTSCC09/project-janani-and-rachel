@@ -20,6 +20,8 @@ import {
   FaRegStar,
 } from "react-icons/fa";
 
+import FavoriteButton from "./FavouriteButton";
+
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
 export default function RecipeSearch({ onSearch }) {
@@ -161,14 +163,6 @@ export default function RecipeSearch({ onSearch }) {
                     marginBottom: "1rem",
                   }}
                 >
-                  <Chip
-                    label={`Missing Ingredients: ${recipe.missedIngredientCount}`}
-                    sx={{ backgroundColor: "#7e91ff", color: "#fff" }}
-                  />
-                  <Chip
-                    label={`Ingredients: ${recipe.ingredients.length}`}
-                    sx={{ backgroundColor: "#7e91ff", color: "#fff" }}
-                  />
                 </Box>
                 <Typography variant="body2" color="text.secondary">
                   <strong>Ingredients:</strong> {recipe.ingredients.join(", ")}
@@ -201,9 +195,8 @@ export default function RecipeSearch({ onSearch }) {
                     Full Recipe Source
                   </a>
                 </Typography>
-
-                {/* Star Button to add to favorites */}
-                <IconButton
+                
+                {/* <IconButton
                   onClick={() => handleFavoriteClick(recipe)}
                   onMouseLeave={(e) => (e.target.style.color = "")}
                   sx={{
@@ -212,7 +205,13 @@ export default function RecipeSearch({ onSearch }) {
                   }}
                 >
                   {favorites.has(recipe.recipeId) ? <FaStar /> : <FaRegStar />}
-                </IconButton>
+                </IconButton> */}
+
+                                {/* <FavoriteButton isFavorite={favorites.has(recipe.recipeId)} onClick={() => handleFavoriteClick(recipe)} /> */}
+                  <FavoriteButton
+                  isFavorite={favorites.has(recipe.recipeId)}
+                  onClick={() => handleFavoriteClick(recipe)}
+                />
               </CardContent>
             </Card>
           ))

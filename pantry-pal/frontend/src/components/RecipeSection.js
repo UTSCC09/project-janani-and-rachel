@@ -9,6 +9,7 @@ import {
   Container,
 } from "@mui/material";
 import { FaTrashAlt } from "react-icons/fa"; // Import FaTrashAlt
+import DeleteButton from "./DeleteButton";
 // import { response } from "express";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
@@ -167,7 +168,7 @@ export default function RecipeList() {
               >
                 <Typography
                   variant="h5"
-                  sx={{ fontWeight: "600", color: "#fff", textAlign: "center" }}
+                  sx={{ fontWeight: "600", color: "#fff", textAlign: "center",  }}
                 >
                   {recipe.recipeName}
                 </Typography>
@@ -247,24 +248,7 @@ export default function RecipeList() {
                 right: "16px",
               }}
             >
-              <Button
-                variant="outlined"
-                color="error"
-                onClick={() => handleDelete(recipe.recipeId)}
-                sx={{
-                  padding: "8px 16px",
-                  border: "none",
-                  textTransform: "none",
-                  color: "#f44336",
-                  "&:hover": {
-                    backgroundColor: "rgba(244, 67, 54, 0.15)", // Subtle red hover background
-                    transform: "scale(1.1)", // Slightly scale up the icon
-                    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)", // Add subtle shadow
-                  },
-                }}
-              >
-                <FaTrashAlt size={20} />
-              </Button>
+              <DeleteButton onClick={() => handleDelete(recipe.recipeId)} />
             </Box>
           </Card>
         ))}

@@ -6,7 +6,7 @@ export const verifyToken = async (req, res, next) => {
 
     if (!idToken) {
         console.log("no token");
-        throw res.status(401).json({ error: 'Unauthorized, no token' });
+        return res.status(401).json({ error: 'Unauthorized, no token' });
     }
 
     try {
@@ -17,7 +17,7 @@ export const verifyToken = async (req, res, next) => {
         next();
     } catch (error) {
         console.error("Error verifying token:", error);
-        throw res.status(401).json({ error: 'Unauthorized, invalid or expired token' });
+        return res.status(401).json({ error: 'Unauthorized, invalid or expired token' });
     }
 };
 

@@ -9,6 +9,7 @@ import {
   Container,
 } from "@mui/material";
 import { FaTrashAlt } from "react-icons/fa"; // Import FaTrashAlt
+import DeleteButton from "./DeleteButton";
 // import { response } from "express";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
@@ -35,8 +36,12 @@ export default function RecipeList() {
           'GoogleAccessToken': localStorage.getItem('accessToken')
         }
       })
-        .then((response) => response.json())
+      .then((response) => {
+        //console.log("Response:", response); // Log the response
+        return response.json();
+      })
         .then((data) => {
+          console.log(data);
           const processedData = Array.isArray(data.recipes)
             ? data.recipes.map((item) => ({
                 ...item,
@@ -101,6 +106,12 @@ export default function RecipeList() {
       });
   };
 
+  const [expandedRecipeId, setExpandedRecipeId] = useState(null);
+
+  const toggleInstructions = (recipeId) => {
+    setExpandedRecipeId(expandedRecipeId === recipeId ? null : recipeId);
+  };
+
   return (
     <Container maxWidth="md">
       {/* Title Styled as Normal Text */}
@@ -157,11 +168,43 @@ export default function RecipeList() {
               >
                 <Typography
                   variant="h5"
-                  sx={{ fontWeight: "600", color: "#fff", textAlign: "center" }}
+                  sx={{ fontWeight: "600", color: "#fff", textAlign: "center",  }}
                 >
                   {recipe.recipeName}
                 </Typography>
               </Box>
+
+              <Box
+                    sx={{
+                      marginBottom: "1rem",
+                      backgroundColor: "#fff", // White background for the box
+                      padding: "1rem",
+                      borderRadius: 2,
+                      boxShadow: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: "500",
+                        color: "#7e91ff", // Soft purple for instructions
+                        marginBottom: "0.5rem",
+                      }}
+                    >
+                      <strong>Instructions:</strong>
+                    </Typography>
+                    {Array.isArray(recipe.instructions) ? (
+                      recipe.instructions.map((instruction, idx) => (
+                        <Typography key={idx} variant="body2" sx={{ color: "#000000" }}>
+                          {instruction.number}. {instruction.step}
+                        </Typography>
+                      ))
+                    ) : (
+                      <Typography variant="body2" sx={{ color: "#7e91ff" }}>
+                        {recipe.instructions || "No instructions available"}
+                      </Typography>
+                    )}
+                  </Box>
   
               {/* Notes Section */}
               <Box sx={{ marginBottom: "1rem" }}>
@@ -193,6 +236,8 @@ export default function RecipeList() {
                   <strong>Date:</strong> {recipe.date || "N/A"}
                 </Typography>
               </Box>
+
+              {/* Instructions Section */}
             </CardContent>
   
             {/* Delete Button */}
@@ -203,24 +248,7 @@ export default function RecipeList() {
                 right: "16px",
               }}
             >
-              <Button
-                variant="outlined"
-                color="error"
-                onClick={() => handleDelete(recipe.recipeId)}
-                sx={{
-                  padding: "8px 16px",
-                  border: "none",
-                  textTransform: "none",
-                  color: "#f44336",
-                  "&:hover": {
-                    backgroundColor: "rgba(244, 67, 54, 0.15)", // Subtle red hover background
-                    transform: "scale(1.1)", // Slightly scale up the icon
-                    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)", // Add subtle shadow
-                  },
-                }}
-              >
-                <FaTrashAlt size={20} />
-              </Button>
+              <DeleteButton onClick={() => handleDelete(recipe.recipeId)} />
             </Box>
           </Card>
         ))}

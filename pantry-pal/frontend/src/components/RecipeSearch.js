@@ -20,6 +20,8 @@ import {
   FaRegStar,
 } from "react-icons/fa";
 
+import FavoriteButton from "./FavouriteButton";
+
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
 export default function RecipeSearch({ onSearch }) {
@@ -150,26 +152,15 @@ export default function RecipeSearch({ onSearch }) {
               sx={{ marginBottom: "1.5rem", borderRadius: "8px", boxShadow: 3, backgroundColor: "#fffae1" }}
             >
               <CardContent>
-                <Typography variant="h6" sx={{ fontWeight: "bold", color: "#7e91ff" }} gutterBottom>
-                  {recipe.recipeName}
-                </Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "1rem",
-                    marginBottom: "1rem",
-                  }}
-                >
-                  <Chip
-                    label={`Missing Ingredients: ${recipe.missedIngredientCount}`}
-                    sx={{ backgroundColor: "#7e91ff", color: "#fff" }}
-                  />
-                  <Chip
-                    label={`Ingredients: ${recipe.ingredients.length}`}
-                    sx={{ backgroundColor: "#7e91ff", color: "#fff" }}
-                  />
-                </Box>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Typography variant="h6" sx={{ fontWeight: "bold", color: "#7e91ff" }} gutterBottom>
+                {recipe.recipeName}
+              </Typography>
+              <FavoriteButton
+                isFavorite={favorites.has(recipe.recipeId)}
+                onClick={() => handleFavoriteClick(recipe)}
+              />
+            </Box>
                 <Typography variant="body2" color="text.secondary">
                   <strong>Ingredients:</strong> {recipe.ingredients.join(", ")}
                 </Typography>
@@ -201,18 +192,6 @@ export default function RecipeSearch({ onSearch }) {
                     Full Recipe Source
                   </a>
                 </Typography>
-
-                {/* Star Button to add to favorites */}
-                <IconButton
-                  onClick={() => handleFavoriteClick(recipe)}
-                  onMouseLeave={(e) => (e.target.style.color = "")}
-                  sx={{
-                    color: favorites.has(recipe.recipeId) ? "#e4e642" : "gray",
-                    marginLeft: "auto",
-                  }}
-                >
-                  {favorites.has(recipe.recipeId) ? <FaStar /> : <FaRegStar />}
-                </IconButton>
               </CardContent>
             </Card>
           ))

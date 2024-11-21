@@ -12,7 +12,8 @@ import {
   Card,
   Tooltip,
 } from "@mui/material";
-import { FaPlusCircle, FaTrashAlt, FaArrowRight } from "react-icons/fa";
+import { FaPlusCircle, FaArrowRight } from "react-icons/fa";
+import DeleteButton from "./DeleteButton";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 const PURPLE = "#7e91ff";
@@ -250,14 +251,7 @@ export default function ShoppingListSection() {
                   </Tooltip>
 
                   <Tooltip title="Delete Ingredient" enterDelay={0}>
-                    <IconButton
-                      edge="end"
-                      onClick={() => handleDeleteItem(item.ingredientName)}
-                      color="error"
-                      sx={{ padding: "0.5rem" }}
-                    >
-                      <FaTrashAlt />
-                    </IconButton>
+                  <DeleteButton onClick={() => handleDeleteItem(item.ingredientName)} />
                   </Tooltip>
                 </Box>
               </Card>

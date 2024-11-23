@@ -24,8 +24,8 @@ router.get('/pantry', (req, res, next) => {
 
 router.post('/pantry', (req, res, next) => {
     const uid = req.uid;
-    const { ingredientName, purchaseDate, expirationDate, frozen, mealPlan } = req.body;
-    addToPantry(uid, ingredientName, purchaseDate, expirationDate, frozen, mealPlan).then((ingredient) => {
+    const { ingredientName, purchaseDate, expirationDate, frozen, mealPlans } = req.body;
+    addToPantry(uid, ingredientName, purchaseDate, expirationDate, frozen, mealPlans).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
         console.error("Error adding to pantry:", error);
@@ -72,8 +72,8 @@ router.get('/shopping-list', (req, res, next) => {
 
 router.post('/shopping-list', (req, res, next) => {
     const uid = req.uid;
-    const { ingredientName, mealPlan } = req.body;
-    addToShoppingList(uid, ingredientName, mealPlan).then((ingredient) => {
+    const { ingredientName, mealPlans } = req.body;
+    addToShoppingList(uid, ingredientName, mealPlans).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
         console.error("Error adding to shopping list:", error);

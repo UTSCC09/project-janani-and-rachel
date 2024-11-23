@@ -9,6 +9,8 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import Signup from "@/components/Signup";
@@ -19,19 +21,50 @@ import ShoppingListSection from "@/components/ShoppingListSection";
 import CalendarSection from "@/components/CalendarSection";
 import RecipeSearch from "@/components/RecipeSearch";
 import styles from "@/styles/Home.module.css";
+import { auth } from "../../config/firebase"; // Adjust the import path as needed
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState("signin");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   useEffect(() => {
     // Check if the token is present in localStorage
-    const token = localStorage.getItem("idToken");
-    if (token) {
-      setIsAuthenticated(true);
-      setActiveSection("recipes"); // Set the default section for authenticated users
+    const idToken = localStorage.getItem("idToken");
+    if (idToken) {
+      auth.onAuthStateChanged(async (user) => {
+        if (user) {
+          try {
+            const idToken = await user.getIdToken(true); // Force refresh the token
+            localStorage.setItem("idToken", idToken);
+            setIsAuthenticated(true);
+            setActiveSection("recipes"); // Set the default section for authenticated users
+          } catch (error) {
+            console.error("Error getting ID token:", error);
+            setSessionExpired(true); // Show Snackbar if there's an error getting the new token
+          }
+        } else {
+          setSessionExpired(true); // Show Snackbar if the user is not authenticated
+        }
+      });
     }
+
+    const unsubscribe = auth.onIdTokenChanged(async (user) => {
+      if (user) {
+        try {
+          const idToken = await user.getIdToken(true); // Force refresh the token
+          localStorage.setItem("idToken", idToken);
+        } catch (error) {
+          console.error("Error getting ID token:", error);
+          setSessionExpired(true); // Show Snackbar if there's an error getting the new token
+        }
+      } else {
+        setSessionExpired(true); // Show Snackbar if the user is not authenticated
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const handleSignIn = () => {
@@ -55,6 +88,11 @@ export default function Home() {
   const handleMenuClose = (section) => {
     setActiveSection(section);
     setAnchorEl(null);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSessionExpired(false);
+    handleSignout();
   };
 
   return (
@@ -145,7 +183,7 @@ export default function Home() {
       >
         {isAuthenticated ? (
           <>
-            {activeSection === "recipes" && <RecipeSection />}
+            {activeSection === "recipes" && <RecipeSection onSignOut={handleSignout} />}
             {activeSection === "ingredients" && <IngredientsSection />}
             {activeSection === "shoppingList" && <ShoppingListSection />}
             {activeSection === "calendar" && <CalendarSection />}
@@ -157,7 +195,18 @@ export default function Home() {
             {activeSection === "signin" && <Signin onSignIn={handleSignIn} onSignUpClick={() => setActiveSection("signup")} />}
           </>
         )}
-      </Box> 
+      </Box>
+
+      {/* Snackbar for session expiration */}
+      <Snackbar
+        open={sessionExpired}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="warning" sx={{ width: '100%' }}>
+          Your session expired. Please log out and log back in.
+        </Alert>
+      </Snackbar>
     </>
   );
 }

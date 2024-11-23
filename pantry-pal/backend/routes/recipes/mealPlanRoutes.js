@@ -1,0 +1,38 @@
+import express from 'express';
+import { getMealPlan, addRecipeToMealPlan } from '../../services/mealPlanServices.js';  
+import { verifyToken } from '../../middleware/authMiddleware.js';
+
+export const router = express.Router();
+router.use(verifyToken);
+
+router.get('/', (req, res, next) => {
+    // get all recipes in the meal plan
+    const uid = req.uid;
+    getMealPlan(uid)
+        .then((recipes) => {
+            return res.status(200).json(recipes);
+        }).catch((error) => {
+            console.error("Error fetching meal plan:", error);
+            res.status(error.status || 500)
+                .json({ error: error.message || "An error occurred while fetching meal plan." });
+        });
+});
+
+router.post('/', (req, res, next) => {
+   // add a recipe to the meal plan
+   const uid = req.uid;
+   const { recipeId, ingredients, date } = req.body;
+   addRecipeToMealPlan(uid, recipeId, ingredients, date)
+       .then((recipe) => {
+           return res.status(200).json(recipe);
+       }).catch((error) => {
+           console.error("Error adding recipe to meal plan:", error);
+           res.status(error.status || 500)
+               .json({ error: error.message || "An error occurred while adding recipe to meal plan." });
+       });
+});
+
+router.delete('/:recipeId', (req, res, next) => {
+    // remove a recipe from the meal plan
+    const uid = req.uid;
+});

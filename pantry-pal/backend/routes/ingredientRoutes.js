@@ -1,7 +1,7 @@
 import express from 'express';
 import { getPantry, addToPantry, removeFromPantry, modifyInPantry }  
     from '../services/ingredientServices.js';
-import { getShoppingList, addToShoppingList, removeFromShoppingCart, modifyInShoppingCart } 
+import { getShoppingList, addToShoppingList, removeFromShoppingList, modifyInShoppingList } 
     from '../services/ingredientServices.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
 
@@ -84,7 +84,7 @@ router.post('/shopping-list', (req, res, next) => {
 
 router.patch('/shopping-list', (req, res, next) => {
     const uid = req.uid;
-    modifyInShoppingCart(uid, req.body).then((ingredient) => {
+    modifyInShoppingList(uid, req.body).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
         console.error("Error modifying in shopping list:", error);
@@ -96,7 +96,7 @@ router.patch('/shopping-list', (req, res, next) => {
 router.delete('/shopping-list/:ingredientName', (req, res, next) => {
     const uid = req.uid;
     const ingredientName = req.params.ingredientName;
-    removeFromShoppingCart(uid, ingredientName).then((ingredient) => {
+    removeFromShoppingList(uid, ingredientName).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
         console.error("Error removing from shopping list:", error);

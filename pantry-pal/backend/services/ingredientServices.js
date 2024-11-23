@@ -29,13 +29,14 @@ export async function getPantry(uid, lim=10, lastVisibleIngredient=null) {
     };
 }
 
-export async function addToPantry(uid, ingredientName, purchaseDate=new Date(), expirationDate=null, frozen=false) {
+export async function addToPantry(uid, ingredientName, purchaseDate=new Date(), expirationDate=null, frozen=false, mealPlans=[]) {
     const pantryRef = db.collection('Users').doc(uid).collection('Pantry').doc(ingredientName);
     const ingredientData = {
         ingredientName,
         purchaseDate,
         expirationDate,
-        frozen
+        frozen,
+        mealPlans
     };
     await pantryRef.set(ingredientData);
     return ingredientData;
@@ -47,7 +48,11 @@ export async function modifyInPantry(uid, ingredient) {
     if (!ingredientData.exists) {
         throw { status: 404, message: "Ingredient does not exist in pantry." };
     }
-    let { newIngredientName, ...updatedIngredientData } = ingredient; 
+    let { newIngredientName, ...updatedIngredientData } = ingredient;
+    if (updatedIngredientData.mealPlans && ingredientData.data().mealPlans) {
+        updatedIngredientData.mealPlans = [ ...ingredientData.data().mealPlans, ...updatedIngredientData.mealPlans ];
+    }
+    console.log(updatedIngredientData.mealPlans); 
     if (newIngredientName) {
         updatedIngredientData.ingredientName = newIngredientName;
     }
@@ -98,16 +103,17 @@ export async function getShoppingList(uid, lim=10, lastVisibleIngredient = null)
     };
 }
 
-export async function addToShoppingList(uid, ingredientName) {
+export async function addToShoppingList(uid, ingredientName, mealPlans=[]) {
     const shoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList').doc(ingredientName);
     const ingredientData = { 
-        ingredientName: ingredientName 
+        ingredientName: ingredientName,
+        mealPlans: mealPlans
     };
     await shoppingListRef.set(ingredientData);
     return ingredientData;
 }
 
-export async function modifyInShoppingCart(uid, ingredient) {
+export async function modifyInShoppingList(uid, ingredient) {
     const shoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList').doc(ingredient.ingredientName);
     const ingredientData = shoppingListRef.get();
     if (!ingredientData.exists) {
@@ -116,6 +122,9 @@ export async function modifyInShoppingCart(uid, ingredient) {
     let { newIngredientName, ...updatedIngredientData } = ingredient; 
     if (newIngredientName) {
         updatedIngredientData.ingredientName = newIngredientName;
+    }
+    if (updatedIngredientData.mealPlans && ingredientData.data().mealPlans) {
+        updatedIngredientData.mealPlans = [ ...ingredientData.data().mealPlans, ...updatedIngredientData.mealPlans ];
     }
     await shoppingListRef.update(updatedIngredientData);
     const newIngredientData = await shoppingListRef.get();
@@ -128,7 +137,7 @@ export async function modifyInShoppingCart(uid, ingredient) {
     return newIngredientData.data();
 }
 
-export async function removeFromShoppingCart(uid, ingredientName) {
+export async function removeFromShoppingList(uid, ingredientName) {
     const shoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList').doc(ingredientName);
     const ingredientData = await shoppingListRef.get();
     if (!ingredientData.exists) {

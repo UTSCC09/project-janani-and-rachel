@@ -1,5 +1,6 @@
 import express from 'express';
 import { router as favRecipeRoutes } from './favRecipeRoutes.js';
+import { router as mealPlanRoutes } from './mealPlanRoutes.js';
 import { searchRecipesByKeyword, searchRecipesByMaxMatching, searchRecipesByMinMissing} 
     from '../../services/searchRecipeServices.js';
 import { verifyToken } from '../../middleware/authMiddleware.js';
@@ -7,6 +8,7 @@ import { verifyToken } from '../../middleware/authMiddleware.js';
 export const router = express.Router();
 
 router.use('/favorites', favRecipeRoutes);
+router.use('/meal-plans', mealPlanRoutes);
 router.use(verifyToken);
 
 // SEARCH RECIPES

@@ -1,6 +1,7 @@
 import { db } from '../config/firebase.js';
 
 export async function getPantry(uid, lim=10, lastVisibleIngredient=null) {
+    uid = 'Janani'; // for testing purposes
     const pantryRef = db.collection('Users').doc(uid).collection('Pantry');
     let q = pantryRef.orderBy('ingredientName').limit(lim);
 
@@ -42,13 +43,25 @@ export async function addToPantry(uid, ingredientName, purchaseDate=new Date(), 
 }
 
 export async function modifyInPantry(uid, ingredient) {
+    uid = 'Janani'; // for testing purposes
+    
     const pantryRef = db.collection('Users').doc(uid).collection('Pantry').doc(ingredient.ingredientName);
     const ingredientData = await pantryRef.get();
     if (!ingredientData.exists) {
         throw { status: 404, message: "Ingredient does not exist in pantry." };
     }
-    await pantryRef.update(ingredient);
+    let { newIngredientName, ...updatedIngredientData } = ingredient; 
+    if (newIngredientName) {
+        updatedIngredientData.ingredientName = newIngredientName;
+    }
+    await pantryRef.update(updatedIngredientData);
     const newIngredientData = await pantryRef.get();
+    // if they specific a new ingredient name, we need to delete the old one and create a new one
+    if (newIngredientName) {
+        await pantryRef.delete();
+        const newPantryRef = db.collection('Users').doc(uid).collection('Pantry').doc(newIngredientName);
+        await newPantryRef.set(newIngredientData.data());
+    }
     return newIngredientData.data();
 }
 
@@ -103,8 +116,18 @@ export async function modifyInShoppingCart(uid, ingredient) {
     if (!ingredientData.exists) {
         throw { status: 404, message: "Ingredient does not exist in shopping list."};
     }
-    await shoppingListRef.update(ingredient);
-    const newIngredientData = shoppingListRef.get();
+    let { newIngredientName, ...updatedIngredientData } = ingredient; 
+    if (newIngredientName) {
+        updatedIngredientData.ingredientName = newIngredientName;
+    }
+    await shoppingListRef.update(updatedIngredientData);
+    const newIngredientData = await shoppingListRef.get();
+    // if they specific a new ingredient name, we need to delete the old one and create a new one
+    if (newIngredientName) {
+        await shoppingListRef.delete();
+        const newShoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList').doc(newIngredientName);
+        await newShoppingListRef.set(newIngredientData.data());
+    }
     return newIngredientData.data();
 }
 

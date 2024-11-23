@@ -7,7 +7,7 @@ import { verifyToken } from '../middleware/authMiddleware.js';
 
 export const router = express.Router();
 
-router.use(verifyToken);
+//router.use(verifyToken);
 
 router.get('/pantry', (req, res, next) => {
     const uid = req.uid;

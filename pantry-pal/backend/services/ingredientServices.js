@@ -1,7 +1,6 @@
 import { db } from '../config/firebase.js';
 
 export async function getPantry(uid, lim=10, lastVisibleIngredient=null) {
-    uid = 'Janani'; // for testing purposes
     const pantryRef = db.collection('Users').doc(uid).collection('Pantry');
     let q = pantryRef.orderBy('ingredientName').limit(lim);
 
@@ -43,8 +42,6 @@ export async function addToPantry(uid, ingredientName, purchaseDate=new Date(), 
 }
 
 export async function modifyInPantry(uid, ingredient) {
-    uid = 'Janani'; // for testing purposes
-    
     const pantryRef = db.collection('Users').doc(uid).collection('Pantry').doc(ingredient.ingredientName);
     const ingredientData = await pantryRef.get();
     if (!ingredientData.exists) {

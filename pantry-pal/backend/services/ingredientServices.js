@@ -29,14 +29,14 @@ export async function getPantry(uid, lim=10, lastVisibleIngredient=null) {
     };
 }
 
-export async function addToPantry(uid, ingredientName, purchaseDate=new Date(), expirationDate=null, frozen=false, mealPlans=[]) {
+export async function addToPantry(uid, ingredientName, purchaseDate=new Date(), expirationDate=null, frozen=false, mealPlan=[]) {
     const pantryRef = db.collection('Users').doc(uid).collection('Pantry').doc(ingredientName);
     const ingredientData = {
         ingredientName,
         purchaseDate,
         expirationDate,
         frozen,
-        mealPlans
+        mealPlan: mealPlan
     };
     await pantryRef.set(ingredientData);
     return ingredientData;
@@ -49,10 +49,10 @@ export async function modifyInPantry(uid, ingredient) {
         throw { status: 404, message: "Ingredient does not exist in pantry." };
     }
     let { newIngredientName, ...updatedIngredientData } = ingredient;
-    if (updatedIngredientData.mealPlans && ingredientData.data().mealPlans) {
-        updatedIngredientData.mealPlans = [ ...ingredientData.data().mealPlans, ...updatedIngredientData.mealPlans ];
+    if (updatedIngredientData.mealPlan && ingredientData.data().mealPlan) {
+        updatedIngredientData.mealPlan = [ ...ingredientData.data().mealPlan, ...updatedIngredientData.mealPlan ];
     }
-    console.log(updatedIngredientData.mealPlans); 
+    console.log(updatedIngredientData.mealPlan); 
     if (newIngredientName) {
         updatedIngredientData.ingredientName = newIngredientName;
     }
@@ -103,11 +103,11 @@ export async function getShoppingList(uid, lim=10, lastVisibleIngredient = null)
     };
 }
 
-export async function addToShoppingList(uid, ingredientName, mealPlans=[]) {
+export async function addToShoppingList(uid, ingredientName, mealPlan=[]) {
     const shoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList').doc(ingredientName);
     const ingredientData = { 
         ingredientName: ingredientName,
-        mealPlans: mealPlans
+        mealPlan: mealPlan
     };
     await shoppingListRef.set(ingredientData);
     return ingredientData;
@@ -123,8 +123,8 @@ export async function modifyInShoppingList(uid, ingredient) {
     if (newIngredientName) {
         updatedIngredientData.ingredientName = newIngredientName;
     }
-    if (updatedIngredientData.mealPlans && ingredientData.data().mealPlans) {
-        updatedIngredientData.mealPlans = [ ...ingredientData.data().mealPlans, ...updatedIngredientData.mealPlans ];
+    if (updatedIngredientData.mealPlan && ingredientData.data().mealPlan) {
+        updatedIngredientData.mealPlan = [ ...ingredientData.data().mealPlan, ...updatedIngredientData.mealPlan ];
     }
     await shoppingListRef.update(updatedIngredientData);
     const newIngredientData = await shoppingListRef.get();

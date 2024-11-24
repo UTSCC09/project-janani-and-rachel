@@ -1,49 +1,42 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import RecipeSuggestion from "@/components/RecipeSuggestion";
-import DeleteButton from "./DeleteButton"
+import IngredientDetails from "./IngredientDetails";
+import IngredientActions from "./IngredientActions";
+import IngredientForm from "./IngredientForm";
+import PurpleButton from "./PurpleButton";
 
 import {
   Box,
-  TextField,
-  Button,
-  Checkbox,
-  FormControlLabel,
   Typography,
-  CircularProgress,
   List,
   ListItem,
-  IconButton,
-  Tooltip,
+  CircularProgress,
   Snackbar,
   Alert,
 } from "@mui/material";
 
 import {
   FaPlus,
-  FaCheckCircle,
-  FaRegCalendarAlt,
-  FaRegCalendar,
   FaMinus,
 } from "react-icons/fa";
 
-import { MdEdit } from "react-icons/md";
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
 export default function IngredientsSection() {
-  const formRef = useRef(null); // Create a reference for the form container
+  const formRef = useRef(null);
   const [ingredients, setIngredients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newIngredient, setNewIngredient] = useState({
     ingredientName: "",
-    purchaseDate: new Date().toISOString().split("T")[0], // Defaults to current date in 'yyyy-mm-dd' format
-    expirationDate: "", // Defaults to empty string
+    purchaseDate: new Date().toISOString().split("T")[0],
+    expirationDate: "",
     frozen: false,
   });
-  const [editingIngredient, setEditingIngredient] = useState(null); // State for ingredient being edited
-  const [showForm, setShowForm] = useState(false); // State to manage form visibility
+  const [editingIngredient, setEditingIngredient] = useState(null);
+  const [showForm, setShowForm] = useState(false);
   const [lastVisible, setLastVisible] = useState(null);
   const [hasMore, setHasMore] = useState(true);
-  const [error, setError] = useState(null); // State for error message
+  const [error, setError] = useState(null);
   const observer = useRef();
   const initialFetch = useRef(true);
 
@@ -116,7 +109,6 @@ export default function IngredientsSection() {
   const handleAddOrUpdateIngredient = (e) => {
     e.preventDefault();
   
-    // Check if the ingredient already exists
     if (
       (!editingIngredient && ingredients.some((ingredient) => ingredient.ingredientName.toLowerCase() === newIngredient.ingredientName.toLowerCase())) ||
       (editingIngredient && ingredients.some((ingredient) => ingredient.ingredientName.toLowerCase() === newIngredient.ingredientName.toLowerCase() && ingredient.ingredientName !== editingIngredient.ingredientName))
@@ -129,8 +121,8 @@ export default function IngredientsSection() {
     const requestBody = editingIngredient
       ? {
           ...newIngredient,
-          ingredientName: editingIngredient.ingredientName, // Preserve original ingredient name for update
-          newIngredientName: newIngredient.ingredientName, // Add newIngredientName for update
+          ingredientName: editingIngredient.ingredientName,
+          newIngredientName: newIngredient.ingredientName,
         }
       : newIngredient;
   
@@ -152,7 +144,6 @@ export default function IngredientsSection() {
       })
       .then((data) => {
         if (editingIngredient) {
-          // Update the ingredient in the list
           setIngredients((prev) =>
             prev.map((ingredient) =>
               ingredient.ingredientName === editingIngredient.ingredientName
@@ -161,15 +152,13 @@ export default function IngredientsSection() {
             )
           );
         } else {
-          // Add the new ingredient to the list
           setIngredients((prev) => [...prev, newIngredient]);
         }
   
-        // Reset form and state
         setEditingIngredient(null);
         setNewIngredient({
           ingredientName: "",
-          purchaseDate: new Date().toISOString().split("T")[0], // Reset to current date
+          purchaseDate: new Date().toISOString().split("T")[0],
           expirationDate: "",
           frozen: false,
         });
@@ -214,7 +203,6 @@ export default function IngredientsSection() {
     });
     setShowForm(true);
 
-    // Scroll to the form when an ingredient is being edited
     setTimeout(() => {
       formRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 100);
@@ -222,16 +210,14 @@ export default function IngredientsSection() {
 
   const handleToggleForm = () => {
     if (showForm) {
-      // Reset newIngredient state when hiding the form (Cancel)
       setNewIngredient({
         ingredientName: "",
-        purchaseDate: new Date().toISOString().split("T")[0], // Reset to current date
+        purchaseDate: new Date().toISOString().split("T")[0],
         expirationDate: "",
         frozen: false,
       });
-      setEditingIngredient(null); // Clear editing state
+      setEditingIngredient(null);
     } else {
-      // Scroll to the form when opening it
       setTimeout(() => {
         formRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 100);
@@ -257,13 +243,11 @@ export default function IngredientsSection() {
       return "Invalid Date";
     }
   
-    // Format the date in Eastern Standard Time (EST)
     const options = { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" };
     return new Intl.DateTimeFormat("en-US", options).format(
       new Date(date.toLocaleString("en-US", { timeZone: "UTC" }))
     );
   };
-  
   
   return (
     <Box sx={{ padding: 3, maxWidth: "900px", margin: "0 auto" }}>
@@ -275,7 +259,7 @@ export default function IngredientsSection() {
       >
         Pantry Ingredients
       </Typography>
-  
+
       <List>
         {ingredients.map((ingredient, index) => (
           <Box key={index}>
@@ -289,230 +273,37 @@ export default function IngredientsSection() {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "flex-start",
-                transition: "transform 0.3s ease, box-shadow 0.3s ease", // Smooth transition for scale and shadow
+                transition: "transform 0.3s ease, box-shadow 0.3s ease",
                 "&:hover": {
-                  transform: "scale(1.05)", // Slightly increase the size
-                  boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)", // Add subtle shadow
+                  transform: "scale(1.05)",
+                  boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
                 },
               }}
             >
-              {/* Left Section: Ingredient Details */}
-              <Box sx={{ display: "flex", flexDirection: "column", flex: 1 }}>
-                {/* Ingredient Name */}
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: "bold",
-                    marginBottom: 1,
-                    color: "#ffffff", // White text color
-                    padding: "4px 8px", // Add padding inside the box
-                    backgroundColor: "#7e91ff", // Pastel purple background
-                    borderRadius: 2, // Rounded corners for the box
-                    display: "inline-block", // To make sure it doesn't take full width
-                  }}
-                >
-                  {ingredient.ingredientName}
-                </Typography>
-  
-                {/* Expiration, Purchase Date, and Frozen Status */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    marginBottom: 1,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      marginBottom: 0.5,
-                    }}
-                  >
-                    <FaRegCalendarAlt
-                      style={{
-                        marginRight: "8px",
-                        fontSize: "16px",
-                        color: "#7e91ff",
-                      }}
-                    />
-                    <Typography variant="body2" sx={{ color: "#777" }}>
-                      Expiration: {formatDate(ingredient.expirationDate) || "N/A"}
-                    </Typography>
-                  </Box>
-  
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      marginBottom: 0.5,
-                    }}
-                  >
-                    <FaRegCalendar
-                      style={{
-                        marginRight: "8px",
-                        fontSize: "16px",
-                        color: "#7e91ff",
-                      }}
-                    />
-                    <Typography variant="body2" sx={{ color: "#777" }}>
-                      Purchased: {formatDate(ingredient.purchaseDate) || "N/A"}
-                    </Typography>
-                  </Box>
-  
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <FaCheckCircle
-                      color={ingredient.frozen ? "#7e91ff" : "gray"}
-                      style={{ marginRight: "8px", fontSize: "16px" }}
-                    />
-                    <Typography
-                      variant="body2"
-                      sx={{ color: ingredient.frozen ? "#7e91ff" : "gray" }}
-                    >
-                      {ingredient.frozen ? "Frozen" : "Not Frozen"}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Box>
-  
-              {/* Right Section: Action Buttons (Delete/Edit) */}
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "100%",
-                }}
-              >
-                <Tooltip title="Edit Ingredient" arrow>
-                  <IconButton
-                    color="primary"
-                    sx={{ marginLeft: 1 }}
-                    onClick={() => handleEditIngredient(ingredient)}
-                  >
-                    <MdEdit />
-                  </IconButton>
-                </Tooltip>
-                <DeleteButton onClick={() => handleDeleteIngredient(ingredient.ingredientName)} />
-              </Box>
+              <IngredientDetails ingredient={ingredient} formatDate={formatDate} />
+              <IngredientActions
+                onEdit={() => handleEditIngredient(ingredient)}
+                onDelete={() => handleDeleteIngredient(ingredient.ingredientName)}
+              />
             </ListItem>
             {editingIngredient === ingredient && (
-              <Box
-                ref={formRef} // Add the reference here
-                component="form"
+              <IngredientForm
+                ingredient={newIngredient}
+                onChange={handleInputChange}
                 onSubmit={handleAddOrUpdateIngredient}
-                sx={{
-                  backgroundColor: "#f9f9f9",
-                  padding: 2,
-                  borderRadius: 2,
-                  boxShadow: 2,
-                  marginTop: 2,
+                onCancel={() => {
+                  setEditingIngredient(null);
+                  setShowForm(false);
+                  setNewIngredient({
+                    ingredientName: "",
+                    purchaseDate: new Date().toISOString().split("T")[0],
+                    expirationDate: "",
+                    frozen: false,
+                  });
                 }}
-              >
-                {/* Ingredient Name */}
-                <TextField
-                  label="Ingredient Name"
-                  name="ingredientName"
-                  value={newIngredient.ingredientName}
-                  onChange={handleInputChange}
-                  fullWidth
-                  margin="normal"
-                  required
-                />
-  
-                {/* Purchase Date */}
-                <TextField
-                  type="date"
-                  label="Purchase Date"
-                  name="purchaseDate"
-                  value={newIngredient.purchaseDate}
-                  onChange={handleInputChange}
-                  fullWidth
-                  margin="normal"
-                  required
-                  slotProps={{
-                    inputLabel: {
-                      shrink: true,
-                    },
-                  }}
-                />
-  
-                {/* Expiration Date */}
-                <TextField
-                  type="date"
-                  label="Expiration Date"
-                  name="expirationDate"
-                  value={newIngredient.expirationDate}
-                  onChange={handleInputChange}
-                  fullWidth
-                  margin="normal"
-                  slotProps={{
-                    inputLabel: {
-                      shrink: true,
-                    },
-                  }}
-                />
-  
-                {/* Frozen Checkbox */}
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={newIngredient.frozen}
-                      onChange={handleInputChange}
-                      name="frozen"
-                      color="#7e91ff"
-                    />
-                  }
-                  label="Frozen"
-                  sx={{ marginBottom: 2 }}
-                />
-  
-                {/* Submit Button */}
-                <Button
-                  type="submit"
-                  variant="contained"
-                  fullWidth
-                  sx={{
-                    padding: 1.5,
-                    backgroundColor: "#7e91ff", // Custom background color (pastel purple)
-                    "&:hover": {
-                      backgroundColor: "#6b82e0", // Custom hover background color
-                    },
-                  }}
-                >
-                  {editingIngredient ? "Update Ingredient" : "Add Ingredient"}
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={() => {
-                    setEditingIngredient(null);
-                    setShowForm(false);
-                    setNewIngredient({
-                      ingredientName: "",
-                      purchaseDate: new Date().toISOString().split("T")[0], // Reset to current date
-                      expirationDate: "",
-                      frozen: false,
-                    });
-                  }}
-                  startIcon={<FaMinus />}
-                  sx={{
-                    marginTop: 2,
-                    display: "block",
-                    width: "100%",
-                    textAlign: "center",
-                    fontSize: "0.9rem",
-                    color: "#7e91ff", // Button text color
-                    borderColor: "#7e91ff", // Border color
-                    "&:hover": {
-                      backgroundColor: "#7e91ff", // Hover background
-                      color: "#fff", // Hover text color
-                    },
-                  }}
-                >
-                  Cancel
-                </Button>
-              </Box>
+                formRef={formRef}
+                isEditing={true}
+              />
             )}
           </Box>
         ))}
@@ -522,125 +313,39 @@ export default function IngredientsSection() {
           <CircularProgress />
         </Box>
       )}
-  
+
       {!editingIngredient && (
         <>
-          <Button
-            variant="outlined"
+          <PurpleButton
             onClick={handleToggleForm}
-            startIcon={showForm ? <FaMinus /> : <FaPlus />} // Conditional icon
-            sx={{
-              marginBottom: 2,
-              display: "block",
-              width: "100%",
-              textAlign: "center",
-              fontSize: "1.1rem",
-              color: "#7e91ff", // Button text color
-              borderColor: "#7e91ff", // Border color
-              "&:hover": {
-                backgroundColor: "#7e91ff", // Hover background
-                color: "#fff", // Hover text color
-              },
-            }}
+            startIcon={showForm ? <FaMinus /> : <FaPlus />}
           >
             {showForm ? "Cancel" : "Add Ingredient"}
-          </Button>
-  
+          </PurpleButton>
+
           {showForm && (
-            <Box
-              ref={formRef} // Add the reference here
-              component="form"
+            <IngredientForm
+              ingredient={newIngredient}
+              onChange={handleInputChange}
               onSubmit={handleAddOrUpdateIngredient}
-              sx={{
-                backgroundColor: "#f9f9f9",
-                padding: 2,
-                borderRadius: 2,
-                boxShadow: 2,
-                marginTop: 2,
+              onCancel={() => {
+                setShowForm(false);
+                setNewIngredient({
+                  ingredientName: "",
+                  purchaseDate: new Date().toISOString().split("T")[0],
+                  expirationDate: "",
+                  frozen: false,
+                });
               }}
-            >
-              {/* Ingredient Name */}
-              <TextField
-                label="Ingredient Name"
-                name="ingredientName"
-                value={newIngredient.ingredientName}
-                onChange={handleInputChange}
-                fullWidth
-                margin="normal"
-                required
-              />
-  
-              {/* Purchase Date */}
-              <TextField
-                type="date"
-                label="Purchase Date"
-                name="purchaseDate"
-                value={newIngredient.purchaseDate}
-                onChange={handleInputChange}
-                fullWidth
-                margin="normal"
-                required
-                slotProps={{
-                  inputLabel: {
-                    shrink: true,
-                  },
-                }}
-              />
-  
-              {/* Expiration Date */}
-              <TextField
-                type="date"
-                label="Expiration Date"
-                name="expirationDate"
-                value={newIngredient.expirationDate}
-                onChange={handleInputChange}
-                fullWidth
-                margin="normal"
-                slotProps={{
-                  inputLabel: {
-                    shrink: true,
-                  },
-                }}
-              />
-  
-              {/* Frozen Checkbox */}
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={newIngredient.frozen}
-                    onChange={handleInputChange}
-                    name="frozen"
-                    color="#7e91ff"
-                  />
-                }
-                label="Frozen"
-                sx={{ marginBottom: 2 }}
-              />
-  
-              {/* Submit Button */}
-              <Button
-                type="submit"
-                variant="contained"
-                fullWidth
-                sx={{
-                  padding: 1.5,
-                  backgroundColor: "#7e91ff", // Custom background color (pastel purple)
-                  "&:hover": {
-                    backgroundColor: "#6b82e0", // Custom hover background color
-                  },
-                }}
-              >
-                Add Ingredient
-              </Button>
-            </Box>
+              formRef={formRef}
+              isEditing={false}
+            />
           )}
         </>
       )}
-  
-      {/* Recipe Suggestions */}
+
       <RecipeSuggestion ingredients={ingredients} />
-  
-      {/* Error Snackbar */}
+
       <Snackbar
         open={!!error}
         autoHideDuration={6000}

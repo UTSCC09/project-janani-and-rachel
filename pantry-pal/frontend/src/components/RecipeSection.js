@@ -8,9 +8,7 @@ import {
   Box,
   Container,
 } from "@mui/material";
-import { FaTrashAlt } from "react-icons/fa"; // Import FaTrashAlt
 import DeleteButton from "./DeleteButton";
-// import { response } from "express";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 

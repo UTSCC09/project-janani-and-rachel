@@ -1,15 +1,15 @@
 import { db } from '../config/firebase.js';
 import { addToPantry, addToShoppingList, modifyInPantry, modifyInShoppingList } from './ingredientServices.js';
 
-export async function getMealPlan(uid, limit=10, lastVisibleMealPlanId=null) {
+export async function getMealPlan(uid, limit=10, lastVisibleMealId=null) {
     try {
         // return meals in the meal plan sorted by date
         const mealPlanRef = db.collection('Users').doc(uid).collection('MealPlan');
         let q = mealPlanRef.orderBy('date').limit(limit);
 
-        if (lastVisibleMealPlanId) {
+        if (lastVisibleMealId) {
             // retrieve the last visible meal plan if it exists
-            const lastVisibleDoc = await mealPlanRef.doc(lastVisibleMealPlanId).get();
+            const lastVisibleDoc = await mealPlanRef.doc(lastVisibleMealId).get();
             if (lastVisibleDoc.exists) {
                 q = mealPlanRef.orderBy('date').startAfter(lastVisibleDoc).limit(limit);
             }
@@ -114,7 +114,7 @@ export async function addRecipeToMealPlan(uid, recipeId, ingredients, date=new D
         await mealPlanRef.update({ frozenIngredients });
         
         return { 
-            mealPlanId: mealPlanRef.id, 
+            mealId: mealPlanRef.id, 
             recipeId, 
             pantryIngredients, 
             shoppingListIngredients, 
@@ -127,13 +127,13 @@ export async function addRecipeToMealPlan(uid, recipeId, ingredients, date=new D
     }
 }
 
-export async function removeRecipeFromMealPlan(uid, mealPlanId) {
-    mealPlanId = String(mealPlanId);
+export async function removeRecipeFromMealPlan(uid, mealId) {
+    mealId = String(mealId);
 
     try {
         // remove recipe from meal plan
-        console.log("Removing recipe from meal plan:", mealPlanId);
-        const mealPlanRef = db.collection('Users').doc(uid).collection('MealPlan').doc(mealPlanId);
+        console.log("Removing recipe from meal plan:", mealId);
+        const mealPlanRef = db.collection('Users').doc(uid).collection('MealPlan').doc(mealId);
         const mealPlanDoc = await mealPlanRef.get();
         if (!mealPlanDoc.exists) {
             throw { status: 404, message: "Meal plan not found." };
@@ -149,7 +149,7 @@ export async function removeRecipeFromMealPlan(uid, mealPlanId) {
         const favRecipeDoc = await favRecipeRef.get();
         if (favRecipeDoc.exists) {
             const favRecipeData = favRecipeDoc.data();
-            const favRecipeMealPlans = favRecipeData.mealPlans.filter((mp) => mp !== mealPlanId)
+            const favRecipeMealPlans = favRecipeData.mealPlans.filter((mp) => mp !== mealId)
             await favRecipeRef.update({
                 planned: (favRecipeMealPlans.length > 0),
                 mealPlans: favRecipeMealPlans
@@ -164,7 +164,7 @@ export async function removeRecipeFromMealPlan(uid, mealPlanId) {
             if (pantryIngredient.exists) {
                 const pantryData = pantryIngredient.data();
                 await pantryIngredient.ref.update({
-                    mealPlans: pantryData.mealPlans.filter((mp) => mp !== mealPlanId)
+                    mealPlans: pantryData.mealPlans.filter((mp) => mp !== mealId)
                 });
             }
         }));
@@ -173,7 +173,7 @@ export async function removeRecipeFromMealPlan(uid, mealPlanId) {
             if (shoppingListIngredient.exists) {
                 const shoppingListData = shoppingListIngredient.data();
                 await shoppingListIngredient.ref.update({
-                    mealPlans: shoppingListData.mealPlans.filter((mp) => mp !== mealPlanId)
+                    mealPlans: shoppingListData.mealPlans.filter((mp) => mp !== mealId)
                 });
             }
         }));

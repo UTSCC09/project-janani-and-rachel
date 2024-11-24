@@ -1,0 +1,134 @@
+import React from "react";
+import {
+  Box,
+  TextField,
+  Button,
+  Checkbox,
+  FormControlLabel,
+} from "@mui/material";
+import { FaMinus } from "react-icons/fa";
+
+const AddIngredientForm = ({
+  newIngredient,
+  handleInputChange,
+  handleAddOrUpdateIngredient,
+  editingIngredient,
+  setEditingIngredient,
+  setShowForm,
+  setNewIngredient,
+}) => {
+  return (
+    <Box
+      component="form"
+      onSubmit={handleAddOrUpdateIngredient}
+      sx={{
+        backgroundColor: "#f9f9f9",
+        padding: 2,
+        borderRadius: 2,
+        boxShadow: 2,
+        marginTop: 2,
+      }}
+    >
+      {/* Ingredient Name */}
+      <TextField
+        label="Ingredient Name"
+        name="ingredientName"
+        value={newIngredient.ingredientName}
+        onChange={handleInputChange}
+        fullWidth
+        margin="normal"
+        required
+      />
+
+      {/* Purchase Date */}
+      <TextField
+        type="date"
+        label="Purchase Date"
+        name="purchaseDate"
+        value={newIngredient.purchaseDate}
+        onChange={handleInputChange}
+        fullWidth
+        margin="normal"
+        required
+        InputLabelProps={{
+          shrink: true,
+        }}
+      />
+
+      {/* Expiration Date */}
+      <TextField
+        type="date"
+        label="Expiration Date"
+        name="expirationDate"
+        value={newIngredient.expirationDate}
+        onChange={handleInputChange}
+        fullWidth
+        margin="normal"
+        InputLabelProps={{
+          shrink: true,
+        }}
+      />
+
+      {/* Frozen Checkbox */}
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={newIngredient.frozen}
+            onChange={handleInputChange}
+            name="frozen"
+            color="#7e91ff"
+          />
+        }
+        label="Frozen"
+        sx={{ marginBottom: 2 }}
+      />
+
+      {/* Submit Button */}
+      <Button
+        type="submit"
+        variant="contained"
+        fullWidth
+        sx={{
+          padding: 1.5,
+          backgroundColor: "#7e91ff", // Custom background color (pastel purple)
+          "&:hover": {
+            backgroundColor: "#6b82e0", // Custom hover background color
+          },
+        }}
+      >
+        {editingIngredient ? "Update Ingredient" : "Add Ingredient"}
+      </Button>
+      <Button
+        variant="outlined"
+        onClick={() => {
+          setEditingIngredient(null);
+          setShowForm(false);
+          setNewIngredient({
+            ingredientName: "",
+            purchaseDate: new Date().toISOString().split("T")[0], // Reset to current date
+            expirationDate: "",
+            frozen: false,
+          });
+        }}
+        startIcon={<FaMinus />}
+        sx={{
+          marginTop: 2,
+          display: "block",
+          width: "100%",
+          textAlign: "center",
+          fontSize: "0.9rem",
+          color: "#7e91ff", // Button text color
+          borderColor: "#7e91ff", // Border color
+          "&:hover": {
+            backgroundColor: "#7e91ff", // Hover background
+            color: "#fff", // Hover text color
+          },
+        }}
+      >
+        Cancel
+      </Button>
+    </Box>
+  );
+};
+
+export default AddIngredientForm;

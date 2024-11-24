@@ -12,12 +12,12 @@ import {
   CircularProgress,
   List,
   ListItem,
-  ListItemText,
   IconButton,
   Tooltip,
   Snackbar,
   Alert,
 } from "@mui/material";
+
 import {
   FaPlus,
   FaCheckCircle,
@@ -25,6 +25,7 @@ import {
   FaRegCalendar,
   FaMinus,
 } from "react-icons/fa";
+
 import { MdEdit } from "react-icons/md";
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
@@ -114,33 +115,35 @@ export default function IngredientsSection() {
 
   const handleAddOrUpdateIngredient = (e) => {
     e.preventDefault();
-
+  
     // Check if the ingredient already exists
-    if (!editingIngredient && ingredients.some((ingredient) => ingredient.ingredientName.toLowerCase() === newIngredient.ingredientName.toLowerCase())) {
+    if (
+      (!editingIngredient && ingredients.some((ingredient) => ingredient.ingredientName.toLowerCase() === newIngredient.ingredientName.toLowerCase())) ||
+      (editingIngredient && ingredients.some((ingredient) => ingredient.ingredientName.toLowerCase() === newIngredient.ingredientName.toLowerCase() && ingredient.ingredientName !== editingIngredient.ingredientName))
+    ) {
       setError("Ingredient already exists.");
       return;
     }
-
     const method = editingIngredient ? "PATCH" : "POST";
     const endpoint = `${domain}/api/ingredients/pantry`;
     const requestBody = editingIngredient
       ? {
           ...newIngredient,
-          ingredientName: editingIngredient.ingredientName, // Preserve ingredient name for update
+          ingredientName: editingIngredient.ingredientName, // Preserve original ingredient name for update
+          newIngredientName: newIngredient.ingredientName, // Add newIngredientName for update
         }
       : newIngredient;
-
+  
     fetch(endpoint, {
       method: method,
-      headers: { "Content-Type": "application/json",
-                 "Authorization":`Bearer ${localStorage.getItem('idToken')}`,
-                 'GoogleAccessToken': localStorage.getItem('accessToken')
-                },
-                 
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem('idToken')}`,
+        'GoogleAccessToken': localStorage.getItem('accessToken')
+      },
       body: JSON.stringify(requestBody),
     })
       .then((response) => {
-        console.log(response);
         if (response.ok) {
           return response.json();
         } else {
@@ -153,7 +156,7 @@ export default function IngredientsSection() {
           setIngredients((prev) =>
             prev.map((ingredient) =>
               ingredient.ingredientName === editingIngredient.ingredientName
-                ? { ...ingredient, ...newIngredient }
+                ? { ...ingredient, ...newIngredient, ingredientName: newIngredient.ingredientName }
                 : ingredient
             )
           );
@@ -161,7 +164,7 @@ export default function IngredientsSection() {
           // Add the new ingredient to the list
           setIngredients((prev) => [...prev, newIngredient]);
         }
-
+  
         // Reset form and state
         setEditingIngredient(null);
         setNewIngredient({
@@ -262,7 +265,6 @@ export default function IngredientsSection() {
   };
   
   
-
   return (
     <Box sx={{ padding: 3, maxWidth: "900px", margin: "0 auto" }}>
       <Typography
@@ -273,7 +275,7 @@ export default function IngredientsSection() {
       >
         Pantry Ingredients
       </Typography>
-
+  
       <List>
         {ingredients.map((ingredient, index) => (
           <Box key={index}>
@@ -311,7 +313,7 @@ export default function IngredientsSection() {
                 >
                   {ingredient.ingredientName}
                 </Typography>
-
+  
                 {/* Expiration, Purchase Date, and Frozen Status */}
                 <Box
                   sx={{
@@ -338,7 +340,7 @@ export default function IngredientsSection() {
                       Expiration: {formatDate(ingredient.expirationDate) || "N/A"}
                     </Typography>
                   </Box>
-
+  
                   <Box
                     sx={{
                       display: "flex",
@@ -357,7 +359,7 @@ export default function IngredientsSection() {
                       Purchased: {formatDate(ingredient.purchaseDate) || "N/A"}
                     </Typography>
                   </Box>
-
+  
                   <Box sx={{ display: "flex", alignItems: "center" }}>
                     <FaCheckCircle
                       color={ingredient.frozen ? "#7e91ff" : "gray"}
@@ -372,7 +374,7 @@ export default function IngredientsSection() {
                   </Box>
                 </Box>
               </Box>
-
+  
               {/* Right Section: Action Buttons (Delete/Edit) */}
               <Box
                 sx={{
@@ -412,18 +414,13 @@ export default function IngredientsSection() {
                 <TextField
                   label="Ingredient Name"
                   name="ingredientName"
-                  value={
-                    editingIngredient
-                      ? editingIngredient.ingredientName
-                      : newIngredient.ingredientName
-                  }
+                  value={newIngredient.ingredientName}
                   onChange={handleInputChange}
                   fullWidth
                   margin="normal"
                   required
-                  disabled={!!editingIngredient} // Disable if editing
                 />
-
+  
                 {/* Purchase Date */}
                 <TextField
                   type="date"
@@ -440,7 +437,7 @@ export default function IngredientsSection() {
                     },
                   }}
                 />
-
+  
                 {/* Expiration Date */}
                 <TextField
                   type="date"
@@ -456,7 +453,7 @@ export default function IngredientsSection() {
                     },
                   }}
                 />
-
+  
                 {/* Frozen Checkbox */}
                 <FormControlLabel
                   control={
@@ -470,7 +467,7 @@ export default function IngredientsSection() {
                   label="Frozen"
                   sx={{ marginBottom: 2 }}
                 />
-
+  
                 {/* Submit Button */}
                 <Button
                   type="submit"
@@ -525,7 +522,7 @@ export default function IngredientsSection() {
           <CircularProgress />
         </Box>
       )}
-
+  
       {!editingIngredient && (
         <>
           <Button
@@ -548,7 +545,7 @@ export default function IngredientsSection() {
           >
             {showForm ? "Cancel" : "Add Ingredient"}
           </Button>
-
+  
           {showForm && (
             <Box
               ref={formRef} // Add the reference here
@@ -572,7 +569,7 @@ export default function IngredientsSection() {
                 margin="normal"
                 required
               />
-
+  
               {/* Purchase Date */}
               <TextField
                 type="date"
@@ -589,7 +586,7 @@ export default function IngredientsSection() {
                   },
                 }}
               />
-
+  
               {/* Expiration Date */}
               <TextField
                 type="date"
@@ -605,7 +602,7 @@ export default function IngredientsSection() {
                   },
                 }}
               />
-
+  
               {/* Frozen Checkbox */}
               <FormControlLabel
                 control={
@@ -619,7 +616,7 @@ export default function IngredientsSection() {
                 label="Frozen"
                 sx={{ marginBottom: 2 }}
               />
-
+  
               {/* Submit Button */}
               <Button
                 type="submit"
@@ -639,10 +636,10 @@ export default function IngredientsSection() {
           )}
         </>
       )}
-
+  
       {/* Recipe Suggestions */}
       <RecipeSuggestion ingredients={ingredients} />
-
+  
       {/* Error Snackbar */}
       <Snackbar
         open={!!error}

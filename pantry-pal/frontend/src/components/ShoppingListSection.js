@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import { FaPlusCircle, FaArrowRight } from "react-icons/fa";
 import DeleteButton from "./DeleteButton";
+import EditButton from "./EditButton";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 const PURPLE = "#7e91ff";
@@ -23,6 +24,7 @@ export default function ShoppingListSection() {
   const [shoppingList, setShoppingList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newItem, setNewItem] = useState("");
+  const [editingItem, setEditingItem] = useState(null);
   const [lastVisible, setLastVisible] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const observer = useRef();
@@ -155,6 +157,43 @@ export default function ShoppingListSection() {
     }
   };
 
+  const handleEditItem = (item) => {
+    setEditingItem(item);
+    setNewItem(item.ingredientName);
+  };
+
+  const handleUpdateItem = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${domain}/api/ingredients/shopping-list`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+          "GoogleAccessToken": localStorage.getItem('accessToken')
+        },
+        body: JSON.stringify({
+          ingredientName: editingItem.ingredientName,
+          newIngredientName: newItem,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      setShoppingList((prevItems) =>
+        prevItems.map((item) =>
+          item.ingredientName === editingItem.ingredientName
+            ? { ...item, ingredientName: newItem }
+            : item
+        )
+      );
+      setEditingItem(null);
+      setNewItem("");
+    } catch (error) {
+      console.error("Error updating item:", error);
+    }
+  };
+
   return (
     <Box sx={{ padding: "2rem", maxWidth: 800, margin: "auto" }}>
       <Typography
@@ -171,7 +210,7 @@ export default function ShoppingListSection() {
 
       <Box
         component="form"
-        onSubmit={handleAddItem}
+        onSubmit={editingItem ? handleUpdateItem : handleAddItem}
         sx={{ display: "flex", flexDirection: "row", gap: 2 }}
       >
         <TextField
@@ -197,7 +236,7 @@ export default function ShoppingListSection() {
           }}
           startIcon={<FaPlusCircle />}
         >
-          Add
+          {editingItem ? "Update" : "Add"}
         </Button>
       </Box>
 
@@ -235,10 +274,27 @@ export default function ShoppingListSection() {
                 ref={index === shoppingList.length - 1 ? lastItemRef : null}
               >
                 <ListItemText
-                  primary={item.ingredientName}
+                  primary={
+                    editingItem && editingItem.ingredientName === item.ingredientName ? (
+                      <Box component="form" onSubmit={handleUpdateItem} sx={{ display: "flex", alignItems: "center" }}>
+                        <TextField
+                          value={newItem}
+                          onChange={handleInputChange}
+                          autoFocus
+                          sx={{ marginRight: 2 }}
+                        />
+                        <Button type="submit" variant="contained" color="primary">
+                          Save
+                        </Button>
+                      </Box>
+                    ) : (
+                      <span>{item.ingredientName}</span>
+                    )
+                  }
                   sx={{ textDecoration: "none", fontWeight: 500, color: "#333" }}
                 />
                 <Box>
+                  <EditButton onClick={() => handleEditItem(item)} />
                   <Tooltip title="Move to Pantry" enterDelay={0}>
                     <IconButton
                       edge="end"
@@ -251,7 +307,7 @@ export default function ShoppingListSection() {
                   </Tooltip>
 
                   <Tooltip title="Delete Ingredient" enterDelay={0}>
-                  <DeleteButton onClick={() => handleDeleteItem(item.ingredientName)} />
+                    <DeleteButton onClick={() => handleDeleteItem(item.ingredientName)} />
                   </Tooltip>
                 </Box>
               </Card>

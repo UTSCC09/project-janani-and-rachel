@@ -1,5 +1,5 @@
 import express from 'express';
-import { getMealPlan, addRecipeToMealPlan, removeRecipeFromMealPlan } from '../../services/mealPlanServices.js';  
+import { getMealPlan, getMealById, addRecipeToMealPlan, removeRecipeFromMealPlan } from '../../services/mealPlanServices.js';  
 import { verifyToken } from '../../middleware/authMiddleware.js';
 
 export const router = express.Router();
@@ -16,6 +16,19 @@ router.get('/', (req, res, next) => {
             console.error("Error fetching meal plan:", error);
             res.status(error.status || 500)
                 .json({ error: error.message || "An error occurred while fetching meal plan." });
+        });
+});
+
+router.get('/:mealId', (req, res, next) => {
+    const uid = req.uid;
+    const mealId = req.params.mealId;
+    getMealById(uid, mealId)
+        .then((recipe) => {
+            return res.status(200).json(recipe);
+        }).catch((error) => {
+            console.error("Error fetching meal plan by id:", error);
+            res.status(error.status || 500)
+                .json({ error: error.message || "An error occurred while fetching meal plan by id." });
         });
 });
 

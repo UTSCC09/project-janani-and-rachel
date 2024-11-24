@@ -40,6 +40,23 @@ export async function getMealPlan(uid, limit=10, lastVisibleMealId=null) {
     }
 };
 
+export async function getMealById(uid, mealId) {
+    try {
+        const mealPlanRef = db.collection('Users').doc(uid).collection('MealPlan').doc(mealId);
+        const mealPlanDoc = await mealPlanRef.get();
+        if (!mealPlanDoc.exists) {
+            throw { status: 404, message: "Meal plan not found." };
+        }
+
+        const mealPlanData = mealPlanDoc.data();
+        const recipeDoc = await mealPlanData.recipe.get();
+        return { ...mealPlanData, recipe: recipeDoc.data() };
+    } catch (error) {
+        console.error("Error fetching meal plan by id:", error);
+        throw error;
+    }
+}
+
 export async function addRecipeToMealPlan(uid, recipeId, ingredients, date=new Date()) {
     recipeId = String(recipeId);
 

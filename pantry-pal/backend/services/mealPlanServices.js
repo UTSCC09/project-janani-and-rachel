@@ -156,8 +156,7 @@ export async function removeRecipeFromMealPlan(uid, mealId) {
             throw { status: 404, message: "Meal plan not found." };
         }
 
-        const mealPlanData = mealPlanDoc.data();
-        const { recipe, pantryIngredients, shoppingListIngredients } = mealPlanDoc.data();
+        const { recipe, pantryIngredients, shoppingListIngredients, frozenIngredients, date } = mealPlanDoc.data();
         await mealPlanRef.delete();
 
         // update favorite recipe's planned status and meal plan reference
@@ -195,7 +194,7 @@ export async function removeRecipeFromMealPlan(uid, mealId) {
             }
         }));
 
-        return mealPlanData;
+        return { mealId, recipeId: recipe.id, pantryIngredients, shoppingListIngredients, frozenIngredients, date };
     }
     catch (error) {
         console.error("Error removing recipe from meal plan:", error);

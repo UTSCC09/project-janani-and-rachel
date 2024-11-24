@@ -1,10 +1,21 @@
 import { db } from '../config/firebase.js';
 import { addToPantry, addToShoppingList, modifyInPantry, modifyInShoppingList } from './ingredientServices.js';
 
-export async function getMealPlan(uid) {
+export async function getMealPlan(uid, limit=10, lastVisibleMealPlanId=null) {
     try {
+        // return meals in the meal plan sorted by date
         const mealPlanRef = db.collection('Users').doc(uid).collection('MealPlan');
-        const mealPlanSnapshot = await mealPlanRef.get();
+        let q = mealPlanRef.orderBy('date').limit(limit);
+
+        if (lastVisibleMealPlanId) {
+            // retrieve the last visible meal plan if it exists
+            const lastVisibleDoc = await mealPlanRef.doc(lastVisibleMealPlanId).get();
+            if (lastVisibleDoc.exists) {
+                q = mealPlanRef.orderBy('date').startAfter(lastVisibleDoc).limit(limit);
+            }
+        }
+
+        const mealPlanSnapshot = await q.get();
         console.log("Fetching meal plan:", mealPlanSnapshot.size);
 
         if (mealPlanSnapshot.empty) {
@@ -17,7 +28,12 @@ export async function getMealPlan(uid) {
             return { ...data, recipe: recipeDoc.data() };
         }));
 
-        return mealPlan;
+        const newLastVisible = mealPlanSnapshot.docs[mealPlanSnapshot.docs.length - 1].id;
+
+        return {
+            mealPlan,
+            lastVisible: newLastVisible
+        };
     } catch (error) {
         console.error("Error fetching meal plan:", error);
         throw error;
@@ -32,9 +48,11 @@ export async function addRecipeToMealPlan(uid, recipeId, ingredients, date=new D
         console.log("Adding recipe to meal plan:", recipeId, ingredients, date);
         const mealPlanRef = db.collection('Users').doc(uid).collection('MealPlan').doc();
         const recipeRef = db.collection('Recipes').doc(recipeId);
-        await mealPlanRef.set({ recipe: recipeRef, ingredients, date });
+        const pantryIngredients = await ingredients.filter((ingredient) => ingredient.inPantry).map((ingredient) => ingredient.ingredientName); 
+        const shoppingListIngredients = await ingredients.filter((ingredient) => !ingredient.inPantry).map((ingredient) => ingredient.ingredientName);
+        await mealPlanRef.set({ recipe: recipeRef, pantryIngredients, shoppingListIngredients, date });
 
-        // update favorite recipe's planned status and meal plan reference
+        // update planned status and meal plan references in favourite recipes
         const favRecipeRef = db.collection('Users').doc(uid).collection('FavRecipes').doc(recipeId);
         const favRecipeDoc = await favRecipeRef.get();
         if (favRecipeDoc.exists) {
@@ -46,53 +64,125 @@ export async function addRecipeToMealPlan(uid, recipeId, ingredients, date=new D
         }
 
         // add ingredients to pantry or shopping list asynchronously
+        // keep track of frozen ingredients
+        let frozenIngredients = [];
+        const pantryRef = db.collection('Users').doc(uid).collection('Pantry');
+        const shoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList');
         await Promise.all(ingredients.map(async (ingredient) => {
             if (ingredient.inPantry) {
-                try {
-                    // try to modify the ingredient in the pantry
-                    await modifyInPantry(uid, {
-                        ingredientName: ingredient.ingredientName,
-                        mealPlans: [mealPlanRef.id]
+                // check if ingredient exists in pantry
+                const pantryIngredient = await pantryRef.doc(ingredient.ingredientName).get();
+                if (pantryIngredient.exists) {
+                    // add meal plan reference to pantry ingredient
+                    const pantryData = pantryIngredient.data();
+                    await pantryRef.doc(ingredient.ingredientName).update({
+                        mealPlans: [...(pantryData.mealPlans || []), mealPlanRef.id]
                     });
-                } catch (error) {
-                    if (error.status === 404) {
-                        // if not found, add it to the pantry
-                        await addToPantry(
-                            uid,
-                            ingredient.ingredientName,
-                            Date(),
-                            null, // expiration date
-                            false, // not frozen
-                            [mealPlanRef.id]
-                        );
-                    } else {
-                        throw error;
+                    // if ingredient is frozen, add to frozen ingredients list
+                    if (pantryData.frozen) {
+                        frozenIngredients.push(ingredient.ingredientName);
                     }
+                } else { // ingredient doesn't already exist in pantry so add it
+                    await addToPantry(
+                        uid,
+                        ingredient.ingredientName,
+                        Date(),
+                        null, // expiration date
+                        false, // not frozen
+                        [mealPlanRef.id]
+                    );
                 }
-            } else {
-                try {
-                    // try to modify the ingredient in the shopping list
-                    await modifyInShoppingList(uid, {
-                        ingredientName: ingredient.ingredientName,
-                        mealPlans: [mealPlanRef.id]
+            } else { // put ingredient in shopping list
+                // check if ingredient exists in shopping list
+                const shoppingListIngredient = await shoppingListRef.doc(ingredient.ingredientName).get();
+                if (shoppingListIngredient.exists) {
+                    // add meal plan reference to shopping list ingredient
+                    const shoppingListData = shoppingListIngredient.data();
+                    await shoppingListRef.doc(ingredient.ingredientName).update({
+                        mealPlans: [...(shoppingListData.mealPlans || []), mealPlanRef.id]
                     });
-                } catch (error) {
-                    if (error.status === 404) {
-                        // If not found, add it to the shopping list
-                        await addToShoppingList(
-                            uid,
-                            ingredient.ingredientName,
-                            [mealPlanRef.id]
-                        );
-                    } else {
-                        throw error;
-                    }
+                } else { // ingredient doesn't already exist in shopping list so add it
+                    await addToShoppingList(
+                        uid,
+                        ingredient.ingredientName,
+                        [mealPlanRef.id]
+                    );
                 }
             }
         }));
-    return { recipeId, ingredients, date };
+        // add frozen ingredients to meal plan
+        await mealPlanRef.update({ frozenIngredients });
+        
+        return { 
+            mealPlanId: mealPlanRef.id, 
+            recipeId, 
+            pantryIngredients, 
+            shoppingListIngredients, 
+            frozenIngredients, 
+            date 
+        };
     } catch (error) {
         console.error("Error adding recipe to meal plan:", error);
         throw error;
     }
 }
+
+export async function removeRecipeFromMealPlan(uid, mealPlanId) {
+    mealPlanId = String(mealPlanId);
+
+    try {
+        // remove recipe from meal plan
+        console.log("Removing recipe from meal plan:", mealPlanId);
+        const mealPlanRef = db.collection('Users').doc(uid).collection('MealPlan').doc(mealPlanId);
+        const mealPlanDoc = await mealPlanRef.get();
+        if (!mealPlanDoc.exists) {
+            throw { status: 404, message: "Meal plan not found." };
+        }
+
+        const mealPlanData = mealPlanDoc.data();
+        const { recipe, pantryIngredients, shoppingListIngredients } = mealPlanDoc.data();
+        await mealPlanRef.delete();
+
+        // update favorite recipe's planned status and meal plan reference
+        const recipeRef = db.collection('Recipes').doc(recipe.id);
+        const favRecipeRef = db.collection('Users').doc(uid).collection('FavRecipes').doc(recipeRef.id);
+        const favRecipeDoc = await favRecipeRef.get();
+        if (favRecipeDoc.exists) {
+            const favRecipeData = favRecipeDoc.data();
+            const favRecipeMealPlans = favRecipeData.mealPlans.filter((mp) => mp !== mealPlanId)
+            await favRecipeRef.update({
+                planned: (favRecipeMealPlans.length > 0),
+                mealPlans: favRecipeMealPlans
+            });
+        }
+
+        // remove link to this meal in the pantry or shopping list
+        const pantryRef = db.collection('Users').doc(uid).collection('Pantry');
+        const shoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList');
+        await Promise.all(pantryIngredients.map(async (ingredientName) => {
+            const pantryIngredient = await pantryRef.doc(ingredientName).get();
+            if (pantryIngredient.exists) {
+                const pantryData = pantryIngredient.data();
+                await pantryIngredient.ref.update({
+                    mealPlans: pantryData.mealPlans.filter((mp) => mp !== mealPlanId)
+                });
+            }
+        }));
+        await Promise.all(shoppingListIngredients.map(async (ingredientName) => {
+            const shoppingListIngredient = await shoppingListRef.doc(ingredientName).get();
+            if (shoppingListIngredient.exists) {
+                const shoppingListData = shoppingListIngredient.data();
+                await shoppingListIngredient.ref.update({
+                    mealPlans: shoppingListData.mealPlans.filter((mp) => mp !== mealPlanId)
+                });
+            }
+        }));
+
+        return mealPlanData;
+    }
+    catch (error) {
+        console.error("Error removing recipe from meal plan:", error);
+        throw error;
+    }
+};
+

@@ -8,7 +8,7 @@ import { verifyToken } from '../../middleware/authMiddleware.js';
 export const router = express.Router();
 
 router.use('/favorites', favRecipeRoutes);
-router.use('/meal-plans', mealPlanRoutes);
+router.use('/meal-plan', mealPlanRoutes);
 router.use(verifyToken);
 
 // SEARCH RECIPES

@@ -115,7 +115,8 @@ export async function addToShoppingList(uid, ingredientName, mealPlans=[]) {
 
 export async function modifyInShoppingList(uid, ingredient) {
     const shoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList').doc(ingredient.ingredientName);
-    const ingredientData = shoppingListRef.get();
+    const ingredientData = await shoppingListRef.get();
+    
     if (!ingredientData.exists) {
         throw { status: 404, message: "Ingredient does not exist in shopping list."};
     }

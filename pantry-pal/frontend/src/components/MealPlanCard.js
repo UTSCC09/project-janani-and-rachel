@@ -4,6 +4,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import DeleteButton from './DeleteButton';
 
+const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
+
+
 const PURPLE = "#7e91ff";
 const YELLOW = "#fffae1";
 
@@ -15,42 +18,6 @@ const MealPlanCard = ({ mealPlan, index, expanded, handleToggle, handleDelete })
   // Parse the date string and convert to UTC
   const date = new Date(mealPlan.date);
   const formattedDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000).toLocaleDateString();
-
-  const handlePantryComparison = () => {
-    setLoading(true);
-    fetch(`${domain}/api/recipes/favorites/${mealPlan.recipe.recipeId}/pantry-comparison`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-        "GoogleAccessToken": localStorage.getItem('accessToken')
-      }
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        console.log('AI Pantry split:', data);
-        setAiSplit({
-          inPantry: data.matchingIngredients || [],
-          notInPantry: data.missingIngredients || [],
-        });
-        setOpen(true);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error with pantry comparison:', error);
-        setLoading(false);
-      });
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-    setAiSplit(null);
-  };
 
   return (
     <Card
@@ -66,6 +33,10 @@ const MealPlanCard = ({ mealPlan, index, expanded, handleToggle, handleDelete })
         width: "90%",
         left: "2%",
         marginTop: "1rem",
+        transition: "transform 0.3s ease-in-out", // Smooth transition for hover effect
+        "&:hover": {
+          transform: "scale(1.02)", // Zoom out effect on hover
+        },
       }}
     >
       <CardContent>
@@ -184,54 +155,6 @@ const MealPlanCard = ({ mealPlan, index, expanded, handleToggle, handleDelete })
           </>
         )}
       </CardContent>
-
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: "16px",
-          right: "16px",
-          display: "flex",
-          gap: "8px",
-        }}
-      >
-        <Tooltip title="Pantry Comparison" arrow>
-          <IconButton color="primary" onClick={handlePantryComparison}>
-            {loading ? <CircularProgress size={24} /> : <ExpandMoreIcon />}
-          </IconButton>
-        </Tooltip>
-      </Box>
-
-      {/* Pantry Comparison Dialog */}
-      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-        <DialogTitle>Pantry Comparison</DialogTitle>
-        <DialogContent>
-          {aiSplit && (
-            <>
-              <Typography variant="h6" sx={{ fontWeight: "600", color: PURPLE }}>
-                In Pantry
-              </Typography>
-              <List>
-                {aiSplit.inPantry.map((ingredient, index) => (
-                  <ListItem key={index}>{ingredient}</ListItem>
-                ))}
-              </List>
-              <Typography variant="h6" sx={{ fontWeight: "600", color: PURPLE }}>
-                Not in Pantry
-              </Typography>
-              <List>
-                {aiSplit.notInPantry.map((ingredient, index) => (
-                  <ListItem key={index}>{ingredient}</ListItem>
-                ))}
-              </List>
-            </>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Card>
   );
 };

@@ -139,6 +139,10 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete, handleEdit }) 
         flexDirection: "column",
         marginBottom: "1.5rem", // Reduced margin for better spacing
         position: "relative", // Enables absolute positioning for children
+        transition: "transform 0.3s ease-in-out", // Smooth transition for hover effect
+        "&:hover": {
+          transform: "scale(1.05)", // Zoom out effect on hover
+        },
       }}
     >
       <CardContent>

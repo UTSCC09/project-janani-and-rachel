@@ -127,6 +127,9 @@ export default function ShoppingListSection() {
   };
 
   const handleMoveToPantry = async (ingredientName) => {
+    const ingredient = shoppingList.find(item => item.ingredientName === ingredientName);
+    if (!ingredient) return;
+    console.log(ingredient);
     const today = new Date().toISOString().split("T")[0];
     try {
       const response = await fetch(`${domain}/api/ingredients/pantry`, {
@@ -139,6 +142,7 @@ export default function ShoppingListSection() {
         body: JSON.stringify({
           ingredientName,
           purchaseDate: today,
+          mealPlans: ingredient.mealPlans,
         }),
       });
       if (!response.ok) {

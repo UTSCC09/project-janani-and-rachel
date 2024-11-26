@@ -10,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors(corsConfig)); // enable CORS
-app.use(express.json()); // Middleware to parse JSON
+app.use(express.json()); // middleware to parse JSON
 
 // to display requests in console
 app.use((req, res, next) => {
@@ -18,7 +18,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/api/recipes', recipeRoutes); // Route for recipe-related requests
+app.use('/api/recipes', recipeRoutes);
 app.use('/api/ingredients', ingredientRoutes);
 
 app.use((req, res, next) => {

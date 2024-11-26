@@ -67,7 +67,13 @@ export async function addRecipeToMealPlan(uid, recipeId, ingredients, date=new D
         const recipeRef = db.collection('Recipes').doc(recipeId);
         const pantryIngredients = await ingredients.filter((ingredient) => ingredient.inPantry).map((ingredient) => ingredient.ingredientName); 
         const shoppingListIngredients = await ingredients.filter((ingredient) => !ingredient.inPantry).map((ingredient) => ingredient.ingredientName);
-        await mealPlanRef.set({ recipe: recipeRef, pantryIngredients, shoppingListIngredients, date });
+        await mealPlanRef.set({ 
+            recipe: recipeRef, 
+            pantryIngredients, 
+            shoppingListIngredients, 
+            date, 
+            mealId: mealPlanRef.id 
+        });
 
         // update planned status and meal plan references in favourite recipes
         const favRecipeRef = db.collection('Users').doc(uid).collection('FavRecipes').doc(recipeId);

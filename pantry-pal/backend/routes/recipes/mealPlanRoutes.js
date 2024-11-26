@@ -42,7 +42,9 @@ router.post('/reminders', (req, res, next) => {
     if (!googleAccessToken) {
         return res.status(401).json({ error: "Google access token required." });
     }
-    addThisWeeksMealReminders(uid, googleAccessToken)
+    const daysInAdvanceDefrost = req.body.daysInAdvanceDefrost || 1;
+    const daysInAdvanceBuy = req.body.daysInAdvanceBuy || 3;
+    addThisWeeksMealReminders(uid, googleAccessToken, daysInAdvanceDefrost, daysInAdvanceBuy)
         .then(() => {
             return res.status(200).json({ message: "Reminders added successfully." });
         }).catch((error) => {
@@ -62,7 +64,9 @@ router.post('/:mealId/reminders', (req, res, next) => {
     if (!googleAccessToken) {
         return res.status(401).json({ error: "Google access token required." });
     }
-    addMealReminders(uid, req.params.mealId, googleAccessToken)
+    const daysInAdvanceDefrost = req.body.daysInAdvanceDefrost || 1;
+    const daysInAdvanceBuy = req.body.daysInAdvanceBuy || 3;
+    addMealReminders(uid, req.params.mealId, googleAccessToken, daysInAdvanceDefrost, daysInAdvanceBuy)
         .then(() => {
             return res.status(200).json({ message: "Reminders added successfully." });
         }).catch((error) => {

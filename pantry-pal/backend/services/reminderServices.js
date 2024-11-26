@@ -98,7 +98,7 @@ export async function addMealReminders(uid, mealId, googleAccessToken, daysInAdv
     }));
 }
 
-export async function addThisWeeksMealReminders(uid, googleAccessToken) {
+export async function addThisWeeksMealReminders(uid, googleAccessToken, daysInAdvanceDefrost=1, daysInAdvanceBuy=3) {
     if (!googleAccessToken) {
         throw { status: 401, message: "Google access token required." };
     }
@@ -110,7 +110,7 @@ export async function addThisWeeksMealReminders(uid, googleAccessToken) {
 
     // loop through each meal plan and add to tasks list using above function 
     await Promise.all(mealPlans.docs.map(async (mealPlan) => {
-        await addMealReminders(uid, mealPlan.data().mealId, googleAccessToken);
+        await addMealReminders(uid, mealPlan.data().mealId, googleAccessToken, daysInAdvanceDefrost, daysInAdvanceBuy);
     }));
     
 }

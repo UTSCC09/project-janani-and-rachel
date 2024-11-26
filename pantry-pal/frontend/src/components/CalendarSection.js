@@ -1,189 +1,125 @@
-import { useState } from "react";
-import {
-  Box,
-  Typography,
-  Button,
-  List,
-  ListItem,
-  Checkbox,
-  CircularProgress,
-  Paper,
-  Card,
-  Tooltip,
-} from "@mui/material";
-import StyledTitle from "./StyledTitle";
+import React, { useState, useEffect } from 'react';
+import { Box, Container, Typography, CircularProgress } from '@mui/material';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import StyledTitle from './StyledTitle';
+import MealPlanCard from './MealPlanCard';
+
+const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
 const PURPLE = "#7e91ff";
-const YELLOW = "#fffae1";
 
 export default function CalendarSection() {
-  const [ingredients, setIngredients] = useState([
-    { name: "Apple", inPantry: false },
-    { name: "Banana", inPantry: true },
-    { name: "Carrot", inPantry: false },
-  ]);
+  const [mealPlans, setMealPlans] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [aiSplit, setAiSplit] = useState(null);
-  const [manualSplit, setManualSplit] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [lastVisible, setLastVisible] = useState(null);
+  const [expanded, setExpanded] = useState({});
 
-  const handlePantryComparison = () => {
+  useEffect(() => {
+    fetchMealPlans();
+  }, []);
+
+  const fetchMealPlans = () => {
     setLoading(true);
-    // Simulate AI call
-    setTimeout(() => {
-      setAiSplit({
-        inPantry: ingredients.filter((ingredient) => ingredient.inPantry),
-        notInPantry: ingredients.filter((ingredient) => !ingredient.inPantry),
+    const url = `${domain}/api/recipes/meal-plan?lastVisibleMealId=${lastVisible || ''}`;
+    const headers = {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+      "GoogleAccessToken": localStorage.getItem('accessToken')
+    };
+
+    fetch(url, {
+      method: "GET",
+      headers: headers
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (!data.mealPlan || data.mealPlan.length === 0) {
+          setHasMore(false);
+        } else {
+          setMealPlans(prevMealPlans => {
+            const newMealPlans = data.mealPlan.filter(
+              newMealPlan => !prevMealPlans.some(
+                existingMealPlan => existingMealPlan.recipe.recipeId === newMealPlan.recipe.recipeId
+              )
+            );
+            return [...prevMealPlans, ...newMealPlans];
+          });
+          setLastVisible(data.lastVisible);
+          setHasMore(data.mealPlan.length > 0);
+        }
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching meal plans:', error);
+        setLoading(false);
       });
-      setLoading(false);
-    }, 1000);
   };
 
-  const handleAddToPantry = () => {
-    // Send request to add ingredients to pantry
-    console.log("Adding to pantry:", aiSplit);
+  const handleToggle = (index) => {
+    setExpanded(prevExpanded => ({
+      ...prevExpanded,
+      [index]: !prevExpanded[index]
+    }));
   };
 
-  const handleManualSplit = () => {
-    setManualSplit(true);
-  };
-
-  const handleManualAddToPantry = () => {
-    const inPantry = ingredients.filter((ingredient) => ingredient.inPantry);
-    const notInPantry = ingredients.filter((ingredient) => !ingredient.inPantry);
-    console.log("Manually adding to pantry:", { inPantry, notInPantry });
-  };
-
-  const handleCheckboxChange = (index) => {
-    setIngredients((prev) =>
-      prev.map((ingredient, i) =>
-        i === index ? { ...ingredient, inPantry: !ingredient.inPantry } : ingredient
-      )
-    );
+  const handleDelete = (id) => {
+    console.log('Deleting meal plan:', id);
+    setLoading(true);
+    fetch(`${domain}/api/recipes/meal-plan/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+        "GoogleAccessToken": localStorage.getItem('accessToken')
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        setMealPlans(prevMealPlans => prevMealPlans.filter(mealPlan => mealPlan.id !== id));
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error deleting meal plan:', error);
+        setLoading(false);
+      });
   };
 
   return (
-    <Box sx={{ padding: "2rem", maxWidth: 800, margin: "auto" }}>
-      <StyledTitle>My Planned Meals</StyledTitle>
+    <Container maxWidth="lg">
+      <Box sx={{ marginBottom: 6 }}>
+        <StyledTitle>Meal Plans</StyledTitle>
+      </Box>
 
-      <Typography variant="h6" sx={{ marginBottom: "1rem", fontWeight: 600, color: PURPLE }}>
-        Meal Planning
-      </Typography>
-
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handlePantryComparison}
-        sx={{
-          backgroundColor: PURPLE,
-          "&:hover": { backgroundColor: "#6b82e0" },
-          marginBottom: "1rem",
-        }}
+      <InfiniteScroll
+        dataLength={mealPlans.length}
+        next={fetchMealPlans}
+        hasMore={hasMore}
+        loader={<CircularProgress sx={{ color: PURPLE }} />}
+        endMessage={
+          <Typography variant="body2" color="textSecondary" align="center">
+            No more meal plans
+          </Typography>
+        }
       >
-        Compare with Pantry (AI)
-      </Button>
-
-      {loading && (
-        <Box sx={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
-          <CircularProgress />
-        </Box>
-      )}
-
-      {aiSplit && (
-        <Paper
-          elevation={3}
-          sx={{
-            padding: "1rem",
-            marginBottom: "1.5rem",
-            backgroundColor: YELLOW,
-            borderRadius: 2,
-          }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 600, color: PURPLE }}>
-            AI Split
-          </Typography>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, color: PURPLE }}>
-            In Pantry
-          </Typography>
-          <List>
-            {aiSplit.inPantry.map((ingredient, index) => (
-              <ListItem key={index}>{ingredient.name}</ListItem>
-            ))}
-          </List>
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, color: PURPLE }}>
-            Not in Pantry
-          </Typography>
-          <List>
-            {aiSplit.notInPantry.map((ingredient, index) => (
-              <ListItem key={index}>{ingredient.name}</ListItem>
-            ))}
-          </List>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddToPantry}
-            sx={{
-              backgroundColor: PURPLE,
-              "&:hover": { backgroundColor: "#6b82e0" },
-              marginTop: "1rem",
-            }}
-          >
-            Add to Pantry
-          </Button>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={handleManualSplit}
-            sx={{
-              borderColor: PURPLE,
-              color: PURPLE,
-              "&:hover": { backgroundColor: "#6b82e0", color: "#fff" },
-              marginTop: "1rem",
-              marginLeft: "1rem",
-            }}
-          >
-            Add Manually
-          </Button>
-        </Paper>
-      )}
-
-      {manualSplit && (
-        <Paper
-          elevation={3}
-          sx={{
-            padding: "1rem",
-            marginBottom: "1.5rem",
-            backgroundColor: YELLOW,
-            borderRadius: 2,
-          }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 600, color: PURPLE }}>
-            Manual Split
-          </Typography>
-          <List>
-            {ingredients.map((ingredient, index) => (
-              <ListItem key={index}>
-                <Checkbox
-                  checked={ingredient.inPantry}
-                  onChange={() => handleCheckboxChange(index)}
-                />
-                {ingredient.name}
-              </ListItem>
-            ))}
-          </List>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleManualAddToPantry}
-            sx={{
-              backgroundColor: PURPLE,
-              "&:hover": { backgroundColor: "#6b82e0" },
-              marginTop: "1rem",
-            }}
-          >
-            Add to Pantry
-          </Button>
-        </Paper>
-      )}
-    </Box>
+        {mealPlans.map((mealPlan, index) => (
+          <MealPlanCard
+            key={index}
+            mealPlan={mealPlan}
+            index={index}
+            expanded={expanded}
+            handleToggle={handleToggle}
+            handleDelete={handleDelete}
+          />
+        ))}
+      </InfiniteScroll>
+    </Container>
   );
 }

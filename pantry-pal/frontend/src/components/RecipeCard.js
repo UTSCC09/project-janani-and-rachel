@@ -1,47 +1,75 @@
 import React, { useState } from 'react';
-import { Card, CardContent, Box, Typography, IconButton, Tooltip, Button, TextField, Checkbox, List, ListItem } from '@mui/material';
-import { MdEdit, MdEvent } from "react-icons/md";
+import { Card, CardContent, Box, Typography, IconButton, Tooltip, Button, TextField, Checkbox, List, ListItem, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress } from '@mui/material';
+import { MdEvent } from "react-icons/md";
 import DeleteButton from './DeleteButton';
-import EditButton from './EditButton';
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
 const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete, handleEdit }) => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [open, setOpen] = useState(false);
   const [aiSplit, setAiSplit] = useState(null);
   const [manualSplit, setManualSplit] = useState(false);
-  const [ingredients, setIngredients] = useState(recipe.ingredients);
+  const [ingredients, setIngredients] = useState(recipe.ingredients.map(ingredient => ({
+    name: ingredient,
+    inPantry: false,
+  })));
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value);
   };
 
   const handlePantryComparison = () => {
-    fetch(`${domain}/api/recipes/favorites/pantry-comparison`, {
-      method: "POST",
+    setLoading(true);
+    setErrorMessage('');
+    fetch(`${domain}/api/recipes/favorites/${recipe.recipeId}/pantry-comparison`, {
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
         "GoogleAccessToken": localStorage.getItem('accessToken')
-      },
-      body: JSON.stringify({ ingredients: recipe.ingredients })
+      }
     })
       .then(response => {
         if (!response.ok) {
+          if (response.status === 500) {
+            // Handle 500 error by opening the popup for manual split
+            setAiSplit(null);
+            setManualSplit(true);
+            setErrorMessage('AI split failed');
+            setOpen(true);
+            setLoading(false);
+            return;
+          }
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         return response.json();
       })
       .then(data => {
-        setAiSplit({
-          inPantry: data.inPantry,
-          notInPantry: data.notInPantry,
-        });
-        setShowDatePicker(true);
+        console.log('AI Pantry split:', data);
+        if (data && data.matchingIngredients && data.missingIngredients) {
+          setAiSplit({
+            inPantry: data.matchingIngredients,
+            notInPantry: data.missingIngredients,
+          });
+          setManualSplit(false);
+        } else {
+          setAiSplit(null);
+          setManualSplit(true);
+          setErrorMessage('AI split failed');
+        }
+        setOpen(true);
+        setLoading(false);
       })
       .catch(error => {
         console.error('Error with pantry comparison:', error);
+        setAiSplit(null);
+        setManualSplit(true);
+        setErrorMessage('AI split failed');
+        setOpen(true);
+        setLoading(false);
       });
   };
 
@@ -73,7 +101,7 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete, handleEdit }) 
       })
       .then(data => {
         console.log('Recipe added to meal plan:', data);
-        setShowDatePicker(false);
+        setOpen(false);
       })
       .catch(error => {
         console.error('Error adding recipe to meal plan:', error);
@@ -92,6 +120,13 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete, handleEdit }) 
     );
   };
 
+  const handleClose = () => {
+    setOpen(false);
+    setManualSplit(false);
+    setAiSplit(null);
+    setErrorMessage('');
+  };
+
   return (
     <Card
       ref={lastRecipeElementRef}
@@ -102,13 +137,8 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete, handleEdit }) 
         padding: "1.5rem",
         display: "flex",
         flexDirection: "column",
-        transition: "transform 0.3s ease, box-shadow 0.3s ease",
         marginBottom: "1.5rem", // Reduced margin for better spacing
         position: "relative", // Enables absolute positioning for children
-        "&:hover": {
-          transform: "scale(1.05)",
-          boxShadow: "0 6px 15px rgba(0, 0, 0, 0.1)",
-        },
       }}
     >
       <CardContent>
@@ -193,9 +223,36 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete, handleEdit }) 
             <strong>Date:</strong> {recipe.date || "N/A"}
           </Typography>
         </Box>
+      </CardContent>
 
-        {/* Meal Plan Date Picker */}
-        {showDatePicker && (
+      {/* Edit, Delete, and Meal Plan Buttons */}
+      <Box
+        sx={{
+          position: "absolute",
+          bottom: "16px",
+          right: "16px",
+          display: "flex",
+          gap: "8px",
+        }}
+      >
+        <DeleteButton onClick={handleDelete} />
+        <Tooltip title="Plan Recipe" arrow>
+          <IconButton color="primary" onClick={handlePantryComparison}>
+            {loading ? <CircularProgress size={24} /> : <MdEvent />}
+          </IconButton>
+        </Tooltip>
+      </Box>
+
+      {/* Meal Plan Modal */}
+      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+        <DialogTitle>Plan Recipe</DialogTitle>
+        <DialogContent>
+          {errorMessage && (
+            <Typography variant="body2" color="error" sx={{ marginBottom: "1rem" }}>
+              {errorMessage}
+            </Typography>
+          )}
+          {/* Meal Plan Date Picker */}
           <Box component="form" onSubmit={handleAddToMealPlan} sx={{ marginBottom: "1.5rem" }}>
             <TextField
               type="date"
@@ -209,105 +266,86 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete, handleEdit }) 
               }}
               required
             />
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              sx={{ marginTop: "1rem", backgroundColor: "#7e91ff" }}
-            >
-              Add to Meal Plan
-            </Button>
           </Box>
-        )}
 
-        {/* AI Split Section */}
-        {aiSplit && (
-          <Box sx={{ marginBottom: "1.5rem" }}>
-            <Typography variant="h6" sx={{ fontWeight: "600", color: "#7e91ff" }}>
-              AI Split
-            </Typography>
-            <Typography variant="subtitle1" sx={{ fontWeight: "600", color: "#7e91ff" }}>
-              In Pantry
-            </Typography>
-            <List>
-              {aiSplit.inPantry.map((ingredient, index) => (
-                <ListItem key={index}>{ingredient.ingredientName}</ListItem>
-              ))}
-            </List>
-            <Typography variant="subtitle1" sx={{ fontWeight: "600", color: "#7e91ff" }}>
-              Not in Pantry
-            </Typography>
-            <List>
-              {aiSplit.notInPantry.map((ingredient, index) => (
-                <ListItem key={index}>{ingredient.ingredientName}</ListItem>
-              ))}
-            </List>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleAddToMealPlan}
-              sx={{ marginTop: "1rem", backgroundColor: "#7e91ff" }}
-            >
-              Add to Meal Plan
-            </Button>
-            <Button
-              variant="outlined"
-              color="primary"
-              onClick={handleManualSplit}
-              sx={{ marginTop: "1rem", marginLeft: "1rem", borderColor: "#7e91ff", color: "#7e91ff" }}
-            >
-              Add Manually
-            </Button>
-          </Box>
-        )}
+          {/* AI Split Section */}
+          {aiSplit && (
+            <Box sx={{ marginBottom: "1.5rem" }}>
+              <Typography variant="h6" sx={{ fontWeight: "600", color: "#7e91ff" }}>
+                AI Split
+              </Typography>
+              <Typography variant="subtitle1" sx={{ fontWeight: "600", color: "#7e91ff" }}>
+                In Pantry
+              </Typography>
+              <List>
+                {aiSplit.inPantry.map((ingredient, index) => (
+                  <ListItem key={index}>{ingredient}</ListItem>
+                ))}
+              </List>
+              <Typography variant="subtitle1" sx={{ fontWeight: "600", color: "#7e91ff" }}>
+                Not in Pantry
+              </Typography>
+              <List>
+                {aiSplit.notInPantry.map((ingredient, index) => (
+                  <ListItem key={index}>{ingredient}</ListItem>
+                ))}
+              </List>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleAddToMealPlan}
+                sx={{ marginTop: "1rem", backgroundColor: "#7e91ff" }}
+              >
+                Add to Meal Plan
+              </Button>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={handleManualSplit}
+                sx={{ marginTop: "1rem", marginLeft: "1rem", borderColor: "#7e91ff", color: "#7e91ff" }}
+              >
+                Add Manually
+              </Button>
+            </Box>
+          )}
 
-        {/* Manual Split Section */}
-        {manualSplit && (
-          <Box sx={{ marginBottom: "1.5rem" }}>
-            <Typography variant="h6" sx={{ fontWeight: "600", color: "#7e91ff" }}>
-              Manual Split
-            </Typography>
-            <List>
-              {ingredients.map((ingredient, index) => (
-                <ListItem key={index}>
-                  <Checkbox
-                    checked={ingredient.inPantry}
-                    onChange={() => handleCheckboxChange(index)}
-                  />
-                  {ingredient.name}
-                </ListItem>
-              ))}
-            </List>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleAddToMealPlan}
-              sx={{ marginTop: "1rem", backgroundColor: "#7e91ff" }}
-            >
-              Add to Meal Plan
-            </Button>
-          </Box>
-        )}
-      </CardContent>
-
-      {/* Edit, Delete, and Meal Plan Buttons */}
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: "16px",
-          right: "16px",
-          display: "flex",
-          gap: "8px",
-        }}
-      >
-        <EditButton onClick={() => handleEdit(recipe.recipeId)} />
-        <DeleteButton onClick={() => handleDelete(recipe.recipeId)} />
-        <Tooltip title="Plan Recipe" arrow>
-          <IconButton color="primary" onClick={handlePantryComparison}>
-            <MdEvent />
-          </IconButton>
-        </Tooltip>
-      </Box>
+          {/* Manual Split Section */}
+          {manualSplit && (
+            <Box sx={{ marginBottom: "1.5rem" }}>
+              <Typography variant="h6" sx={{ fontWeight: "600", color: "#7e91ff" }}>
+                Manual Split
+              </Typography>
+              <Typography variant="h7" sx={{ fontWeight: "300", color: "#7e91ff" }}>
+                Check the ingredients that you have
+              </Typography>
+              <List>
+                {ingredients.map((ingredient, index) => (
+                  <ListItem key={index}>
+                    <Checkbox
+                      checked={ingredient.inPantry}
+                      onChange={() => handleCheckboxChange(index)}
+                    />
+                    {ingredient.name}
+                  </ListItem>
+                ))}
+              </List>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleAddToMealPlan}
+                sx={{ marginTop: "1rem", backgroundColor: "#7e91ff" }}
+              >
+                Add to Meal Plan
+              </Button>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 };

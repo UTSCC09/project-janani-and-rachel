@@ -25,6 +25,8 @@ export default function Signup({ onSignInClick, onRecipeSectionClick }) {
 
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
+    provider.addScope("https://www.googleapis.com/auth/calendar.events");
+    provider.addScope("https://www.googleapis.com/auth/tasks");
     try {
       const result = await signInWithPopup(auth, provider);
       const idToken = await result.user.getIdToken();

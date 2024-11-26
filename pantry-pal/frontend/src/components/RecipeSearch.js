@@ -10,17 +10,14 @@ import {
   Card,
   CardContent,
   Divider,
-  Chip,
-  IconButton,
 } from "@mui/material";
 import {
   FaSearch,
   FaExclamationCircle,
-  FaStar,
-  FaRegStar,
 } from "react-icons/fa";
 
 import FavoriteButton from "./FavouriteButton";
+import StyledTitle from "./StyledTitle";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
@@ -95,14 +92,12 @@ export default function RecipeSearch({ onSearch }) {
 
   return (
     <Box sx={{ padding: "2rem", maxWidth: 1000, margin: "auto" }}>
-      <Typography variant="h4" gutterBottom textAlign="center" sx={{ fontWeight: "bold", color: "#7e91ff" }}>
-        Search Recipes by Keyword
-      </Typography>
+      <StyledTitle>Search For Recipes by Keyword</StyledTitle>
       <Paper elevation={6} sx={{ padding: "2rem", borderRadius: "8px", backgroundColor: "#fffae1" }}>
         <TextField
-          label="Enter a keyword (e.g., strawberry)"
+          label="Enter a keyword (e.g., chicken)"
           variant="outlined"
-          placeholder="e.g., strawberry"
+          placeholder="e.g., chicken"
           value={ingredients}
           onChange={(e) => setIngredients(e.target.value)}
           fullWidth

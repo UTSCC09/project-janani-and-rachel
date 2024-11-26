@@ -9,10 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@date-io/date-fns": "^3.0.0",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@mui/icons-material": "^6.1.7",
+    "@mui/lab": "^6.0.0-beta.16",
     "@mui/material": "^6.1.6",
+    "@mui/x-date-pickers": "^7.22.3",
+    "date-fns": "^3.6.0",
     "dotenv": "^16.4.5",
     "firebase": "^11.0.2",
     "next": "15.0.2",

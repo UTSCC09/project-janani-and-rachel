@@ -6,18 +6,13 @@ import {
   Card,
   CardContent,
   Divider,
-  Paper,
   CircularProgress,
   Chip,
-  IconButton,
 } from "@mui/material";
 import {
   FaSearch,
-  FaUtensils,
   FaRegFrown,
   FaCheckCircle,
-  FaStar,
-  FaRegStar,
 } from "react-icons/fa";
 import FavoriteButton from "./FavouriteButton";
 
@@ -312,8 +307,6 @@ export default function RecipeSuggestion({ ingredients }) {
                       {recipe.successMessage}
                     </Typography>
                   )}
-
-       
 
                   <Button
                     variant="contained"

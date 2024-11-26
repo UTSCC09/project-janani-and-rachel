@@ -15,6 +15,7 @@ import {
 import { FaPlusCircle, FaArrowRight } from "react-icons/fa";
 import DeleteButton from "./DeleteButton";
 import EditButton from "./EditButton";
+import StyledTitle from "./StyledTitle";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 const PURPLE = "#7e91ff";
@@ -196,14 +197,7 @@ export default function ShoppingListSection() {
 
   return (
     <Box sx={{ padding: "2rem", maxWidth: 800, margin: "auto" }}>
-      <Typography
-        variant="h4"
-        gutterBottom
-        sx={{ fontWeight: 600, textAlign: "center", color: PURPLE }}
-      >
-        Shopping List
-      </Typography>
-
+      <StyledTitle>Shopping List</StyledTitle>
       <Typography variant="h6" sx={{ marginBottom: "1rem", fontWeight: 600, color: PURPLE}}>
         Add Item to Shopping List
       </Typography>

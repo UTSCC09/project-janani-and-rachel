@@ -4,6 +4,7 @@ import IngredientDetails from "./IngredientDetails";
 import IngredientActions from "./IngredientActions";
 import IngredientForm from "./IngredientForm";
 import PurpleButton from "./PurpleButton";
+import StyledTitle from "./StyledTitle";
 
 import {
   Box,
@@ -251,15 +252,7 @@ export default function IngredientsSection() {
   
   return (
     <Box sx={{ padding: 3, maxWidth: "900px", margin: "0 auto" }}>
-      <Typography
-        variant="h4"
-        gutterBottom
-        align="center"
-        sx={{ fontWeight: "bold", color: "#7e91ff" }}
-      >
-        Pantry Ingredients
-      </Typography>
-
+      <StyledTitle>Pantry Ingredients</StyledTitle>
       <List>
         {ingredients.map((ingredient, index) => (
           <Box key={index}>

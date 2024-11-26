@@ -251,6 +251,9 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete, handleEdit }) 
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
         <DialogTitle>Plan Recipe</DialogTitle>
         <DialogContent>
+        <Typography variant="body2" color="textSecondary" sx={{ marginBottom: "1rem" }}>
+            Note: AI split only works if you're signed in with Google
+          </Typography>
           {errorMessage && (
             <Typography variant="body2" color="error" sx={{ marginBottom: "1rem" }}>
               {errorMessage}

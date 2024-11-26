@@ -11,9 +11,9 @@ const PURPLE = "#7e91ff";
 const YELLOW = "#fffae1";
 
 const MealPlanCard = ({ mealPlan, index, expanded, handleToggle, handleDelete }) => {
-  const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [aiSplit, setAiSplit] = useState(null);
+  // const [loading, setLoading] = useState(false);
+  // const [open, setOpen] = useState(false);
+  // const [aiSplit, setAiSplit] = useState(null);
 
   // Parse the date string and convert to UTC
   const date = new Date(mealPlan.date);
@@ -63,7 +63,7 @@ const MealPlanCard = ({ mealPlan, index, expanded, handleToggle, handleDelete })
               {expanded[index] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </IconButton>
             <Tooltip title="Delete Meal Plan" arrow>
-              <DeleteButton onClick={() => handleDelete(mealPlan.id)} />
+              <DeleteButton onClick={() => handleDelete(mealPlan.mealId)} />
             </Tooltip>
           </Box>
         </Box>

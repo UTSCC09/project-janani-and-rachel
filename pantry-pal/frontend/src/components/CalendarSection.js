@@ -68,28 +68,26 @@ export default function CalendarSection() {
     }));
   };
 
-  const handleDelete = (id) => {
-    console.log('Deleting meal plan:', id);
+  const handleDelete = async (mealId) => {
     setLoading(true);
-    fetch(`${domain}/api/recipes/meal-plan/${id}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-        "GoogleAccessToken": localStorage.getItem('accessToken')
-      }
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+    try {
+      const response = await fetch(`${domain}/api/recipes/meal-plan/${mealId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+          "GoogleAccessToken": localStorage.getItem('accessToken')
         }
-        setMealPlans(prevMealPlans => prevMealPlans.filter(mealPlan => mealPlan.id !== id));
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error deleting meal plan:', error);
-        setLoading(false);
       });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      setMealPlans(prevMealPlans => prevMealPlans.filter(mealPlan => mealPlan.mealId !== mealId));
+    } catch (error) {
+      console.error('Error deleting meal plan:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

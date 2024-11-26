@@ -1,7 +1,7 @@
 import express from 'express';
 import { getMealPlan, getMealById, addRecipeToMealPlan, removeRecipeFromMealPlan } 
     from '../../services/mealPlanServices.js';  
-import { addReminders } from '../../services/reminderServices.js';
+import { addMealReminders, addThisWeeksMealReminders } from '../../services/reminderServices.js';
 import { verifyToken } from '../../middleware/authMiddleware.js';
 
 export const router = express.Router();
@@ -34,16 +34,26 @@ router.get('/:mealId', (req, res, next) => {
         });
 });
 
-// maybe an add meals to calender 
+// madd reminder for all meals this week 
+router.post('/reminders', (req, res, next) => {
+    // add reminders for all meals in the meal plan
+    const uid = req.uid;
+    const googleAccessToken = req.headers['googleaccesstoken'];
+    if (!googleAccessToken) {
+        return res.status(401).json({ error: "Google access token required." });
+    }
+    addThisWeeksMealReminders(uid, googleAccessToken)
+        .then(() => {
+            return res.status(200).json({ message: "Reminders added successfully." });
+        }).catch((error) => {
+            console.error("Error adding reminders:", error);
+            res.status(error.status || 500)
+                .json({ error: error.message || "An error occurred while adding reminders." });
+        });
+});
 
 // and also a add reminders to tasks
 router.post('/:mealId/reminders', (req, res, next) => {
-    // so we need to check that there is a google access token in the header 
-    // then we call the api and do the request
-    // everthing in frozenIngredients get a defrost reminder, default is 1 night day before
-        // can specify different time before in query params
-    // buy ingredients reminder for all in shoppingListIngredients, default is 3 days before
-        // can specify different time before in query params
     const uid = req.uid;
     const googleAccessToken = req.headers['googleaccesstoken'];
     if (!req.params.mealId) {
@@ -52,7 +62,7 @@ router.post('/:mealId/reminders', (req, res, next) => {
     if (!googleAccessToken) {
         return res.status(401).json({ error: "Google access token required." });
     }
-    addReminders(uid, req.params.mealId, googleAccessToken)
+    addMealReminders(uid, req.params.mealId, googleAccessToken)
         .then(() => {
             return res.status(200).json({ message: "Reminders added successfully." });
         }).catch((error) => {

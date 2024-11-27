@@ -26,6 +26,7 @@ export default function ShoppingListSection() {
   const [loading, setLoading] = useState(true);
   const [newItem, setNewItem] = useState("");
   const [editingItem, setEditingItem] = useState(null);
+  const [editingItemName, setEditingItemName] = useState("");
   const [lastVisible, setLastVisible] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const observer = useRef();
@@ -82,7 +83,11 @@ export default function ShoppingListSection() {
   );
 
   const handleInputChange = (e) => {
-    setNewItem(e.target.value);
+    if (editingItem) {
+      setEditingItemName(e.target.value);
+    } else {
+      setNewItem(e.target.value);
+    }
   };
 
   const handleDeleteItem = async (ingredientName) => {
@@ -164,7 +169,7 @@ export default function ShoppingListSection() {
 
   const handleEditItem = (item) => {
     setEditingItem(item);
-    setNewItem(item.ingredientName);
+    setEditingItemName(item.ingredientName);
   };
 
   const handleUpdateItem = async (e) => {
@@ -179,7 +184,7 @@ export default function ShoppingListSection() {
         },
         body: JSON.stringify({
           ingredientName: editingItem.ingredientName,
-          newIngredientName: newItem,
+          newIngredientName: editingItemName,
         }),
       });
       if (!response.ok) {
@@ -188,12 +193,12 @@ export default function ShoppingListSection() {
       setShoppingList((prevItems) =>
         prevItems.map((item) =>
           item.ingredientName === editingItem.ingredientName
-            ? { ...item, ingredientName: newItem }
+            ? { ...item, ingredientName: editingItemName }
             : item
         )
       );
       setEditingItem(null);
-      setNewItem("");
+      setEditingItemName("");
     } catch (error) {
       console.error("Error updating item:", error);
     }
@@ -208,7 +213,7 @@ export default function ShoppingListSection() {
 
       <Box
         component="form"
-        onSubmit={editingItem ? handleUpdateItem : handleAddItem}
+        onSubmit={handleAddItem}
         sx={{ display: "flex", flexDirection: "row", gap: 2 }}
       >
         <TextField
@@ -234,7 +239,7 @@ export default function ShoppingListSection() {
           }}
           startIcon={<FaPlusCircle />}
         >
-          {editingItem ? "Update" : "Add"}
+          Add
         </Button>
       </Box>
 
@@ -276,7 +281,7 @@ export default function ShoppingListSection() {
                     editingItem && editingItem.ingredientName === item.ingredientName ? (
                       <Box component="form" onSubmit={handleUpdateItem} sx={{ display: "flex", alignItems: "center" }}>
                         <TextField
-                          value={newItem}
+                          value={editingItemName}
                           onChange={handleInputChange}
                           autoFocus
                           sx={{ marginRight: 2 }}

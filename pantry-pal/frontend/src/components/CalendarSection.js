@@ -94,7 +94,7 @@ export default function CalendarSection() {
   };
 
   const handleWeeklyReminder = () => {
-    fetch(`${domain}/api/recipes/meal-plan/reminders?daysInAdvanceDefrost=7&daysInAdvanceBuy=7`, {
+    fetch(`${domain}/api/recipes/meal-plan/reminders`, {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",

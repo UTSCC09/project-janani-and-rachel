@@ -29,6 +29,23 @@ export async function getPantry(uid, lim=10, lastVisibleIngredient=null) {
     };
 }
 
+// add pantry ingredient pantry section of meal plan if it doesnt exist
+async function addPantryIngredientToMealPlan(uid, mealPlanId, ingredientName) {
+    const mealPlanRef = db.collection('Users').doc(uid).collection('MealPlan').doc(mealPlanId);
+    const mealPlanData = await mealPlanRef.get();
+    if (!mealPlanData.exists) {
+        return;
+    }
+
+    const mealPlanIngredients = mealPlanData.data().pantryIngredients;
+    if (!mealPlanIngredients.includes(ingredientName)) {
+        const newMealPlanIngredients = [ ...mealPlanIngredients, ingredientName ];
+        await mealPlanRef.update({
+            pantryIngredients: newMealPlanIngredients
+        });
+    }
+}
+
 export async function addToPantry(uid, ingredientName, purchaseDate=new Date(), expirationDate=null, frozen=false, mealPlans=[]) {
     const pantryRef = db.collection('Users').doc(uid).collection('Pantry').doc(ingredientName);
     const ingredientData = {
@@ -39,6 +56,12 @@ export async function addToPantry(uid, ingredientName, purchaseDate=new Date(), 
         mealPlans
     };
     await pantryRef.set(ingredientData);
+
+    // add ingredient to pantry section of meal plan if it doesn't exist
+    await Promise.all(mealPlans.map(async (mealPlanId) => {
+        await addPantryIngredientToMealPlan(uid, mealPlanId, ingredientName);
+    }));
+
     return ingredientData;
 }
 
@@ -196,6 +219,23 @@ export async function getShoppingList(uid, lim=10, lastVisibleIngredient = null)
     };
 }
 
+// add shopping list ingredient to meal plan shoppingList ingredient if it doesn't exist
+async function addShoppingListIngredientToMealPlan(uid, mealPlanId, ingredientName) {
+    const mealPlanRef = db.collection('Users').doc(uid).collection('MealPlan').doc(mealPlanId);
+    const mealPlanData = await mealPlanRef.get();
+    if (!mealPlanData.exists) {
+        return;
+    }
+    
+    const mealPlanIngredients = mealPlanData.data().shoppingListIngredients;
+    if (!mealPlanIngredients.includes(ingredientName)) {
+        const newMealPlanIngredients = [ ...mealPlanIngredients, ingredientName ];
+        await mealPlanRef.update({
+            shoppingListIngredients: newMealPlanIngredients
+        });
+    }
+}
+
 
 export async function addToShoppingList(uid, ingredientName, mealPlans=[]) {
     const shoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList').doc(ingredientName);
@@ -204,6 +244,12 @@ export async function addToShoppingList(uid, ingredientName, mealPlans=[]) {
         mealPlans: mealPlans
     };
     await shoppingListRef.set(ingredientData);
+
+    // add ingredient to shopping list section of meal plan if it doesn't exist
+    await Promise.all(mealPlans.map(async (mealPlanId) => {
+        await addShoppingListIngredientToMealPlan(uid, mealPlanId, ingredientName);
+    }));
+
     return ingredientData;
 }
 

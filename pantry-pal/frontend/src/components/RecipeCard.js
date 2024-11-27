@@ -245,10 +245,13 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete, handleEdit }) 
       >
         <DeleteButton onClick={handleDelete} />
         <Tooltip title="Plan Recipe" arrow>
-          <IconButton color="primary" onClick={handlePantryComparison}>
-            {loading ? <CircularProgress size={24} /> : <MdEvent />}
-          </IconButton>
-        </Tooltip>
+    <IconButton
+      onClick={handlePantryComparison}
+      sx={{ color: "#7e91ff" }}
+    >
+      {loading ? <CircularProgress size={24} sx={{ color: "#7e91ff" }} /> : <MdEvent />}
+    </IconButton>
+  </Tooltip>
       </Box>
 
       {/* Meal Plan Modal */}
@@ -339,6 +342,12 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete, handleEdit }) 
                     <Checkbox
                       checked={ingredient.inPantry}
                       onChange={() => handleCheckboxChange(index)}
+                      sx={{
+                        color: PURPLE,
+                        '&.Mui-checked': {
+                          color: PURPLE,
+                        },
+                      }}
                     />
                     {ingredient.name}
                   </ListItem>
@@ -349,6 +358,7 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete, handleEdit }) 
                 color="primary"
                 onClick={handleAddToMealPlan}
                 sx={{ marginTop: "1rem", backgroundColor: "#7e91ff" }}
+                
               >
                 Add to Meal Plan
               </Button>

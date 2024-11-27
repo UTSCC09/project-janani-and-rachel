@@ -73,7 +73,7 @@ export default function Signup({ onSignInClick, onRecipeSectionClick }) {
             },
           }}
         >
-          Sign in with
+          Sign up with
           <img
             src="https://hackaday.com/wp-content/uploads/2016/08/google-g-logo.png"
             alt="Google logo"

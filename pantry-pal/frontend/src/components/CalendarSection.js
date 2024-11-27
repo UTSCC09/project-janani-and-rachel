@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Container, Typography, CircularProgress } from '@mui/material';
+import { Box, Container, CircularProgress, Fab, Tooltip, Typography, Snackbar, Alert } from '@mui/material';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import StyledTitle from './StyledTitle';
 import MealPlanCard from './MealPlanCard';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
@@ -14,6 +16,7 @@ export default function CalendarSection() {
   const [hasMore, setHasMore] = useState(true);
   const [lastVisible, setLastVisible] = useState(null);
   const [expanded, setExpanded] = useState({});
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   useEffect(() => {
     fetchMealPlans();
@@ -90,12 +93,42 @@ export default function CalendarSection() {
     }
   };
 
+  const handleWeeklyReminder = () => {
+    fetch(`${domain}/api/recipes/meal-plan/reminders?daysInAdvanceDefrost=7&daysInAdvanceBuy=7`, {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+        "GoogleAccessToken": localStorage.getItem('accessToken')
+      }
+    }).then(response => {
+      if (response.ok) {
+        setSnackbarOpen(true);
+        console.log('Weekly reminder set successfully');
+      } else {
+        console.error('Failed to set weekly reminder');
+      }
+    });
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
   return (
     <Container maxWidth="lg">
       <Box sx={{ marginBottom: 6 }}>
         <StyledTitle>Meal Plans</StyledTitle>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', marginTop: '1rem' }}>
+          <ErrorOutlineIcon sx={{ color: PURPLE, marginRight: '0.5rem' }} />
+          <Typography variant="body2" sx={{ color: PURPLE }}>
+            You can only get reminders if you are signed in with Google.
+          </Typography>
+        </Box>
       </Box>
-
       <InfiniteScroll
         dataLength={mealPlans.length}
         next={fetchMealPlans}
@@ -118,6 +151,33 @@ export default function CalendarSection() {
           />
         ))}
       </InfiniteScroll>
+      <Tooltip title="Remind me about the next week">
+        <Fab
+          onClick={handleWeeklyReminder}
+          color="primary"
+          sx={{
+            position: 'fixed',
+            bottom: 16,
+            left: 16,
+            backgroundColor: PURPLE,
+            '&:hover': {
+              backgroundColor: PURPLE,
+            }
+          }}
+        >
+          <NotificationsActiveIcon />
+        </Fab>
+      </Tooltip>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+          Reminder set successfully!
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

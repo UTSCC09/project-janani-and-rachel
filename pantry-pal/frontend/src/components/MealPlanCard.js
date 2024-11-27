@@ -1,23 +1,52 @@
 import React, { useState } from 'react';
-import { Box, Typography, Card, CardContent, List, ListItem, IconButton, CircularProgress, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { Box, Typography, Card, CardContent, List, ListItem, IconButton, Tooltip, CircularProgress } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import DeleteButton from './DeleteButton';
+import ReminderForm from './ReminderForm';
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
-
 
 const PURPLE = "#7e91ff";
 const YELLOW = "#fffae1";
 
 const MealPlanCard = ({ mealPlan, index, expanded, handleToggle, handleDelete }) => {
-  // const [loading, setLoading] = useState(false);
-  // const [open, setOpen] = useState(false);
-  // const [aiSplit, setAiSplit] = useState(null);
+  const [reminderFormOpen, setReminderFormOpen] = useState(false);
+  const [notificationState, setNotificationState] = useState('default'); // 'default', 'loading', 'success'
 
-  // Parse the date string and convert to UTC
+  // Parse the date string
   const date = new Date(mealPlan.date);
   const formattedDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000).toLocaleDateString();
+
+  const handleNotification = () => {
+    setReminderFormOpen(true);
+  };
+
+  const handleReminderSubmit = (reminders) => {
+    const { daysInAdvanceDefrost, daysInAdvanceBuy } = reminders;
+    setNotificationState('loading');
+    fetch(`${domain}/api/recipes/meal-plan/${mealPlan.mealId}/reminders?daysInAdvanceDefrost=${daysInAdvanceDefrost}&daysInAdvanceBuy=${daysInAdvanceBuy}`, {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+        "GoogleAccessToken": localStorage.getItem('accessToken')
+      }
+    }).then(response => {
+      if (response.ok) {
+        setNotificationState('success');
+      } else {
+        console.error('Failed to set reminders');
+        setNotificationState('default');
+      }
+    }).catch(error => {
+      console.error('Error setting reminders:', error);
+      setNotificationState('default');
+    });
+  };
 
   return (
     <Card
@@ -32,7 +61,6 @@ const MealPlanCard = ({ mealPlan, index, expanded, handleToggle, handleDelete })
         position: "relative",
         width: "90%",
         left: "2%",
-        marginTop: "1rem",
         transition: "transform 0.3s ease-in-out", // Smooth transition for hover effect
         "&:hover": {
           transform: "scale(1.02)", // Zoom out effect on hover
@@ -62,16 +90,29 @@ const MealPlanCard = ({ mealPlan, index, expanded, handleToggle, handleDelete })
             <IconButton onClick={() => handleToggle(index)} sx={{ color: "#fff" }}>
               {expanded[index] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </IconButton>
+            <Tooltip title="Notify" arrow>
+              <IconButton onClick={handleNotification} sx={{ color: "#fff" }}>
+                {notificationState === 'default' && <NotificationsIcon />}
+                {notificationState === 'loading' && <CircularProgress size={24} sx={{ color: "#fff" }} />}
+                {notificationState === 'success' && <NotificationsActiveIcon />}
+              </IconButton>
+            </Tooltip>
+            <ReminderForm
+              open={reminderFormOpen}
+              onClose={() => setReminderFormOpen(false)}
+              onSubmit={handleReminderSubmit}
+            />
             <Tooltip title="Delete Meal Plan" arrow>
               <DeleteButton onClick={() => handleDelete(mealPlan.mealId)} />
             </Tooltip>
           </Box>
         </Box>
 
-        <Box sx={{ marginBottom: "1.5rem" }}>
+        <Box sx={{ marginBottom: "1.5rem", display: "flex", alignItems: "center" }}>
+          <CalendarTodayIcon sx={{ color: PURPLE, marginRight: "0.5rem" }} />
           <Typography
             variant="body2"
-            sx={{ fontWeight: "500", color: PURPLE, marginBottom: "0.5rem" }}
+            sx={{ fontWeight: "500", color: PURPLE }}
           >
             <strong>Planned On:</strong> {formattedDate}
           </Typography>

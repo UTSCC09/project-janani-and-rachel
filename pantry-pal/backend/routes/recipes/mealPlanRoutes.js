@@ -64,8 +64,8 @@ router.post('/:mealId/reminders', (req, res, next) => {
     if (!googleAccessToken) {
         return res.status(401).json({ error: "Google access token required." });
     }
-    const daysInAdvanceDefrost = parseInt(req.body.daysInAdvanceDefrost) || 1;
-    const daysInAdvanceBuy = parseInt(req.body.daysInAdvanceBuy) || 3;
+    const daysInAdvanceDefrost = parseInt(req.query.daysInAdvanceDefrost) || 1;
+    const daysInAdvanceBuy = parseInt(req.query.daysInAdvanceBuy) || 3;
     addMealReminders(uid, req.params.mealId, googleAccessToken, daysInAdvanceDefrost, daysInAdvanceBuy)
         .then(() => {
             return res.status(200).json({ message: "Reminders added successfully." });

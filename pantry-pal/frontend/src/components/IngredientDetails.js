@@ -2,6 +2,8 @@ import React from 'react';
 import { Box, Typography } from "@mui/material";
 import { FaRegCalendarAlt, FaRegCalendar, FaCheckCircle } from "react-icons/fa";
 
+const PURPLE = "#7e91ff";
+
 const IngredientDetails = ({ ingredient, formatDate }) => {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", flex: 1 }}>
@@ -13,7 +15,9 @@ const IngredientDetails = ({ ingredient, formatDate }) => {
           color: "#ffffff",
           padding: "4px 8px",
           backgroundColor: "#7e91ff",
+          width: "111%",
           borderRadius: 2,
+          position: "relative",
           display: "inline-block",
         }}
       >

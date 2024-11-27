@@ -6,7 +6,7 @@ import { MdEdit } from "react-icons/md";
 const EditButton = ({ onClick }) => {
   return (
     <Tooltip title="Edit Ingredient" arrow>
-      <IconButton color="primary" sx={{ marginLeft: 1 }} onClick={onClick}>
+      <IconButton  sx={{ marginLeft: 1, color: "ffffff"}} onClick={onClick}>
         <MdEdit />
       </IconButton>
     </Tooltip>

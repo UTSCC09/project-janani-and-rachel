@@ -31,31 +31,46 @@ export default function Home() {
   const [sessionExpired, setSessionExpired] = useState(false);
 
   useEffect(() => {
-    // Check if the token is present in localStorage
-    const idToken = localStorage.getItem("idToken");
-    if (idToken) {
-      auth.onAuthStateChanged(async (user) => {
-        if (user) {
-          try {
-            const idToken = await user.getIdToken(true); // Force refresh the token
-            localStorage.setItem("idToken", idToken);
-            setIsAuthenticated(true);
-            setActiveSection("recipes"); // Set the default section for authenticated users
-          } catch (error) {
-            console.error("Error getting ID token:", error);
-            setSessionExpired(true); // Show Snackbar if there's an error getting the new token
+    const checkAuthState = async () => {
+      const idToken = localStorage.getItem("idToken");
+      if (idToken) {
+        auth.onAuthStateChanged(async (user) => {
+          if (user) {
+            try {
+              const idToken = await user.getIdToken(true); // Force refresh the token
+              const credential = GoogleAuthProvider.credentialFromResult({ user });
+              const googleAccessToken = credential ? credential.accessToken : null; // Get Google access token
+              localStorage.setItem("idToken", idToken);
+              if (googleAccessToken) {
+                localStorage.setItem("accessToken", googleAccessToken); // Store Google access token
+              }
+              setIsAuthenticated(true);
+              setActiveSection("recipes"); // Set the default section for authenticated users
+            } catch (error) {
+              console.error("Error getting ID token:", error);
+              setSessionExpired(true); // Show Snackbar if there's an error getting the new token
+            }
+          } else {
+            setSessionExpired(true); // Show Snackbar if the user is not authenticated
           }
-        } else {
-          setSessionExpired(true); // Show Snackbar if the user is not authenticated
-        }
-      });
-    }
+        });
+      } else {
+        setSessionExpired(true); // Show Snackbar if the user is not authenticated
+      }
+    };
+
+    checkAuthState();
 
     const unsubscribe = auth.onIdTokenChanged(async (user) => {
       if (user) {
         try {
           const idToken = await user.getIdToken(true); // Force refresh the token
+          const credential = GoogleAuthProvider.credentialFromResult({ user });
+          const googleAccessToken = credential ? credential.accessToken : null; // Get Google access token
           localStorage.setItem("idToken", idToken);
+          if (googleAccessToken) {
+            localStorage.setItem("accessToken", googleAccessToken); // Store Google access token
+          }
         } catch (error) {
           console.error("Error getting ID token:", error);
           setSessionExpired(true); // Show Snackbar if there's an error getting the new token

@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 import { Card, CardContent, Box, Typography, IconButton, Tooltip, Button, TextField, Checkbox, List, ListItem, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress } from '@mui/material';
 import { MdEvent } from "react-icons/md";
 import DeleteButton from './DeleteButton';
+import InfoIcon from '@mui/icons-material/Info';
+
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
+const PURPLE = "#7e91ff";
+const LIGHT_GRAY = "#d3d3d3";
 
 const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete, handleEdit }) => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -249,11 +253,15 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete, handleEdit }) 
 
       {/* Meal Plan Modal */}
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-        <DialogTitle>Plan Recipe</DialogTitle>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: 2 }}>
+            <DialogTitle>Plan Recipe</DialogTitle>
+            <Tooltip title="Ingredients will be put into your pantry or shopping list." arrow>
+              <IconButton sx={{ color: 'textSecondary' }}>
+                <InfoIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
         <DialogContent>
-        <Typography variant="body2" color="textSecondary" sx={{ marginBottom: "1rem" }}>
-            Note: AI split only works if you're signed in with Google
-          </Typography>
           {errorMessage && (
             <Typography variant="body2" color="error" sx={{ marginBottom: "1rem" }}>
               {errorMessage}
@@ -348,10 +356,18 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete, handleEdit }) 
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            Cancel
-          </Button>
-        </DialogActions>
+            <Button
+              onClick={handleClose}
+              sx={{
+                color: PURPLE,
+                '&:hover': {
+                  backgroundColor: LIGHT_GRAY,
+                },
+              }}
+            >
+              Close
+            </Button>
+          </DialogActions>
       </Dialog>
     </Card>
   );

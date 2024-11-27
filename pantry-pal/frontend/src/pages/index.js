@@ -38,10 +38,7 @@ export default function Home() {
         if (user) {
           try {
             const idToken = await user.getIdToken(true); // Force refresh the token
-            const credential = GoogleAuthProvider.credentialFromResult({ user });
-            const googleAccessToken = credential ? credential.accessToken : null; // Get Google access token
             localStorage.setItem("idToken", idToken);
-            localStorage.setItem("accessToken", googleAccessToken); // Store Google access token
             setIsAuthenticated(true);
             setActiveSection("recipes"); // Set the default section for authenticated users
           } catch (error) {
@@ -58,10 +55,7 @@ export default function Home() {
       if (user) {
         try {
           const idToken = await user.getIdToken(true); // Force refresh the token
-          const credential = GoogleAuthProvider.credentialFromResult({ user });
-          const googleAccessToken = credential ? credential.accessToken : null; // Get Google access token
           localStorage.setItem("idToken", idToken);
-          localStorage.setItem("accessToken", googleAccessToken); // Store Google access token
         } catch (error) {
           console.error("Error getting ID token:", error);
           setSessionExpired(true); // Show Snackbar if there's an error getting the new token

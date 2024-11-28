@@ -46,6 +46,7 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
         if (!response.ok) {
           if (response.status === 500) {
             // Handle 500 error by opening the popup for manual split
+            setErrorMessage('Automatic split failed.');
             setAiSplit(null);
             setManualSplit(true);
             setOpen(true);
@@ -76,6 +77,7 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
         } else {
           console.error('Error planning recipe:', error);
         }
+        setErrorMessage('Automatic split failed.');
         setAiSplit(null);
         setManualSplit(true);
         setOpen(true);
@@ -309,14 +311,18 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
                 </Box>
                 {aiSplit.inPantry && (
                   <>
-                    <Typography variant="subtitle1" sx={{ fontWeight: "600", color: "#7e91ff", marginBottom: "-0.5rem" }}>
-                      Ingredients in your Pantry
-                    </Typography>
-                    <List>
-                      {aiSplit.inPantry.map((ingredient, index) => (
-                        <ListItem key={index}>{ingredient}</ListItem>
-                      ))}
-                    </List>
+                  <Typography variant="subtitle1" sx={{ fontWeight: "600", color: "#7e91ff", marginBottom: "-0.5rem" }}>
+                    Ingredients in your Pantry
+                  </Typography>
+                  <List>
+                  {aiSplit.inPantry.map((ingredient, index) => (
+                    <ListItem key={index} sx={{ padding: "0.25rem 0" }}> {/* Adjusted padding */}
+                      <Typography variant="body2" sx={{ color: "#000000" }}>
+                        {ingredient}
+                      </Typography>
+                    </ListItem>
+                  ))}
+                </List>
                   </>
                 )}
                 {aiSplit.notInPantry && (
@@ -325,10 +331,14 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
                       Ingredients not in your Pantry
                     </Typography>
                     <List>
-                      {aiSplit.notInPantry.map((ingredient, index) => (
-                        <ListItem key={index}>{ingredient}</ListItem>
-                      ))}
-                    </List>
+                  {aiSplit.notInPantry.map((ingredient, index) => (
+                    <ListItem key={index} sx={{ padding: "0.25rem 0" }}> {/* Adjusted padding */}
+                      <Typography variant="body2" sx={{ color: "#000000" }}>
+                        {ingredient}
+                      </Typography>
+                    </ListItem>
+                  ))}
+                </List>
                   </>
                 )}
                 <Button

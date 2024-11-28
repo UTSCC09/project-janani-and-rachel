@@ -9,6 +9,7 @@ export const router = express.Router();
 
 router.use('/favorites', favRecipeRoutes);
 router.use('/meal-plan', mealPlanRoutes);
+
 router.use(verifyToken);
 
 // SEARCH RECIPES

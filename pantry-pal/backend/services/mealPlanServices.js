@@ -57,7 +57,7 @@ export async function getMealById(uid, mealId) {
     }
 }
 
-export async function addRecipeToMealPlan(uid, recipeId, ingredients, date=new Date()) {
+export async function addRecipeToMealPlan(uid, recipeId, ingredients=[], date=new Date()) {
     recipeId = String(recipeId);
 
     try {

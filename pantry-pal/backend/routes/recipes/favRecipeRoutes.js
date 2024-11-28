@@ -3,6 +3,7 @@ import express from 'express';
 import { getFavRecipes, getPlannedFavRecipes, getUnPlannedFavRecipes, getFavRecipeById, addFavRecipe, removeFavRecipe, pantryComparison } 
 from '../../services/favRecipeServices.js'; 
 import { verifyToken } from '../../middleware/authMiddleware.js';
+import { sanitizeAndValidateRecipe } from '../../validators/recipeValidator.js';
 
 export const router = express.Router();
 
@@ -66,7 +67,7 @@ router.get('/:recipeId', async (req, res) => {
 });
 
 
-router.post('/', (req, res, next) => {
+router.post('/', sanitizeAndValidateRecipe, (req, res, next) => {
     // add recipe to favorites
     const uid = req.uid;
     // req.body formated as response from search recipes

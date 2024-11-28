@@ -14,7 +14,7 @@ const IngredientActions = ({ onEdit, onDelete }) => {
         height: "100%",
       }}
     >
-      <EditButton onClick={onEdit}sx={{ color: "#ffffff" }} />
+      <EditButton onClick={onEdit} />
       <DeleteButton onClick={onDelete} />
     </Box>
   );

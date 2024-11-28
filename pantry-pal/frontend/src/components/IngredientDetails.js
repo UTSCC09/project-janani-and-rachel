@@ -7,22 +7,26 @@ const PURPLE = "#7e91ff";
 const IngredientDetails = ({ ingredient, formatDate }) => {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <Typography
-        variant="h6"
+      <Box
         sx={{
-          fontWeight: "bold",
-          marginBottom: 1,
-          color: "#ffffff",
+          backgroundColor: PURPLE,
           padding: "4px 8px",
-          backgroundColor: "#7e91ff",
-          width: "111%",
           borderRadius: 2,
-          position: "relative",
-          display: "inline-block",
+          marginBottom: 1,
+          width: "calc(100% - 16px)", // Adjust width to end before the card
+          marginLeft: "8px", // Center the highlight
         }}
       >
-        {ingredient.ingredientName}
-      </Typography>
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: "bold",
+            color: "#ffffff",
+          }}
+        >
+          {ingredient.ingredientName}
+        </Typography>
+      </Box>
 
       <Box sx={{ display: "flex", flexDirection: "column", marginBottom: 1 }}>
         <Box sx={{ display: "flex", alignItems: "center", marginBottom: 0.5 }}>

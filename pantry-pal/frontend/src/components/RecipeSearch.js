@@ -147,14 +147,19 @@ export default function RecipeSearch({ onSearch }) {
               sx={{ marginBottom: "1.5rem", borderRadius: "8px", boxShadow: 3, backgroundColor: "#fffae1" }}
             >
               <CardContent>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}>
               <Typography variant="h6" sx={{ fontWeight: "bold", color: "#7e91ff" }} gutterBottom>
-                {recipe.recipeName}
+              {recipe.recipeName}
               </Typography>
-              <FavoriteButton
-                isFavorite={favorites.has(recipe.recipeId)}
-                onClick={() => handleFavoriteClick(recipe)}
-              />
+              <Box sx={{ position: "absolute", top: "-4px", right: "-4px" }}> {/* Adjusted top value */}
+                  <FavoriteButton
+                    isFavorite={favorites.has(recipe.recipeId)}
+                    onClick={() => handleFavoriteClick(recipe)}
+                    sx={{
+                      color: favorites.has(recipe.recipeId) ? "#ff4081" : "#7e91ff",
+                    }}
+                  />
+                </Box>
             </Box>
                 <Typography variant="body2" color="text.secondary">
                   <strong>Ingredients:</strong> {recipe.ingredients.join(", ")}

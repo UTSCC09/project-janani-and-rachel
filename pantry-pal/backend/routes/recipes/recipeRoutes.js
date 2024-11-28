@@ -15,7 +15,7 @@ router.use(verifyToken);
 // SEARCH RECIPES
 router.get('/search-keyword', (req, res, next) => {
     try {
-        const page = req.query.page || 1;
+        const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const keyword = req.query.keyword || "";
         searchRecipesByKeyword(keyword, page, limit)
@@ -28,7 +28,7 @@ router.get('/search-keyword', (req, res, next) => {
 
 router.get('/search-most-matching', (req, res, next) => {
     try {
-        const page = req.query.page || 1;
+        const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         searchRecipesByMaxMatching(page, limit)
         .then((recipes) => { res.json(recipes) });
@@ -40,7 +40,7 @@ router.get('/search-most-matching', (req, res, next) => {
 
 router.get('/search-least-missing', (req, res, next) => {
     try {
-        const page = req.query.page || 1;
+        const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         searchRecipesByMinMissing(page, limit)
         .then((recipes) => { res.json(recipes) });

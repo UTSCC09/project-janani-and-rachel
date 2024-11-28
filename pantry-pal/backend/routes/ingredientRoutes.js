@@ -4,13 +4,13 @@ import { getPantry, addToPantry, removeFromPantry, modifyInPantry }
 import { getShoppingList, addToShoppingList, removeFromShoppingList, modifyInShoppingList } 
     from '../services/ingredientServices.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
-import { sanitizeAndValidateIngredient } from '../validators/ingredientValidator.js';
+import { sanitizeAndValidateIngredient, sanitizeAndValidateGetIngredientQuery } from '../validators/ingredientValidator.js';
 
 export const router = express.Router();
 
 router.use(verifyToken);
 
-router.get('/pantry', (req, res, next) => {
+router.get('/pantry', sanitizeAndValidateGetIngredientQuery, (req, res, next) => {
     const uid = req.uid;
     const limit = parseInt(req.query.limit) || 10;
     const lastVisibleIngredient = req.query.lastVisibleIngredient || null;
@@ -59,7 +59,7 @@ router.delete('/pantry/:ingredientName', (req, res, next) => {
     });
 });
 
-router.get('/shopping-list', (req, res, next) => {
+router.get('/shopping-list', sanitizeAndValidateGetIngredientQuery, (req, res, next) => {
     const uid = req.uid;
     const limit = parseInt(req.query.limit) || 10;
     const lastVisibleIngredient = req.query.lastVisibleIngredient || null;

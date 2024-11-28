@@ -10,4 +10,11 @@ const mealSchema = Joi.object({
     "date": Joi.date()
 });
 
+const getMealQuerySchema = Joi.object({
+    "limit": numberSchema.allow(null).allow(''),
+    "lastVisibleMealId": numberSchema.allow(null).allow('')
+});
+
 export const sanitizeAndValidateMeal = sanitizeAndValidateData(mealSchema);
+export const sanitizeAndValidateGetMealQuery = sanitizeAndValidateData(getMealQuerySchema, 'query');
+

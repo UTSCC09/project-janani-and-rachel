@@ -10,4 +10,10 @@ const ingredientSchema = Joi.object({
     mealPlans: Joi.array().items(simpleStringSchema)
 });
 
+const getIngredientQuerySchema = Joi.object({
+    limit: Joi.number().allow(null).allow(''),
+    lastVisibleIngredient: Joi.string().allow(null).allow('')
+});
+
 export const sanitizeAndValidateIngredient = sanitizeAndValidateData(ingredientSchema);
+export const sanitizeAndValidateGetIngredientQuery = sanitizeAndValidateData(getIngredientQuerySchema, 'query');

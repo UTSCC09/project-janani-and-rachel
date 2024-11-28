@@ -3,12 +3,12 @@ import { getMealPlan, getMealById, addRecipeToMealPlan, removeRecipeFromMealPlan
     from '../../services/mealPlanServices.js';  
 import { addMealReminders, addThisWeeksMealReminders } from '../../services/reminderServices.js';
 import { verifyToken } from '../../middleware/authMiddleware.js';
-import { sanitizeAndValidateMeal } from '../../validators/mealValidator.js';
+import { sanitizeAndValidateMeal, sanitizeAndValidateGetMealQuery } from '../../validators/mealValidator.js';
 
 export const router = express.Router();
 router.use(verifyToken);
 
-router.get('/', (req, res, next) => {
+router.get('/', sanitizeAndValidateGetMealQuery, (req, res, next) => {
     // get all recipes in the meal plan
     const uid = req.uid;
     const { limit, lastVisibleMealId } = req.query;

@@ -15,4 +15,10 @@ const recipeSchema = Joi.object({
     }))
 });
 
+const getRecipeQuerySchema = Joi.object({
+    limit: numberSchema.allow(null).allow(''),
+    lastVisible: numberSchema.allow(null).allow('')
+});
+
 export const sanitizeAndValidateRecipe = sanitizeAndValidateData(recipeSchema);
+export const sanitizeAndValidateGetRecipeQuery = sanitizeAndValidateData(getRecipeQuerySchema, 'query');

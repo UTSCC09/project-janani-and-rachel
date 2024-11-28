@@ -1,4 +1,3 @@
-import { parse } from 'path';
 import { db } from '../config/firebase.js';
 import { addToPantry, addToShoppingList, modifyInPantry, modifyInShoppingList } from './ingredientServices.js';
 

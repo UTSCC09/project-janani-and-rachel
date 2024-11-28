@@ -1,4 +1,3 @@
-import { parse } from 'path';
 import { db } from '../config/firebase.js';
 
 export async function getPantry(uid, lim=10, lastVisibleIngredient=null) {

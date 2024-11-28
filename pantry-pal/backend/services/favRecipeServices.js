@@ -1,7 +1,6 @@
 import { db } from '../config/firebase.js';
 import { getPantry } from './ingredientServices.js';
 import { genAI } from '../config/gemini.js';
-import { parse } from 'path';
 
 async function getFormattedRecipe(favRecipeDocData) {
     const recipeRef = favRecipeDocData.recipe;
@@ -211,7 +210,7 @@ async function pantryComparison(uid, recipeId) {
     };
     
     const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-pro",
+        model: "gemini-1.5-flash",
         generationConfig: {
             responseMimeType: "application/json",
             responseSchema: schema

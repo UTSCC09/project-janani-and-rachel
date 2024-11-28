@@ -1,6 +1,5 @@
 import { db } from '../config/firebase.js';
 import { google } from 'googleapis';
-import { Timestamp } from '@google-cloud/firestore';
 
 export async function addMealReminders(uid, mealId, googleAccessToken, daysInAdvanceDefrost=1, daysInAdvanceBuy=3) {
     if (!googleAccessToken) {

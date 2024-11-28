@@ -19,7 +19,7 @@ router.get('/search-keyword', (req, res, next) => {
         const limit = parseInt(req.query.limit) || 10;
         const keyword = req.query.keyword || "";
         searchRecipesByKeyword(keyword, page, limit)
-        .then((recipes) => { res.json(recipes) });
+            .then((recipes) => { res.json(recipes) });
     } catch (error) {
         console.error("Error searching recipes by keyword:", error);
         res.status(500).json({ error: "An error occurred while fetching recipes." });
@@ -31,7 +31,7 @@ router.get('/search-most-matching', (req, res, next) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         searchRecipesByMaxMatching(page, limit)
-        .then((recipes) => { res.json(recipes) });
+            .then((recipes) => { res.json(recipes) });
     } catch (error) {
         console.error("Error searching recipes by most matching:", error);
         res.status(500).json({ error: "An error occurred while fetching recipes." });
@@ -43,7 +43,7 @@ router.get('/search-least-missing', (req, res, next) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         searchRecipesByMinMissing(page, limit)
-        .then((recipes) => { res.json(recipes) });
+            .then((recipes) => { res.json(recipes) });
     } catch (error) {
         console.error("Error searching recipes by least missing:", error);
         res.status(500).json({ error: "An error occurred while fetching recipes." });

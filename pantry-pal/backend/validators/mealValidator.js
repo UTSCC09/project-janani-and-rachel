@@ -12,7 +12,7 @@ const mealSchema = Joi.object({
 
 const getMealQuerySchema = Joi.object({
     "limit": numberSchema.allow(null).allow(''),
-    "lastVisibleMealId": numberSchema.allow(null).allow('')
+    "lastVisibleMealId": simpleStringSchema.allow(null).allow('')
 });
 
 export const sanitizeAndValidateMeal = sanitizeAndValidateData(mealSchema);

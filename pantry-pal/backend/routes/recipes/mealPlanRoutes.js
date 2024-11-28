@@ -75,9 +75,11 @@ router.post('/reminders', (req, res, next) => {
     if (!googleAccessToken) {
         return res.status(401).json({ error: "Google access token required." });
     }
-    const daysInAdvanceDefrost = req.query.daysInAdvanceDefrost || 1;
-    const daysInAdvanceBuy = req.query.daysInAdvanceBuy || 3;
-    addThisWeeksMealReminders(uid, googleAccessToken, daysInAdvanceDefrost, daysInAdvanceBuy)
+    try {
+        const daysInAdvanceDefrost = parseInt(req.query.daysInAdvanceDefrost) || 1;
+        const daysInAdvanceBuy = parseInt(req.query.daysInAdvanceBuy) || 3;
+        
+        addThisWeeksMealReminders(uid, googleAccessToken, daysInAdvanceDefrost, daysInAdvanceBuy)
         .then(() => {
             return res.status(200).json({ message: "Reminders added successfully." });
         }).catch((error) => {
@@ -85,6 +87,11 @@ router.post('/reminders', (req, res, next) => {
             res.status(error.status || 500)
                 .json({ error: error.message || "An error occurred while adding reminders." });
         });
+    } catch (error) {
+        console.error("Error adding reminders:", error);
+        res.status(error.status || 500)
+            .json({ error: error.message || "An error occurred while adding reminders." });
+    }
 });
 
 // and also a add reminders to tasks

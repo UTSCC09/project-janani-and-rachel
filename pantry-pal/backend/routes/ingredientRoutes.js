@@ -4,12 +4,13 @@ import { getPantry, addToPantry, removeFromPantry, modifyInPantry }
 import { getShoppingList, addToShoppingList, removeFromShoppingList, modifyInShoppingList } 
     from '../services/ingredientServices.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
+import { sanitizeAndValidateIngredient, sanitizeAndValidateGetIngredientQuery } from '../validators/ingredientValidator.js';
 
 export const router = express.Router();
 
 router.use(verifyToken);
 
-router.get('/pantry', (req, res, next) => {
+router.get('/pantry', sanitizeAndValidateGetIngredientQuery, (req, res, next) => {
     const uid = req.uid;
     const limit = parseInt(req.query.limit) || 10;
     const lastVisibleIngredient = req.query.lastVisibleIngredient || null;
@@ -22,8 +23,9 @@ router.get('/pantry', (req, res, next) => {
     });
 });
 
-router.post('/pantry', (req, res, next) => {
+router.post('/pantry', sanitizeAndValidateIngredient, (req, res, next) => {
     const uid = req.uid;
+    console.log("here");
     const { ingredientName, purchaseDate, expirationDate, frozen, mealPlans } = req.body;
     addToPantry(uid, ingredientName, purchaseDate, expirationDate, frozen, mealPlans).then((ingredient) => {
         res.json(ingredient);
@@ -34,7 +36,7 @@ router.post('/pantry', (req, res, next) => {
     });
 });
 
-router.patch('/pantry', (req, res, next) => {
+router.patch('/pantry', sanitizeAndValidateIngredient, (req, res, next) => {
     const uid = req.uid;
     modifyInPantry(uid, req.body).then((ingredient) => {
         res.json(ingredient);
@@ -57,7 +59,7 @@ router.delete('/pantry/:ingredientName', (req, res, next) => {
     });
 });
 
-router.get('/shopping-list', (req, res, next) => {
+router.get('/shopping-list', sanitizeAndValidateGetIngredientQuery, (req, res, next) => {
     const uid = req.uid;
     const limit = parseInt(req.query.limit) || 10;
     const lastVisibleIngredient = req.query.lastVisibleIngredient || null;
@@ -70,7 +72,7 @@ router.get('/shopping-list', (req, res, next) => {
     });
 });
 
-router.post('/shopping-list', (req, res, next) => {
+router.post('/shopping-list', sanitizeAndValidateIngredient, (req, res, next) => {
     const uid = req.uid;
     const { ingredientName, mealPlans } = req.body;
     addToShoppingList(uid, ingredientName, mealPlans).then((ingredient) => {
@@ -82,7 +84,7 @@ router.post('/shopping-list', (req, res, next) => {
     });
 });
 
-router.patch('/shopping-list', (req, res, next) => {
+router.patch('/shopping-list', sanitizeAndValidateIngredient, (req, res, next) => {
     const uid = req.uid;
     modifyInShoppingList(uid, req.body).then((ingredient) => {
         res.json(ingredient);

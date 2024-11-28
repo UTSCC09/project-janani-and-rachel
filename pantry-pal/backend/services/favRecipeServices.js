@@ -15,13 +15,9 @@ async function getFormattedRecipe(favRecipeDocData) {
     }
     const recipeData = recipeDoc.data();
     return {
-        recipeId: favRecipeDocData.recipeId,
-        recipeName: favRecipeDocData.recipeName,
         planned: favRecipeDocData.planned,
-        ingredients: recipeData.ingredients,
-        sourceUrl: recipeData.sourceUrl,
-        instructions: recipeData.instructions,
-        totalIngredientCount: recipeData.totalIngredientCount
+        mealPlans: favRecipeDocData.mealPlans,
+        ...recipeData
     };
 }
 

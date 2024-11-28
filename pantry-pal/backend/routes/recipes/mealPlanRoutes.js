@@ -3,11 +3,12 @@ import { getMealPlan, getMealById, addRecipeToMealPlan, removeRecipeFromMealPlan
     from '../../services/mealPlanServices.js';  
 import { addMealReminders, addThisWeeksMealReminders } from '../../services/reminderServices.js';
 import { verifyToken } from '../../middleware/authMiddleware.js';
+import { sanitizeAndValidateMeal, sanitizeAndValidateGetMealQuery } from '../../validators/mealValidator.js';
 
 export const router = express.Router();
 router.use(verifyToken);
 
-router.get('/', (req, res, next) => {
+router.get('/', sanitizeAndValidateGetMealQuery, (req, res, next) => {
     // get all recipes in the meal plan
     const uid = req.uid;
     const { limit, lastVisibleMealId } = req.query;
@@ -34,7 +35,39 @@ router.get('/:mealId', (req, res, next) => {
         });
 });
 
-// madd reminder for all meals this week 
+router.post('/', sanitizeAndValidateMeal, (req, res, next) => {
+    // add a recipe to the meal plan
+    const uid = req.uid;
+    const { recipeId, ingredients, date } = req.body;
+    if (!recipeId || !ingredients) {
+        return res.status(400).json({ error: "Missing recipeId or ingredients." });
+    }
+    addRecipeToMealPlan(uid, recipeId, ingredients, date)
+        .then((recipe) => {
+            return res.status(200).json(recipe);
+        }).catch((error) => {
+            console.error("Error adding recipe to meal plan:", error);
+            res.status(error.status || 500)
+                .json({ error: error.message || "An error occurred while adding recipe to meal plan." });
+        });
+});
+
+router.delete('/:recipeId', (req, res, next) => {
+    // remove a recipe from the meal plan
+    const uid = req.uid;
+    const recipeId = req.params.recipeId;
+    removeRecipeFromMealPlan(uid, recipeId)
+        .then((recipe) => {
+            return res.status(200).json(recipe);
+        }).catch((error) => {
+            console.error("Error removing recipe from meal plan:", error);
+            res.status(error.status || 500)
+                .json({ error: error.message || "An error occurred while removing recipe from meal plan." });
+        });
+
+});
+
+// add reminder for all meals this week 
 router.post('/reminders', (req, res, next) => {
     // add reminders for all meals in the meal plan
     const uid = req.uid;
@@ -42,8 +75,8 @@ router.post('/reminders', (req, res, next) => {
     if (!googleAccessToken) {
         return res.status(401).json({ error: "Google access token required." });
     }
-    const daysInAdvanceDefrost = req.body.daysInAdvanceDefrost || 1;
-    const daysInAdvanceBuy = req.body.daysInAdvanceBuy || 3;
+    const daysInAdvanceDefrost = req.query.daysInAdvanceDefrost || 1;
+    const daysInAdvanceBuy = req.query.daysInAdvanceBuy || 3;
     addThisWeeksMealReminders(uid, googleAccessToken, daysInAdvanceDefrost, daysInAdvanceBuy)
         .then(() => {
             return res.status(200).json({ message: "Reminders added successfully." });
@@ -74,36 +107,4 @@ router.post('/:mealId/reminders', (req, res, next) => {
             res.status(error.status || 500)
                 .json({ error: error.message || "An error occurred while adding reminders." });
         });
-});
-
-router.post('/', (req, res, next) => {
-    // add a recipe to the meal plan
-    const uid = req.uid;
-    const { recipeId, ingredients, date } = req.body;
-    if (!recipeId || !ingredients) {
-        return res.status(400).json({ error: "Missing recipeId or ingredients." });
-    }
-    addRecipeToMealPlan(uid, recipeId, ingredients, date)
-        .then((recipe) => {
-            return res.status(200).json(recipe);
-        }).catch((error) => {
-            console.error("Error adding recipe to meal plan:", error);
-            res.status(error.status || 500)
-                .json({ error: error.message || "An error occurred while adding recipe to meal plan." });
-        });
-});
-
-router.delete('/:recipeId', (req, res, next) => {
-    // remove a recipe from the meal plan
-    const uid = req.uid;
-    const recipeId = req.params.recipeId;
-    removeRecipeFromMealPlan(uid, recipeId)
-        .then((recipe) => {
-            return res.status(200).json(recipe);
-        }).catch((error) => {
-            console.error("Error removing recipe from meal plan:", error);
-            res.status(error.status || 500)
-                .json({ error: error.message || "An error occurred while removing recipe from meal plan." });
-        });
-
 });

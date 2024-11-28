@@ -37,26 +37,48 @@ function formatRecipes(data) {
         // recipe cource url
     const recipes = data.results;
     return recipes.map((recipe) => {
-        const missedIngredients = recipe.missedIngredients.map((ingredient) => ingredient.name);
-        const ingredients = recipe.extendedIngredients.map((ingredient) => ingredient.name);
+        const simpleStringReplacementSchema = /[^a-zA-Z0-9 &()-,]/g;
+        const complexStringReplacementSchema = /[^a-zA-Z0-9 $*&()';:.,/!-]/g;
+
+        const missedIngredients = recipe.missedIngredients.map((ingredient) => 
+            ingredient.name.replace(simpleStringReplacementSchema, '')
+        );
+        const ingredients = recipe.extendedIngredients.map((ingredient) => 
+            ingredient.name.replace(simpleStringReplacementSchema, '')
+        );
         let instructions = [];
         if (recipe.analyzedInstructions.length > 0) {
             instructions = recipe.analyzedInstructions[0].steps.map((step) => {
                 return {
                     number: step.number,
-                    step: step.step
+                    step: step.step.replace(complexStringReplacementSchema, '')
                 };
             });
+        }
+        let nutrition = null;
+        if (recipe.nutrition) {
+            nutrition = {
+                nutrients: recipe.nutrition.nutrients.map((nutrient) => {
+                    return {
+                        name: nutrient.name.replace(simpleStringReplacementSchema, ''),
+                        amount: nutrient.amount,
+                        unit: nutrient.unit.replace(simpleStringReplacementSchema, ''),
+                        percentOfDailyNeeds: nutrient.percentOfDailyNeeds,
+                    };
+                }),
+                caloricBreakdown: recipe.nutrition.caloricBreakdown
+            };
         }
         const formattedRecipe = {
             recipeId: recipe.id,
             recipeName: recipe.title,
             missedIngredientCount: recipe.missedIngredientCount,
-            missedIngredients: missedIngredients,
+            missedIngredients,
             totalIngredientCount: ingredients.length,
-            ingredients: ingredients,
-            instructions: instructions,
-            sourceUrl: recipe.sourceUrl
+            ingredients,
+            instructions,
+            sourceUrl: recipe.sourceUrl,
+            nutrition
         };
         return formattedRecipe;
     });
@@ -65,7 +87,8 @@ function formatRecipes(data) {
 export async function searchRecipesByKeyword(keyword, page=1, lim=10) {
     const url = `${spoonacularAPI}recipes/complexSearch?apiKey=${spoonacularKey}&query=${keyword}` +
         `&number=${lim}&offset=${(page-1) * lim}&instructionsRequired=true&sort=popularity` +
-        `&addRecipeInformation=true&addRecipeInstructions=true&fillIngredients=true`;
+        `&addRecipeInformation=true&addRecipeInstructions=true&fillIngredients=true&ignorePantry=false` +
+        `&addRecipeNutrition=true`;
 
     try {
         
@@ -85,7 +108,8 @@ export async function searchRecipesByKeyword(keyword, page=1, lim=10) {
 export async function searchRecipesByMaxMatching(page=1, lim=10) {
     const url = `${spoonacularAPI}recipes/complexSearch?apiKey=${spoonacularKey}&sort=max-used-ingredients` +
         `&number=${lim}&offset=${(page-1) * lim}&instructionsRequired=true&fillIngredients=true` +
-        `&includeIngredients=${pantryIngredients.join(",")}&addRecipeInformation=true&addRecipeInstructions=true`;
+        `&includeIngredients=${pantryIngredients.join(",")}&addRecipeInformation=true&addRecipeInstructions=true` +
+        `&addRecipeNutrition=true&ignorePantry=false`;
     try {
         const response = await fetch(url);
         if (!response.ok) {
@@ -103,7 +127,8 @@ export async function searchRecipesByMaxMatching(page=1, lim=10) {
 export async function searchRecipesByMinMissing(page=1, lim=10) {
     const url = `${spoonacularAPI}recipes/complexSearch?apiKey=${spoonacularKey}&sort=min-missing-ingredients` +
         `&number=${lim}&offset=${(page-1) * lim}&instructionsRequired=true&fillIngredients=true` +
-        `&includeIngredients=${pantryIngredients.join(",")}&addRecipeInformation=true&addRecipeInstructions=true`;
+        `&includeIngredients=${pantryIngredients.join(",")}&addRecipeInformation=true&addRecipeInstructions=true` +
+        `&addRecipeNutrition=true&ignorePantry=false`;
     try {
         const response = await fetch(url);
         if (!response.ok) {

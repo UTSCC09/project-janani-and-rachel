@@ -3,13 +3,14 @@ import express from 'express';
 import { getFavRecipes, getPlannedFavRecipes, getUnPlannedFavRecipes, getFavRecipeById, addFavRecipe, removeFavRecipe, pantryComparison } 
 from '../../services/favRecipeServices.js'; 
 import { verifyToken } from '../../middleware/authMiddleware.js';
+import { sanitizeAndValidateRecipe, sanitizeAndValidateGetRecipeQuery } from '../../validators/recipeValidator.js';
 
 export const router = express.Router();
 
 router.use(verifyToken);
 
 // Route to get all favorited recipes
-router.get('/', (req, res, next) => {
+router.get('/', sanitizeAndValidateGetRecipeQuery, (req, res, next) => {
     const uid = req.uid;
     const { limit=10, lastVisible=null } = req.query;
     getFavRecipes(uid, limit, lastVisible)
@@ -24,7 +25,7 @@ router.get('/', (req, res, next) => {
 });
 
 // Route to planned recipes
-router.get('/planned', (req, res, next) => {
+router.get('/planned', sanitizeAndValidateGetRecipeQuery, (req, res, next) => {
     const uid = req.uid;
     const { limit=10, lastVisible=null } = req.query;
     getPlannedFavRecipes(uid, limit, lastVisible)
@@ -37,7 +38,7 @@ router.get('/planned', (req, res, next) => {
         });
 });
 
-router.get('/unplanned', (req, res, next) => {
+router.get('/unplanned', sanitizeAndValidateGetRecipeQuery, (req, res, next) => {
     const uid = req.uid;
     const { limit=10, lastVisible=null } = req.query;
     getUnPlannedFavRecipes(uid, limit, lastVisible)
@@ -66,7 +67,7 @@ router.get('/:recipeId', async (req, res) => {
 });
 
 
-router.post('/', (req, res, next) => {
+router.post('/', sanitizeAndValidateRecipe, (req, res, next) => {
     // add recipe to favorites
     const uid = req.uid;
     // req.body formated as response from search recipes

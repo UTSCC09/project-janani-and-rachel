@@ -1,3 +1,4 @@
+import { parse } from 'path';
 import { db } from '../config/firebase.js';
 import { addToPantry, addToShoppingList, modifyInPantry, modifyInShoppingList } from './ingredientServices.js';
 
@@ -11,6 +12,7 @@ export async function getMealPlan(uid, limit=10, lastVisibleMealId=null) {
             // retrieve the last visible meal plan if it exists
             const lastVisibleDoc = await mealPlanRef.doc(lastVisibleMealId).get();
             if (lastVisibleDoc.exists) {
+                limit=parseInt(limit);
                 q = mealPlanRef.orderBy('date').startAfter(lastVisibleDoc).limit(limit);
             }
         }

@@ -1,5 +1,6 @@
 import { db } from '../config/firebase.js';
 import { google } from 'googleapis';
+import { Timestamp } from '@google-cloud/firestore';
 
 export async function addMealReminders(uid, mealId, googleAccessToken, daysInAdvanceDefrost=1, daysInAdvanceBuy=3) {
     if (!googleAccessToken) {
@@ -98,19 +99,43 @@ export async function addMealReminders(uid, mealId, googleAccessToken, daysInAdv
     }));
 }
 
-export async function addThisWeeksMealReminders(uid, googleAccessToken, daysInAdvanceDefrost=1, daysInAdvanceBuy=3) {
+export async function addAllMealReminders(uid, googleAccessToken, daysInAdvanceDefrost=1, daysInAdvanceBuy=3) {
     if (!googleAccessToken) {
         throw { status: 401, message: "Google access token required." };
     }
+
+    //let now = new Date();
+    //now.setHours(0, 0, 0, 0);
+    
+    //const today = now.toISOString();
+    //const oneWeekLater = new Date(now.getMilliseconds() + 604800000).toISOString();
+
     
     // get the meal plans for the week
+    // want to access _seconds of date field object
     const mealPlansRef = db.collection('Users').doc(uid).collection('MealPlan')
-        .where('date', '>=', new Date().getTime()).where('date', '<=', new Date().getTime() + 604800000); 
+        //.where('date', '>=', today)//.where('date', '<=', oneWeekLater); 
     const mealPlans = await mealPlansRef.get();
 
+    console.log('mealPlans:', mealPlans.docs);
+
+    // add reminder for frist meal and then the rest to avoid race conditions
+    if (mealPlans.docs.length > 0) {
+        const firstMealPlan = mealPlans.docs[0];
+        try {
+            await addMealReminders(uid, firstMealPlan.data().mealId, googleAccessToken, daysInAdvanceDefrost, daysInAdvanceBuy);
+        } catch (error) {
+            console.error(`Failed to add reminders for meal ${firstMealPlan.id}:`, error);
+        }
+    }
+
     // loop through each meal plan and add to tasks list using above function 
-    await Promise.all(mealPlans.docs.map(async (mealPlan) => {
-        await addMealReminders(uid, mealPlan.data().mealId, googleAccessToken, daysInAdvanceDefrost, daysInAdvanceBuy);
+    await Promise.all(mealPlans.docs.slice(1).map(async (mealPlan) => {
+        try {
+            await addMealReminders(uid, mealPlan.data().mealId, googleAccessToken, daysInAdvanceDefrost, daysInAdvanceBuy);
+        } catch (error) {
+            console.error(`Failed to add reminders for meal ${mealPlan.id}:`, error);
+        }
     }));
     
 }

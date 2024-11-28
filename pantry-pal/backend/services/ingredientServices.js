@@ -1,7 +1,9 @@
+import { parse } from 'path';
 import { db } from '../config/firebase.js';
 
 export async function getPantry(uid, lim=10, lastVisibleIngredient=null) {
     const pantryRef = db.collection('Users').doc(uid).collection('Pantry');
+    lim = parseInt(lim);
     let q = pantryRef.orderBy('ingredientName').limit(lim);
 
     if (lastVisibleIngredient) {
@@ -195,6 +197,7 @@ export async function removeFromPantry(uid, ingredientName) {
 
 export async function getShoppingList(uid, lim=10, lastVisibleIngredient = null) {
     const shoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList');
+    lim = parseInt(lim);
     let q = shoppingListRef.orderBy('ingredientName').limit(lim);
 
     if (lastVisibleIngredient) {

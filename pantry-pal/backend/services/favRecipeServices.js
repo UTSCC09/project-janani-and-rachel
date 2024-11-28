@@ -1,6 +1,7 @@
 import { db } from '../config/firebase.js';
 import { getPantry } from './ingredientServices.js';
 import { genAI } from '../config/gemini.js';
+import { parse } from 'path';
 
 async function getFormattedRecipe(favRecipeDocData) {
     const recipeRef = favRecipeDocData.recipe;
@@ -23,6 +24,7 @@ async function getFormattedRecipe(favRecipeDocData) {
 
 async function getFavRecipes(uid, lim=10, lastVisibleId=null) {    
     const recipesRef = db.collection("Users").doc(uid).collection("FavRecipes");
+    lim = parseInt(lim);
     let q = recipesRef.orderBy('recipeName').limit(lim);
 
     // if lastVisibleId is provided, get the last visible document and start query after that
@@ -64,6 +66,7 @@ async function getFavRecipes(uid, lim=10, lastVisibleId=null) {
 
 async function getPlannedFavRecipes(uid, lim=10, lastVisibleId=null) {
     const recipesRef = db.collection("Users").doc(uid).collection("FavRecipes");
+    lim = parseInt(lim);
     let q = recipesRef.where('planned', '==', true).limit(lim);
 
     // if lastVisibleId is provided, get the last visible document and start query after that
@@ -99,6 +102,7 @@ async function getPlannedFavRecipes(uid, lim=10, lastVisibleId=null) {
 
 async function getUnPlannedFavRecipes(uid, lim = 10, lastVisibleId = null) {
     const recipesRef = db.collection("Users").doc(uid).collection("FavRecipes");
+    lim = parseInt(lim);
     let q = recipesRef.where('planned', '==', false).limit(lim);
 
     // if lastVisibleId is provided, get the last visible document and start query after that

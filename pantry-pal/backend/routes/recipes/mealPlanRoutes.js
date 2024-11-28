@@ -1,7 +1,7 @@
 import express from 'express';
 import { getMealPlan, getMealById, addRecipeToMealPlan, removeRecipeFromMealPlan } 
     from '../../services/mealPlanServices.js';  
-import { addMealReminders, addThisWeeksMealReminders } from '../../services/reminderServices.js';
+import { addMealReminders, addAllMealReminders } from '../../services/reminderServices.js';
 import { verifyToken } from '../../middleware/authMiddleware.js';
 import { sanitizeAndValidateMeal, sanitizeAndValidateGetMealQuery } from '../../validators/mealValidator.js';
 
@@ -79,14 +79,14 @@ router.post('/reminders', (req, res, next) => {
         const daysInAdvanceDefrost = parseInt(req.query.daysInAdvanceDefrost) || 1;
         const daysInAdvanceBuy = parseInt(req.query.daysInAdvanceBuy) || 3;
         
-        addThisWeeksMealReminders(uid, googleAccessToken, daysInAdvanceDefrost, daysInAdvanceBuy)
-        .then(() => {
-            return res.status(200).json({ message: "Reminders added successfully." });
-        }).catch((error) => {
-            console.error("Error adding reminders:", error);
-            res.status(error.status || 500)
-                .json({ error: error.message || "An error occurred while adding reminders." });
-        });
+        addAllMealReminders(uid, googleAccessToken, daysInAdvanceDefrost, daysInAdvanceBuy)
+            .then(() => {
+                return res.status(200).json({ message: "Reminders added successfully." });
+            }).catch((error) => {
+                console.error("Error adding reminders:", error);
+                res.status(error.status || 500)
+                    .json({ error: error.message || "An error occurred while adding reminders." });
+            });
     } catch (error) {
         console.error("Error adding reminders:", error);
         res.status(error.status || 500)

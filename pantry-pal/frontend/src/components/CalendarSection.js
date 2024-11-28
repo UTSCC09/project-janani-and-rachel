@@ -28,8 +28,7 @@ export default function CalendarSection() {
 
   const fetchMealPlans = () => {
     setLoading(true);
-    const url = `${domain}/api/recipes/meal-plan?lastVisibleMealId=${lastVisible || ''}`;
-    const headers = {
+    const url = `${domain}/api/recipes/meal-plan?lastVisibleMealId=${(lastVisible || '').trim()}`;    const headers = {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
       "GoogleAccessToken": localStorage.getItem('accessToken')

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Container, CircularProgress, Fab, Tooltip, Typography, Snackbar, Alert } from '@mui/material';
+import { Box, Button, Container, CircularProgress, Typography, Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import StyledTitle from './StyledTitle';
 import MealPlanCard from './MealPlanCard';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import ReminderForm from './ReminderForm';
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
@@ -17,6 +18,9 @@ export default function CalendarSection() {
   const [lastVisible, setLastVisible] = useState(null);
   const [expanded, setExpanded] = useState({});
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [daysInAdvanceDefrost, setDaysInAdvanceDefrost] = useState(3);
+  const [daysInAdvanceBuy, setDaysInAdvanceBuy] = useState(1);
 
   useEffect(() => {
     fetchMealPlans();
@@ -24,8 +28,7 @@ export default function CalendarSection() {
 
   const fetchMealPlans = () => {
     setLoading(true);
-    const url = `${domain}/api/recipes/meal-plan?lastVisibleMealId=${lastVisible || ''}`;
-    const headers = {
+    const url = `${domain}/api/recipes/meal-plan?lastVisibleMealId=${(lastVisible || '').trim()}`;    const headers = {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
       "GoogleAccessToken": localStorage.getItem('accessToken')
@@ -94,7 +97,15 @@ export default function CalendarSection() {
   };
 
   const handleWeeklyReminder = () => {
-    fetch(`${domain}/api/recipes/meal-plan/reminders`, {
+    setDialogOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  };
+
+  const handleDialogSubmit = () => {
+    fetch(`${domain}/api/recipes/meal-plan/reminders?daysInAdvanceDefrost=${daysInAdvanceDefrost}&daysInAdvanceBuy=${daysInAdvanceBuy}`, {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -109,6 +120,7 @@ export default function CalendarSection() {
         console.error('Failed to set weekly reminder');
       }
     });
+    setDialogOpen(false);
   };
 
   const handleSnackbarClose = (event, reason) => {
@@ -120,14 +132,31 @@ export default function CalendarSection() {
 
   return (
     <Container maxWidth="lg">
-      <Box sx={{ marginBottom: 6 }}>
+      <Box sx={{ marginBottom: 6, textAlign: 'center' }}>
         <StyledTitle>Meal Plans</StyledTitle>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', marginTop: '1rem' }}>
-          <ErrorOutlineIcon sx={{ color: PURPLE, marginRight: '0.5rem' }} />
-          <Typography variant="body2" sx={{ color: PURPLE }}>
-            You can only get reminders if you are signed in with Google.
-          </Typography>
-        </Box>
+      </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', marginTop: '-2rem' }}>
+        <Button
+          variant="outlined"
+          startIcon={<NotificationsActiveIcon sx={{ color: PURPLE }} />}
+          onClick={handleWeeklyReminder}
+          sx={{
+            borderColor: PURPLE,
+            color: PURPLE,
+            '&:hover': {
+              borderColor: PURPLE,
+              backgroundColor: 'rgba(126, 145, 255, 0.1)',
+            },
+          }}
+        >
+          Add Google Calendar reminders for all recipes this week
+        </Button>
+      </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', marginTop: '1rem', marginBottom: '1rem' }}>
+        <ErrorOutlineIcon sx={{ color: PURPLE, marginRight: '0.5rem' }} />
+        <Typography variant="body2" sx={{ color: PURPLE }}>
+          You can only get reminders if you are signed in with Google.
+        </Typography>
       </Box>
       <InfiniteScroll
         dataLength={mealPlans.length}
@@ -151,23 +180,16 @@ export default function CalendarSection() {
           />
         ))}
       </InfiniteScroll>
-      <Tooltip title="Remind me about the next week">
-        <Fab
-          onClick={handleWeeklyReminder}
-          color="primary"
-          sx={{
-            position: 'fixed',
-            bottom: 16,
-            left: 16,
-            backgroundColor: PURPLE,
-            '&:hover': {
-              backgroundColor: PURPLE,
-            }
-          }}
-        >
-          <NotificationsActiveIcon />
-        </Fab>
-      </Tooltip>
+      <Dialog open={dialogOpen} onClose={handleDialogClose}>
+        <DialogTitle>Set Weekly Reminder</DialogTitle>
+        <DialogContent>
+          <ReminderForm
+            open={dialogOpen}
+            onClose={handleDialogClose}
+            onSubmit={handleDialogSubmit}
+          />
+        </DialogContent>
+      </Dialog>
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}

@@ -28,21 +28,26 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
   const handlePantryComparison = () => {
     setLoading(true);
     setErrorMessage('');
-    fetch(`${domain}/api/recipes/favorites/${recipe.recipeId}/pantry-comparison`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-        "GoogleAccessToken": localStorage.getItem('accessToken')
-      }
-    })
+  
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), 5000));
+  
+    Promise.race([
+      fetch(`${domain}/api/recipes/favorites/${recipe.recipeId}/pantry-comparison`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
+          "GoogleAccessToken": localStorage.getItem('accessToken')
+        }
+      }),
+      timeout
+    ])
       .then(response => {
         if (!response.ok) {
           if (response.status === 500) {
             // Handle 500 error by opening the popup for manual split
             setAiSplit(null);
             setManualSplit(true);
-            setErrorMessage('AI split failed');
             setOpen(true);
             setLoading(false);
             return;
@@ -62,17 +67,20 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
         } else {
           setAiSplit(null);
           setManualSplit(true);
-          setErrorMessage('AI split failed');
         }
         setOpen(true);
-        setLoading(false);
       })
       .catch(error => {
-        console.error('Error with pantry comparison:', error);
+        if (error.message === 'Request timed out') {
+          console.log('Request timed out, proceeding with manual split');
+        } else {
+          console.error('Error planning recipe:', error);
+        }
         setAiSplit(null);
         setManualSplit(true);
-        setErrorMessage('AI split failed');
         setOpen(true);
+      })
+      .finally(() => {
         setLoading(false);
       });
   };
@@ -201,36 +209,39 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
           )}
         </Box>
 
-        {/* Notes Section */}
-        <Box sx={{ marginBottom: "1rem" }}>
+{/* Ingredients Section */}
+<Box
+          sx={{
+            marginBottom: "1rem",
+            backgroundColor: "#fff", // White background for the box
+            padding: "1rem",
+            borderRadius: 2,
+            boxShadow: 1,
+          }}
+        >
           <Typography
             variant="body2"
             sx={{
               fontWeight: "500",
-              color: "#7e91ff", // Soft purple for notes
+              color: "#7e91ff", // Soft purple for ingredients
               marginBottom: "0.5rem",
             }}
           >
-            <strong>Notes:</strong>
+            <strong>Ingredients:</strong>
           </Typography>
-          <Typography variant="body2">
-            {recipe.notes || "No notes available"}
-          </Typography>
+          {Array.isArray(recipe.ingredients) ? (
+            recipe.ingredients.map((ingredient, idx) => (
+              <Typography key={idx} variant="body2" sx={{ color: "#000000" }}>
+                {ingredient}
+              </Typography>
+            ))
+          ) : (
+            <Typography variant="body2" sx={{ color: "#7e91ff" }}>
+              {recipe.ingredients || "No ingredients available"}
+            </Typography>
+          )}
         </Box>
 
-        {/* Date Section */}
-        <Box sx={{ marginBottom: "1.5rem" }}>
-          <Typography
-            variant="body2"
-            sx={{
-              fontWeight: "500",
-              color: "#7e91ff", // Soft purple for date
-              marginBottom: "0.5rem",
-            }}
-          >
-            <strong>Date:</strong> {recipe.date || "N/A"}
-          </Typography>
-        </Box>
       </CardContent>
 
       {/* Edit, Delete, and Meal Plan Buttons */}
@@ -260,11 +271,6 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: 2 }}>
             <DialogTitle>Plan Recipe</DialogTitle>
-            <Tooltip title="Ingredients will be put into your pantry or shopping list." arrow>
-              <IconButton sx={{ color: 'textSecondary' }}>
-                <InfoIcon />
-              </IconButton>
-            </Tooltip>
           </Box>
         <DialogContent>
           {errorMessage && (
@@ -276,7 +282,7 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
           <Box component="form" onSubmit={handleAddToMealPlan} sx={{ marginBottom: "1.5rem" }}>
             <TextField
               type="date"
-              label="Meal Plan Date"
+              label="Meal Date"
               value={selectedDate}
               onChange={handleDateChange}
               fullWidth
@@ -288,37 +294,53 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
             />
           </Box>
 
-          {/* AI Split Section */}
-          {aiSplit && (
-            <Box sx={{ marginBottom: "1.5rem" }}>
-              <Typography variant="h6" sx={{ fontWeight: "600", color: "#7e91ff" }}>
-                AI Split
-              </Typography>
-              <Typography variant="subtitle1" sx={{ fontWeight: "600", color: "#7e91ff" }}>
-                In Pantry
-              </Typography>
-              <List>
-                {aiSplit.inPantry.map((ingredient, index) => (
-                  <ListItem key={index}>{ingredient}</ListItem>
-                ))}
-              </List>
-              <Typography variant="subtitle1" sx={{ fontWeight: "600", color: "#7e91ff" }}>
-                Not in Pantry
-              </Typography>
-              <List>
-                {aiSplit.notInPantry.map((ingredient, index) => (
-                  <ListItem key={index}>{ingredient}</ListItem>
-                ))}
-              </List>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleAddToMealPlan}
-                sx={{ marginTop: "1rem", backgroundColor: "#7e91ff" }}
-              >
-                Add to Meal Plan
-              </Button>
-              <Button
+            {/* AI Split Section */}
+            {aiSplit && (
+              <Box sx={{ marginBottom: "1.5rem" }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+                  <Typography variant="h6" sx={{ fontWeight: "600", color: "#7e91ff" }}>
+                    Recipe Ingredients
+                  </Typography>
+                  <Tooltip title="The ingredients you need to buy will be automatically added to your shopping list when you plan this meal. If you don't like this autogenerated split, you can create this list manually." arrow>
+                    <IconButton sx={{ color: 'textSecondary' }}>
+                      <InfoIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+                {aiSplit.inPantry && (
+                  <>
+                    <Typography variant="subtitle1" sx={{ fontWeight: "600", color: "#7e91ff", marginBottom: "-0.5rem" }}>
+                      Ingredients in your Pantry
+                    </Typography>
+                    <List>
+                      {aiSplit.inPantry.map((ingredient, index) => (
+                        <ListItem key={index}>{ingredient}</ListItem>
+                      ))}
+                    </List>
+                  </>
+                )}
+                {aiSplit.notInPantry && (
+                  <>
+                    <Typography variant="subtitle1" sx={{ fontWeight: "600", color: "#7e91ff", marginBottom: "-0.5rem" }}>
+                      Ingredients not in your Pantry
+                    </Typography>
+                    <List>
+                      {aiSplit.notInPantry.map((ingredient, index) => (
+                        <ListItem key={index}>{ingredient}</ListItem>
+                      ))}
+                    </List>
+                  </>
+                )}
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleAddToMealPlan}
+                  sx={{ marginTop: "1rem", backgroundColor: "#7e91ff" }}
+                >
+                  Add to Meal Plan
+                </Button>
+
+                <Button
                 variant="outlined"
                 color="primary"
                 onClick={handleManualSplit}
@@ -326,17 +348,17 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
               >
                 Add Manually
               </Button>
-            </Box>
-          )}
+              </Box>
+            )}
 
           {/* Manual Split Section */}
           {manualSplit && (
             <Box sx={{ marginBottom: "1.5rem" }}>
               <Typography variant="h6" sx={{ fontWeight: "600", color: "#7e91ff" }}>
-                Manual Split
+              Recipe Ingredients
               </Typography>
               <Typography variant="h7" sx={{ fontWeight: "300", color: "#7e91ff" }}>
-                Check the ingredients that you have
+                Check the ingredients that you have. They will be automatically be added to your pantry when you plan this recipe.
               </Typography>
               <List>
                 {ingredients.map((ingredient, index) => (

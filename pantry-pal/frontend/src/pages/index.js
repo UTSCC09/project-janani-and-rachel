@@ -171,10 +171,10 @@ export default function Home() {
                   open={Boolean(anchorEl)}
                   onClose={() => setAnchorEl(null)}
                 >
-                  <MenuItem onClick={() => handleMenuClose("recipes")}>Recipes</MenuItem>
+                  <MenuItem onClick={() => handleMenuClose("recipes")}>My Recipes</MenuItem>
                   <MenuItem onClick={() => handleMenuClose("ingredients")}>My Pantry</MenuItem>
                   <MenuItem onClick={() => handleMenuClose("shoppingList")}>Shopping List</MenuItem>
-                  <MenuItem onClick={() => handleMenuClose("calendar")}>My Meal Plans</MenuItem>
+                  <MenuItem onClick={() => handleMenuClose("calendar")}>Meal Plan</MenuItem>
                   <MenuItem onClick={() => handleMenuClose("recipeSearch")}>Recipe Search</MenuItem>
                   <MenuItem onClick={handleSignout}>Sign Out</MenuItem>
                 </Menu>

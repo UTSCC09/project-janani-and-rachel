@@ -90,7 +90,7 @@ const MealPlanCard = ({ mealPlan, index, expanded, handleToggle, handleDelete })
             <IconButton onClick={() => handleToggle(index)} sx={{ color: "#fff" }}>
               {expanded[index] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </IconButton>
-            <Tooltip title="Notify" arrow>
+            <Tooltip title="Add Google Calendar Reminders to defrost and buy ingredients for this meal" arrow>
               <IconButton onClick={handleNotification} sx={{ color: "#fff" }}>
                 {notificationState === 'default' && <NotificationsIcon />}
                 {notificationState === 'loading' && <CircularProgress size={24} sx={{ color: "#fff" }} />}

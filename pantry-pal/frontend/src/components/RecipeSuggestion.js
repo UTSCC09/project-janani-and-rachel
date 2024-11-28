@@ -187,22 +187,23 @@ export default function RecipeSuggestion({ ingredients }) {
           {suggestedRecipes.length > 0 ? (
             suggestedRecipes.map((recipe) => (
               <Card
-                key={recipe.recipeId}
-                sx={{
-                  marginBottom: "1.5rem",
-                  borderRadius: "8px",
-                  boxShadow: 3,
-                  position: "relative",
-                  backgroundColor: "#fffae1",
-                }}
+              key={recipe.recipeId}
+              sx={{
+                marginBottom: "1.5rem",
+                borderRadius: "8px",
+                boxShadow: 3,
+                backgroundColor: "#fffae1",
+                position: "relative",
+              }}
               >
                 <CardContent>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-    <Typography
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}>
+                <Typography
       variant="h6"
       sx={{
         color: "#ffffff",
         backgroundColor: "#7e91ff",
+        maxWidth: "88%",
         padding: "8px",
         borderRadius: "4px",
         marginBottom: "1rem",
@@ -212,10 +213,15 @@ export default function RecipeSuggestion({ ingredients }) {
     >
       {recipe.recipeName}
     </Typography>
-    <FavoriteButton
-      isFavorite={favorites.has(recipe.recipeId)}
-      onClick={() => handleFavoriteClick(recipe)}
-    />
+    <Box sx={{ position: "absolute", top: "8px", right: "16px" }}>
+                  <FavoriteButton
+                    isFavorite={favorites.has(recipe.recipeId)}
+                    onClick={() => handleFavoriteClick(recipe)}
+                    sx={{
+                      color: favorites.has(recipe.recipeId) ? "#ff4081" : "#7e91ff",
+                    }}
+                  />
+                </Box>
   </Box>
                   <Box
                     sx={{

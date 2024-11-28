@@ -9,7 +9,7 @@ const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 const PURPLE = "#7e91ff";
 const LIGHT_GRAY = "#d3d3d3";
 
-const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete, handleEdit }) => {
+const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [open, setOpen] = useState(false);
   const [aiSplit, setAiSplit] = useState(null);
@@ -241,10 +241,12 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete, handleEdit }) 
           right: "16px",
           display: "flex",
           gap: "8px",
+          flexWrap: "wrap", // Allow wrapping of buttons
+          justifyContent: "flex-end", // Align buttons to the right
         }}
       >
-        <DeleteButton onClick={handleDelete} />
-        <Tooltip title="Plan Recipe" arrow>
+          <DeleteButton onClick={() => handleDelete(recipe.recipeId)} />
+          <Tooltip title="Plan Recipe" arrow>
     <IconButton
       onClick={handlePantryComparison}
       sx={{ color: "#7e91ff" }}

@@ -82,6 +82,7 @@ export default function RecipeList() {
   );
 
   const handleDelete = (recipeId) => {
+    console.log("recipeId", recipeId);
     // Send DELETE request to the backend
     fetch(`${domain}/api/recipes/favorites/${encodeURIComponent(recipeId)}`, {
       method: "DELETE",

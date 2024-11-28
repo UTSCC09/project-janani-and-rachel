@@ -12,7 +12,20 @@ const recipeSchema = Joi.object({
     instructions: Joi.array().items(Joi.object({
         number: numberSchema,
         step: complexStringSchema
-    }))
+    })),
+    nutrition: Joi.object({
+        nutrients: Joi.array().items(Joi.object({
+            name: simpleStringSchema,
+            amount: numberSchema,
+            unit: simpleStringSchema,
+            percentOfDailyNeeds: numberSchema
+        })),
+        caloricBreakdown: Joi.object({
+            percentProtein: numberSchema,
+            percentFat: numberSchema,
+            percentCarbs: numberSchema
+        })
+    })
 });
 
 const getRecipeQuerySchema = Joi.object({

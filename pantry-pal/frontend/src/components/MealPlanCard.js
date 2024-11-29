@@ -86,26 +86,34 @@ const MealPlanCard = ({ mealPlan, index, expanded, handleToggle, handleDelete })
           >
             {mealPlan.recipe.recipeName}
           </Typography>
-          <Box>
-            <IconButton onClick={() => handleToggle(index)} sx={{ color: "#fff" }}>
-              {expanded[index] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </IconButton>
-            <Tooltip title="Add Google Calendar Reminders to defrost and buy ingredients for this meal" arrow>
-              <IconButton onClick={handleNotification} sx={{ color: "#fff" }}>
-                {notificationState === 'default' && <NotificationsIcon />}
-                {notificationState === 'loading' && <CircularProgress size={24} sx={{ color: "#fff" }} />}
-                {notificationState === 'success' && <NotificationsActiveIcon />}
-              </IconButton>
-            </Tooltip>
-            <ReminderForm
-              open={reminderFormOpen}
-              onClose={() => setReminderFormOpen(false)}
-              onSubmit={handleReminderSubmit}
-            />
-            <Tooltip title="Delete Meal Plan" arrow>
-              <DeleteButton onClick={() => handleDelete(mealPlan.mealId)} />
-            </Tooltip>
-          </Box>
+          <Box
+  sx={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexBasis: "15%", // Take up 15% of the width of the parent container
+    flexShrink: 0, // Prevent the children from wrapping
+  }}
+>
+  <IconButton onClick={() => handleToggle(index)} sx={{ color: "#fff" }}>
+    {expanded[index] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+  </IconButton>
+  <Tooltip title="Add Google Calendar Reminders to defrost and buy ingredients for this meal" arrow>
+    <IconButton onClick={handleNotification} sx={{ color: "#fff" }}>
+      {notificationState === 'default' && <NotificationsIcon />}
+      {notificationState === 'loading' && <CircularProgress size={24} sx={{ color: "#fff" }} />}
+      {notificationState === 'success' && <NotificationsActiveIcon />}
+    </IconButton>
+  </Tooltip>
+  <ReminderForm
+    open={reminderFormOpen}
+    onClose={() => setReminderFormOpen(false)}
+    onSubmit={handleReminderSubmit}
+  />
+  <Tooltip title="Delete Meal Plan" arrow>
+    <DeleteButton onClick={() => handleDelete(mealPlan.mealId)} />
+  </Tooltip>
+</Box>
         </Box>
 
         <Box sx={{ marginBottom: "1.5rem", display: "flex", alignItems: "center" }}>

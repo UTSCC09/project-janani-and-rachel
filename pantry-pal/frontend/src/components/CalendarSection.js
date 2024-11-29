@@ -149,7 +149,7 @@ export default function CalendarSection() {
             },
           }}
         >
-          Add Google Calendar reminders for all recipes this week
+          Add Google Calendar reminders for all recipes
         </Button>
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', marginTop: '1rem', marginBottom: '1rem' }}>

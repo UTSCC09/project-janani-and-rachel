@@ -29,7 +29,7 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
     setLoading(true);
     setErrorMessage('');
   
-    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), 5000));
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), 1000000));
   
     Promise.race([
       fetch(`${domain}/api/recipes/favorites/${recipe.recipeId}/pantry-comparison`, {
@@ -372,19 +372,19 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
               </Typography>
               <List>
                 {ingredients.map((ingredient, index) => (
-                  <ListItem key={index}>
-                    <Checkbox
-                      checked={ingredient.inPantry}
-                      onChange={() => handleCheckboxChange(index)}
-                      sx={{
+                  <ListItem key={index} sx={{ padding: "0rem 0" }}> {/* Adjusted padding */}
+                  <Checkbox
+                    checked={ingredient.inPantry}
+                    onChange={() => handleCheckboxChange(index)}
+                    sx={{
+                      color: PURPLE,
+                      '&.Mui-checked': {
                         color: PURPLE,
-                        '&.Mui-checked': {
-                          color: PURPLE,
-                        },
-                      }}
-                    />
-                    {ingredient.name}
-                  </ListItem>
+                      },
+                    }}
+                  />
+                  {ingredient.name}
+                </ListItem>
                 ))}
               </List>
               <Button

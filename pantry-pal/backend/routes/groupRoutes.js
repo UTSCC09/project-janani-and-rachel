@@ -4,12 +4,16 @@ import { createGroup, addMemberToGroup, getGroupInvites, acceptGroupInvite, decl
     getUsersGroups, getGroupsICreated, getGroupMembers, getPantryForGroup, getRecipesForGroup, addRecipeToGroup, removeRecipeFromGroup } 
     from '../services/groupServices.js';
 import { searchRecipesByMaxMatchingForGroup } from '../services/searchRecipeServices.js';
+import { sanitizeAndValidateRecipe } from '../validators/recipeValidator.js';
+import { sanitizeAndValidateGroup, sanitizeAndValidateGroupMember, sanitizeAndValidateGroupParams } 
+    from '../validators/groupValidator.js';
+
 export const router = express.Router();
 
 router.use(verifyToken);
 
 // get all pantry ingredients for group
-router.get('/:groupId/pantry', (req, res, next) => {
+router.get('/:groupId/pantry', sanitizeAndValidateGroupParams, (req, res, next) => {
     const uid = req.uid;
     const groupId = req.params.groupId;
     getPantryForGroup(uid, groupId).then((ingredients) => {
@@ -22,7 +26,7 @@ router.get('/:groupId/pantry', (req, res, next) => {
 });
 
 // get all recipes for group
-router.get('/:groupId/recipes', (req, res, next) => {
+router.get('/:groupId/recipes', sanitizeAndValidateGroupParams, (req, res, next) => {
     const uid = req.uid;
     const groupId = req.params.groupId;
     getRecipesForGroup(uid, groupId).then((recipes) => {
@@ -35,24 +39,30 @@ router.get('/:groupId/recipes', (req, res, next) => {
 });
 
 // search recipes by most matching for group
-router.get('/:groupId/search-most-matching', (req, res, next) => {
+router.get('/:groupId/search-most-matching', sanitizeAndValidateGroupParams, (req, res, next) => {
     const uid = req.uid;
     const groupId = req.params.groupId;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    searchRecipesByMaxMatchingForGroup(uid, groupId, page, limit).then((recipes) => {
-        res.json(recipes);
-    }).catch((error) => {
-        console.error("Error searching recipes by most matching for group:", error);
-        res.status(error.status || 500)
-            .json({ error: error.message || "An error occurred while fetching recipes." });
-    });
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        searchRecipesByMaxMatchingForGroup(uid, groupId, page, limit).then((recipes) => {
+            res.json(recipes);
+        }).catch((error) => {
+            console.error("Error searching recipes by most matching for group:", error);
+            res.status(error.status || 500)
+                .json({ error: error.message || "An error occurred while fetching recipes." });
+        });
+    } catch (error) {
+        console.error("Error parsing query parameters:", error);
+        res.status(400).json({ error: "Invalid query parameters." });
+    }
+    
 });
 
 // create a group
-router.post('/', (req, res, next) => {
+router.post('/', sanitizeAndValidateGroup, (req, res, next) => {
     const uid = req.uid;
-    const { groupName} = req.body;
+    const { groupName } = req.body;
     createGroup(uid, groupName).then((group) => {
         res.json(group);
     }).catch((error) => {
@@ -63,7 +73,7 @@ router.post('/', (req, res, next) => {
 });
 
 // add a member to a group
-router.post('/:groupId/members', (req, res, next) => {
+router.post('/:groupId/members', sanitizeAndValidateGroupParams, sanitizeAndValidateGroupMember, (req, res, next) => {
     const uid = req.uid;
     const groupId = req.params.groupId;
     const { memberEmail } = req.body;
@@ -89,7 +99,7 @@ router.get('/invites', (req, res, next) => {
 });
 
 // accept a group invite
-router.post('/:groupId/accept', (req, res, next) => {
+router.post('/:groupId/accept', sanitizeAndValidateGroupParams, (req, res, next) => {
     const uid = req.uid;
     const groupId = req.params.groupId;
     acceptGroupInvite(uid, groupId).then((group) => {
@@ -102,7 +112,7 @@ router.post('/:groupId/accept', (req, res, next) => {
 });
 
 // decline a group invite
-router.post('/:groupId/decline', (req, res, next) => {
+router.post('/:groupId/decline', sanitizeAndValidateGroupParams, (req, res, next) => {
     const uid = req.uid;
     const groupId = req.params.groupId;
     declineGroupInvite(uid, groupId).then((group) => {
@@ -115,7 +125,7 @@ router.post('/:groupId/decline', (req, res, next) => {
 });
 
 // leave a group
-router.delete('/:groupId', (req, res, next) => {
+router.delete('/:groupId', sanitizeAndValidateGroupParams, (req, res, next) => {
     const uid = req.uid;
     const groupId = req.params.groupId;
     leaveGroup(uid, groupId).then((group) => {
@@ -128,7 +138,7 @@ router.delete('/:groupId', (req, res, next) => {
 });
 
 // get all members of a group
-router.get('/:groupId/members', (req, res, next) => {
+router.get('/:groupId/members', sanitizeAndValidateGroupParams, (req, res, next) => {
     const uid = req.uid;
     const groupId = req.params.groupId;
     getGroupMembers(uid, groupId).then((members) => {
@@ -153,7 +163,7 @@ router.get('/created-by-me', (req, res, next) => {
 });
 
 // add a recipe to a group
-router.post('/:groupId/recipes', (req, res, next) => {
+router.post('/:groupId/recipes', sanitizeAndValidateGroupParams, sanitizeAndValidateRecipe, (req, res, next) => {
     const uid = req.uid;
     const groupId = req.params.groupId;
     const recipe = req.body;
@@ -167,7 +177,7 @@ router.post('/:groupId/recipes', (req, res, next) => {
 });
 
 // remove a recipe from a group
-router.delete('/:groupId/recipes/:recipeId', (req, res, next) => {
+router.delete('/:groupId/recipes/:recipeId', sanitizeAndValidateGroupParams, (req, res, next) => {
     const uid = req.uid;
     const groupId = req.params.groupId;
     const recipeId = req.params.recipeId;

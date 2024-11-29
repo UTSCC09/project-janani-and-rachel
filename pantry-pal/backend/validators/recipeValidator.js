@@ -4,26 +4,26 @@ import { numberSchema, simpleStringSchema, complexStringSchema, sanitizeAndValid
 const recipeSchema = Joi.object({
     recipeId: numberSchema.required(),
     recipeName: simpleStringSchema.max(255).required(),
-    ingredients: Joi.array().items(simpleStringSchema.max(100)),
-    totalIngredientCount: numberSchema,
-    sourceUrl: Joi.string().uri(),
-    missedIngredients: Joi.array().items(simpleStringSchema),
-    missedIngredientCount: numberSchema,
+    ingredients: Joi.array().items(simpleStringSchema.max(100)).allow(null).allow(''),
+    totalIngredientCount: numberSchema.allow(null).allow(''),
+    sourceUrl: Joi.string().uri().allow(null).allow(''),
+    missedIngredients: Joi.array().items().allow(null).allow(''),
+    missedIngredientCount: numberSchema.allow(null).allow(''),
     instructions: Joi.array().items(Joi.object({
         number: numberSchema,
         step: complexStringSchema
-    })),
+    })).allow(null).allow(''),
     nutrition: Joi.object({
         nutrients: Joi.array().items(Joi.object({
-            name: simpleStringSchema,
-            amount: numberSchema,
-            unit: simpleStringSchema,
-            percentOfDailyNeeds: numberSchema
+            name: simpleStringSchema.allow(null).allow(''),
+            amount: numberSchema.allow(null).allow(''),
+            unit: simpleStringSchema.allow(null).allow(''),
+            percentOfDailyNeeds: numberSchema.allow(null).allow('')
         })),
         caloricBreakdown: Joi.object({
-            percentProtein: numberSchema,
-            percentFat: numberSchema,
-            percentCarbs: numberSchema
+            percentProtein: numberSchema.allow(null).allow(''),
+            percentFat: numberSchema.allow(null).allow(''),
+            percentCarbs: numberSchema.allow(null).allow('')
         })
     })
 });

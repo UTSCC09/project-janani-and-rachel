@@ -6,8 +6,8 @@ const mealSchema = Joi.object({
     "ingredients": Joi.array().items(Joi.object({
         "ingredientName": simpleStringSchema.required(),
         "inPantry": Joi.boolean().required()
-    })),
-    "date": Joi.date()
+    })).allow(null).allow(''),
+    "date": Joi.date().allow(null).allow(''),
 });
 
 const getMealQuerySchema = Joi.object({

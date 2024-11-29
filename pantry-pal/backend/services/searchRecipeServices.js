@@ -51,7 +51,7 @@ function formatRecipes(data) {
         // recipe cource url
     const recipes = data.results;
     return recipes.map((recipe) => {
-        const simpleStringReplacementSchema = /[^a-zA-Z0-9 &()-,]/g;
+        const simpleStringReplacementSchema = /[^a-zA-Z0-9 &()'-,]/g;
         const complexStringReplacementSchema = /[^a-zA-Z0-9 $*&()';:.,/!-]/g;
 
         const missedIngredients = recipe.missedIngredients.map((ingredient) => 

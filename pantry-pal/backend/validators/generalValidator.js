@@ -6,7 +6,8 @@ export const numberSchema = Joi.alternatives().try(
     Joi.number()
 );
 
-export const simpleStringSchema = Joi.string().pattern(/^[a-zA-Z0-9 &()-,]+$/);
+export const alphanumericStringSchema = Joi.string().pattern(/^[a-zA-Z0-9]+$/);
+export const simpleStringSchema = Joi.string().pattern(/^[a-zA-Z0-9 &()'-,]+$/);
 export const complexStringSchema = Joi.string().pattern(/^[a-zA-Z0-9 $*&()';:.,/!-]+$/);
 
 const sanitizeStrings = (data) => {

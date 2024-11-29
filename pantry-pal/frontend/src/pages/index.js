@@ -131,29 +131,29 @@ export default function Home() {
           boxShadow: "none",
         }}
       >
-        <Container maxWidth="lg">
-          <Toolbar disableGutters sx={{ justifyContent: "space-between", padding: "0 1rem" }}>
-            {/* Pantry Pal Logo */}
-            <Box
-              onClick={() => setActiveSection(isAuthenticated ? "recipes" : "signin")}
-              sx={{
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
+      <Container maxWidth="lg" sx={{ padding: "0" }}>
+        <Toolbar disableGutters sx={{ justifyContent: "space-between", padding: 0 }}>
+          {/* Pantry Pal Logo */}
+          <Box
+            onClick={() => setActiveSection(isAuthenticated ? "recipes" : "signin")}
+            sx={{
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-start", // Align to the left
+              flexGrow: 0, // Ensure it doesn't grow to take extra space
+            }}
+          >
+            <img
+              src="/pantry_pal-removebg-preview.png" // Replace with the actual path to your logo
+              alt="Pantry Pal Logo"
+              style={{
+                maxWidth: "85px", // Set a max width for responsiveness
+                height: "auto", // Maintain aspect ratio
+                objectFit: "contain",
               }}
-            >
-              <Typography
-                variant="h6"
-                component="div"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: { xs: "1.4rem", sm: "1.6rem" },
-                  color: "#7e91ff",
-                }}
-              >
-                Pantry Pal
-              </Typography>
-            </Box>
+            />
+          </Box>
 
             {/* Hamburger Menu - Only visible if authenticated */}
             {isAuthenticated && (

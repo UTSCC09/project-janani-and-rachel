@@ -9,6 +9,7 @@ const StyledTitle = ({ children }) => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
+        marginTop: 5,
       }}
     >
       <Typography

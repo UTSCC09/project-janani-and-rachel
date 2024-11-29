@@ -30,7 +30,7 @@ router.get('/search-most-matching', (req, res, next) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
-        searchRecipesByMaxMatching(page, limit)
+        searchRecipesByMaxMatching(uid, page, limit)
             .then((recipes) => { res.json(recipes) });
     } catch (error) {
         console.error("Error searching recipes by most matching:", error);
@@ -42,7 +42,7 @@ router.get('/search-least-missing', (req, res, next) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
-        searchRecipesByMinMissing(page, limit)
+        searchRecipesByMinMissing(uid, page, limit)
             .then((recipes) => { res.json(recipes) });
     } catch (error) {
         console.error("Error searching recipes by least missing:", error);

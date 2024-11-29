@@ -3,6 +3,7 @@ import 'dotenv/config';
 import express from 'express';
 import { router as recipeRoutes } from './routes/recipes/recipeRoutes.js';
 import { router as ingredientRoutes } from './routes/ingredientRoutes.js';
+import { router as groupRoutes } from './routes/groupRoutes.js';
 import cors from 'cors';
 import corsConfig from './config/cors.js';
 
@@ -20,6 +21,7 @@ app.use((req, res, next) => {
 
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/ingredients', ingredientRoutes);
+app.use('/api/groups', groupRoutes);
 
 app.use((req, res, next) => {
   console.log(`HTTP request did not match any route.`);

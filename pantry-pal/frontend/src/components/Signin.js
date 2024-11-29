@@ -34,7 +34,6 @@ export default function Signin({ onSignIn, onSignUpClick }) {
 
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
-    provider.addScope("https://www.googleapis.com/auth/calendar.events");
     provider.addScope("https://www.googleapis.com/auth/tasks");
     try {
       const result = await signInWithPopup(auth, provider);

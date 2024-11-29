@@ -2,14 +2,28 @@ const spoonacularAPI = "https://api.spoonacular.com/";
 const spoonacularKey = process.env.SPOONACULAR_API_KEY;
 
 import { getPantry } from './ingredientServices.js';
+import { getPantryForGroup } from './groupServices.js';
 
-const pantryIngredients = await getPantryIngredients("Janani");
 
 async function getPantryIngredients(uid) {
     try {
-      const pantry = await getPantry(uid);
+      const pantry = await getPantry(uid, 1000);
       if (pantry.ingredients && pantry.ingredients.length > 0) {
         return pantry.ingredients.map((ingredient) => ingredient.ingredientName);
+      } else {
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching pantry ingredients:", error);
+      return [];
+    }
+}
+
+async function getPantryIngredientsForGroup(uid, groupId) {
+    try {
+      const pantry = await getPantryForGroup(uid, groupId, 1000);
+      if (pantry && pantry.length > 0) {
+        return pantry.map((ingredient) => ingredient.ingredientName);
       } else {
         return [];
       }
@@ -105,7 +119,8 @@ export async function searchRecipesByKeyword(keyword, page=1, lim=10) {
     }
 }
 
-export async function searchRecipesByMaxMatching(page=1, lim=10) {
+export async function searchRecipesByMaxMatching(uid, page=1, lim=10) {
+    const pantryIngredients = await getPantryIngredients(uid);
     const url = `${spoonacularAPI}recipes/complexSearch?apiKey=${spoonacularKey}&sort=max-used-ingredients` +
         `&number=${lim}&offset=${(page-1) * lim}&instructionsRequired=true&fillIngredients=true` +
         `&includeIngredients=${pantryIngredients.join(",")}&addRecipeInformation=true&addRecipeInstructions=true` +
@@ -124,7 +139,8 @@ export async function searchRecipesByMaxMatching(page=1, lim=10) {
     }
 }
 
-export async function searchRecipesByMinMissing(page=1, lim=10) {
+export async function searchRecipesByMinMissing(uid, page=1, lim=10) {
+    const pantryIngredients = await getPantryIngredients(uid);
     const url = `${spoonacularAPI}recipes/complexSearch?apiKey=${spoonacularKey}&sort=min-missing-ingredients` +
         `&number=${lim}&offset=${(page-1) * lim}&instructionsRequired=true&fillIngredients=true` +
         `&includeIngredients=${pantryIngredients.join(",")}&addRecipeInformation=true&addRecipeInstructions=true` +
@@ -143,3 +159,22 @@ export async function searchRecipesByMinMissing(page=1, lim=10) {
     }
 }
 
+export async function searchRecipesByMaxMatchingForGroup(uid, groupId, page=1, lim=10) {
+    const pantryIngredients = await getPantryIngredientsForGroup(uid, groupId);
+    const url = `${spoonacularAPI}recipes/complexSearch?apiKey=${spoonacularKey}&sort=max-used-ingredients` +
+        `&number=${lim}&offset=${(page-1) * lim}&instructionsRequired=true&fillIngredients=true` +
+        `&includeIngredients=${pantryIngredients.join(",")}&addRecipeInformation=true&addRecipeInstructions=true` +
+        `&addRecipeNutrition=true&ignorePantry=false`;
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Failed to fetch recipes');
+        }
+        const data = await response.json();
+        const recipes = formatRecipes(data);
+        return recipes;
+    } catch (error) {
+        console.error('Error fetching recipes:', error);
+        return [];  
+    }
+}

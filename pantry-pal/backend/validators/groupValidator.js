@@ -16,6 +16,7 @@ const groupMemberSchema = Joi.object({
 const groupParamsSchema = Joi.object({
     groupId: alphanumericStringSchema.required(),
     recipeId: alphanumericStringSchema.allow(null).allow(''),
+    memberId: alphanumericStringSchema.allow(null).allow('')
 });
 
 export const sanitizeAndValidateGroup = sanitizeAndValidateData(groupSchema);

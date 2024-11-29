@@ -1,7 +1,8 @@
 import express from 'express';
 import { verifyToken } from '../middleware/authMiddleware.js';
 import { createGroup, addMemberToGroup, getGroupInvites, acceptGroupInvite, declineGroupInvite, leaveGroup, 
-    getUsersGroups, getGroupsICreated, getGroupMembers, getPantryForGroup, getRecipesForGroup, addRecipeToGroup, removeRecipeFromGroup } 
+    getUsersGroups, getGroupsICreated, getGroupMembers, getPantryForGroup, getRecipesForGroup, addRecipeToGroup, 
+    removeRecipeFromGroup, getPantryOfGroupMember } 
     from '../services/groupServices.js';
 import { searchRecipesByMaxMatchingForGroup } from '../services/searchRecipeServices.js';
 import { sanitizeAndValidateRecipe } from '../validators/recipeValidator.js';
@@ -69,6 +70,20 @@ router.post('/', sanitizeAndValidateGroup, (req, res, next) => {
         console.error("Error creating group:", error);
         res.status(error.status || 500)
             .json({ error: error.message || "An error occurred while creating group." });
+    });
+});
+
+// get pantry of group member
+router.get('/:groupId/members/:memberId/pantry', sanitizeAndValidateGroupParams, (req, res, next) => {
+    const uid = req.uid;
+    const groupId = req.params.groupId;
+    const memberId = req.params.memberId;
+    getPantryOfGroupMember(uid, groupId, memberId).then((ingredients) => {
+        res.json(ingredients);
+    }).catch((error) => {
+        console.error("Error fetching pantry ingredients for group member:", error);
+        res.status(error.status || 500)
+            .json({ error: error.message || "An error occurred while fetching pantry ingredients for group member." });
     });
 });
 

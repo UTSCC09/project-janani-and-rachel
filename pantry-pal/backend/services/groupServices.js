@@ -235,7 +235,47 @@ export async function getGroupMembers(uid, groupId) {
         throw { status: 400, message: "User is not a member of this group." };
     }
 
-    return groupData.groupMembers;
+    // return group member uids and emails
+    let groupMembers = [];
+    await Promise.all(groupData.groupMembers.map(async (member) => {
+        const user = await auth.getUser(member);
+        groupMembers.push({ uid: member, email: user.email });
+    }));
+
+    return groupMembers;
+}
+
+export async function getPantryOfGroupMember(uid, groupId, memberUid, limit=10, lastVisibleIngredient=null) {
+    // get pantry of a specific member of the group
+    const groupRef = db.collection('Groups').doc(groupId);
+    const groupDoc = await groupRef.get();
+    if (!groupDoc.exists) {
+        throw { status: 404, message: "Group not found." };
+    }
+    const groupData = groupDoc.data();
+
+    // check if user is a member of the group
+    if (!groupData.groupMembers.includes(uid)) {
+        throw { status: 400, message: "User is not a member of this group." };
+    }
+    // check if memberUid is a member of the group
+    if (!groupData.groupMembers.includes(memberUid)) {
+        throw { status: 400, message: "User is not a member of this group." };
+    }
+
+    // get pantry of memberUid
+    console.log("memberUid:", memberUid);
+    const pantryRef = db.collection('Users').doc(memberUid).collection('Pantry');
+    let query = pantryRef.orderBy('ingredientName').limit(limit);
+    if (lastVisibleIngredient) {
+        const lastIngredient = await pantryRef.doc(lastVisibleIngredient).get();
+        query = query.startAfter(lastIngredient);
+    }
+    const pantryDocs = await query.get();
+    console.log("pantryDocs:", pantryDocs.docs);
+    const pantry = pantryDocs.docs.map((doc) => doc.data());
+
+    return pantry;
 }
 
 export async function getPantryForGroup(uid, groupId) {

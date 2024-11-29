@@ -88,9 +88,11 @@ router.post('/shopping-list', sanitizeAndValidateIngredient, (req, res, next) =>
     });
 });
 
+// modify ingredient in shopping list
 router.patch('/shopping-list', sanitizeAndValidateIngredient, (req, res, next) => {
     const uid = req.uid;
-    modifyInShoppingList(uid, req.body).then((ingredient) => {
+    const googleAccessToken = req.headers['googleaccesstoken'];
+    modifyInShoppingList(uid, req.body, googleAccessToken).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
         console.error("Error modifying in shopping list:", error);

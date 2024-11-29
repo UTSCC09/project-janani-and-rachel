@@ -248,4 +248,38 @@ export async function deleteBuyTask(uid, ingredientName, googleAccessToken) {
     }
 }
 
+export async function renameFrozenIngredient(uid, oldIngredientName, newIngredientName, googleAccessToken) {
+    // look at google tasks for today and delete the task if it exists
+    // doesnt need to happy today, just needs to exist
+    const oauth2Client = new google.auth.OAuth2();
+    oauth2Client.setCredentials({ access_token: googleAccessToken });
+    const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
+    const taskLists = await tasks.tasklists.list();
+    const pantryPalTaskList = taskLists.data.items.find((list) => list.title === 'Pantry Pal: Meal Prep Reminders');
+    const taskListId = pantryPalTaskList.id;
+    const taskList = await tasks.tasks.list({ tasklist: taskListId });
+    const defrostTask = taskList.data.items.find((task) => task.title === `Defrost ${oldIngredientName}`);
+    if (defrostTask) {
+        defrostTask.title = `Defrost ${newIngredientName}`;
+        await tasks.tasks.update({ tasklist: taskListId, task: defrostTask.id, resource: defrostTask });
+    }
+}
+
+export async function renameShoppingListIngredient(uid, oldIngredientName, newIngredientName, googleAccessToken) {
+    // look at google tasks for today and delete the task if it exists
+    // doesnt need to happy today, just needs to exist
+    const oauth2Client = new google.auth.OAuth2();
+    oauth2Client.setCredentials({ access_token: googleAccessToken });
+    const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
+    const taskLists = await tasks.tasklists.list();
+    const pantryPalTaskList = taskLists.data.items.find((list) => list.title === 'Pantry Pal: Meal Prep Reminders');
+    const taskListId = pantryPalTaskList.id;
+    const taskList = await tasks.tasks.list({ tasklist: taskListId });
+    const buyTask = taskList.data.items.find((task) => task.title === `Buy ${oldIngredientName}`);
+    if (buyTask) {
+        buyTask.title = `Buy ${newIngredientName}`;
+        await tasks.tasks.update({ tasklist: taskListId, task: buyTask.id, resource: buyTask });
+    }
+}
+
 

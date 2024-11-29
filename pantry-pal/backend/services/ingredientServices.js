@@ -1,5 +1,7 @@
+import { google } from 'googleapis';
 import { db } from '../config/firebase.js';
-import { deleteBuyTask, deleteDefrostTask } from './reminderServices.js';
+import { deleteBuyTask, deleteDefrostTask, renameFrozenIngredient, renameShoppingListIngredient } 
+    from './reminderServices.js';
 
 export async function getPantry(uid, lim=10, lastVisibleIngredient=null) {
     const pantryRef = db.collection('Users').doc(uid).collection('Pantry');
@@ -152,13 +154,17 @@ export async function modifyInPantry(uid, ingredient, googleAccessToken) {
             // update frozen
             if (ingredient.frozen !== undefined) {
                 await updateFrozenIngredientsInMealPlan(uid, mealPlanId, newIngredientData.ingredientName, ingredient.frozen);
-                // if the ingredient is no longer frozen, delete the defrost task
-                // it would only have a task if you have a google access token and its on a meal plan
-                if (ingredient.frozen === false && googleAccessToken && newIngredientData.mealPlans) { 
-                    await deleteDefrostTask(uid, newIngredientData.ingredientName, googleAccessToken);
-                }
             }
         }));
+        // if the ingredient is no longer frozen, delete the defrost task
+        // it would only have a task if you have a google access token and its on a meal plan
+        if (ingredient.frozen && ingredient.frozen === false && googleAccessToken && newIngredientData.mealPlans) { 
+            await deleteDefrostTask(uid, newIngredientData.ingredientName, googleAccessToken);
+        }
+        // if we renamed the ingredient, we need to rename the reminders
+        if (newIngredientName && googleAccessToken) {
+            await renameFrozenIngredient(uid, ingredient.ingredientName, newIngredientName, googleAccessToken);
+        }
     }
     return newIngredientData;
 }
@@ -285,7 +291,7 @@ async function changeShoppingListIngredientNameInMealPlan(uid, mealPlanId, ingre
     });
 }
 
-export async function modifyInShoppingList(uid, ingredient) {
+export async function modifyInShoppingList(uid, ingredient, googleAccessToken) {
     // check if ingredient exists in shopping list
     const shoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList').doc(ingredient.ingredientName);
     const ingredientData = await shoppingListRef.get();
@@ -315,6 +321,10 @@ export async function modifyInShoppingList(uid, ingredient) {
             // if they specified a new ingredient name, we need to update the name in the meal plan
             if (newIngredientName) {
                 await changeShoppingListIngredientNameInMealPlan(uid, mealPlanId, ingredient.ingredientName, newIngredientName);
+                // also update in the reminders
+                if (googleAccessToken) {
+                    await renameShoppingListIngredient(uid, ingredient.ingredientName, newIngredientName, googleAccessToken);
+                }
             }
         }));
     }

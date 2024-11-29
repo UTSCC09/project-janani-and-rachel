@@ -54,48 +54,127 @@ export async function addMealReminders(uid, mealId, googleAccessToken, daysInAdv
         taskListId = pantryPalTaskList.id;
     }
 
-    // create an task for the meal
-    const mealTask = {
-        title: `Prepare ${recipeName}`,
-        due: new Date(dateInMs)
-    };
-    await tasks.tasks.insert({ tasklist: taskListId, resource: mealTask });
+    // check if the meal (same name and time) exists in the task list
+    // if it doesnt, create it
+    let mealTaskList = await tasks.tasks.list({ tasklist: taskListId });
+    let mealTaskExist = mealTaskList.data.items.some((task) => {
+        // Convert the task's due date to 'YYYY-MM-DD' format
+        const taskDueDate = new Date(task.due).toISOString().split("T")[0];  // Strip time part
+        
+        // Convert the input date to 'YYYY-MM-DD' format
+        const inputDate = new Date(dateInMs).toISOString().split("T")[0];  // Strip time 
+        
+        const curDate = new Date().toISOString().split("T")[0];  // Strip time part
 
-    // ADD MEAL PREP REMINDERS
+        // delete any tasks in the past
+        if (taskDueDate < curDate) {
+            tasks.tasks.delete({ tasklist: taskListId, task: task.id });
+            return false;
+        }
 
-    // check if task list called pantry pal meal plan reminders already exists
-    taskLists = await tasks.tasklists.list();
-    pantryPalTaskList = taskLists.data.items.find((list) => list.title === remindersTaskListName);
-    // if it doenst exist, create it
-    if (!pantryPalTaskList) {
-        const taskList = {
-            title: remindersTaskListName
+        console.log('taskDueDate:', taskDueDate);
+        console.log('inputDate:', inputDate);
+        
+        // only create if the task does not exist and the date is in the future
+        return task.title === `Prepare ${recipeName}` && taskDueDate === inputDate && inputDate >= curDate;
+    });
+
+    if (!mealTaskExist) {
+        // create an task for the meal
+        const mealTask = {
+            title: `Prepare ${recipeName}`,
+            due: new Date(dateInMs)
         };
-        const taskListRes = await tasks.tasklists.insert({ resource: taskList });
-        taskListId = taskListRes.data.id;
+        await tasks.tasks.insert({ tasklist: taskListId, resource: mealTask });
 
-    } else {
-        taskListId = pantryPalTaskList.id;
+        // ADD MEAL PREP REMINDERS
+
+        // check if task list called pantry pal meal plan reminders already exists
+        taskLists = await tasks.tasklists.list();
+        pantryPalTaskList = taskLists.data.items.find((list) => list.title === remindersTaskListName);
+        // if it doenst exist, create it
+        if (!pantryPalTaskList) {
+            const taskList = {
+                title: remindersTaskListName
+            };
+            const taskListRes = await tasks.tasklists.insert({ resource: taskList });
+            taskListId = taskListRes.data.id;
+
+        } else {
+            taskListId = pantryPalTaskList.id;
+        }
+
+        // create tasks for defrosting and buying ingredients
+        await Promise.all(frozenIngredients.map(async (ingredient) => {            
+            const task = {
+                title: `Defrost ${ingredient}`,
+                due: new Date(dateInMs - daysInAdvanceDefrost*oneDayInMs), // 1 day before meal date, 1 day = 86400000 ms
+                notes: `Defrost ${ingredient} for "${recipeName}" in ${daysInAdvanceDefrost} day(s).`
+            };
+            await tasks.tasks.insert({ tasklist: taskListId, resource: task });
+        }));
+
+        await Promise.all(shoppingListIngredients.map(async (ingredient) => {
+            // if we are already buying the ingredient for the meal, 
+                // update the reminder to be the earlier of the two
+                // update the note to included the new meal name and update how far away from the two meals the reminder is
+            
+            // check if the ingredient is already in the task list
+            let ingredientTaskList = await tasks.tasks.list({ tasklist: taskListId });
+            let ingredientTaskExist = ingredientTaskList.data.items.some((task) => {
+                // cannot be in the past and need to have the same name
+                const taskDueDate = new Date(task.due).getTime();
+                const curDate = new Date().getTime();
+                return task.title === `Buy ${ingredient}` && taskDueDate > curDate;
+            });
+            
+            if (ingredientTaskExist) {
+                // update the task
+                const task = ingredientTaskList.data.items.find((task) => task.title === `Buy ${ingredient}`);
+                // if the new due date is earlier than the current due date, update the task
+                const taskDueDate = new Date(task.due).getTime();
+                const taskDueDateStr = new Date(task.due).toISOString().split("T")[0];
+                const newDueDate = new Date(dateInMs - daysInAdvanceBuy*oneDayInMs).getTime();
+                const newDueDateStr = new Date(dateInMs - daysInAdvanceBuy*oneDayInMs).toISOString().split("T")[0];
+                const taskNotes = task.notes.split('"');
+                const oldRecipeName = taskNotes[1];
+                const oldDaysInAdvanceBuy = parseInt(taskNotes[2].split(' ')[2]);
+                const restOfNote = task.notes.split('and')[1];
+                console.log('taskDueDate:', taskDueDate);
+                console.log('newDueDate:', newDueDate);
+                if (newDueDate < taskDueDate) {
+                    task.due = new Date(dateInMs - daysInAdvanceBuy*oneDayInMs);
+                    task.notes = `Buy ${ingredient} for "${recipeName}" in ${daysInAdvanceBuy} day(s) and for "${oldRecipeName}" on ${taskDueDateStr}.`;
+                    if (restOfNote) {
+                        task.notes.split(0, -1) += ' and' + restOfNote;
+                    }
+                    await tasks.tasks.update({ tasklist: taskListId, task: task.id, resource: task });
+                } else {
+                    task.notes = `Buy ${ingredient} for "${oldRecipeName}" in ${oldDaysInAdvanceBuy} day(s) and for "${recipeName}" on ${newDueDateStr}.`;
+                    if (restOfNote) {
+                        task.notes.split(0, -1) += ' and' + restOfNote;
+                    }
+                    await tasks.tasks.update({ tasklist: taskListId, task: task.id, resource: task });
+                }
+                return;
+            }
+            else {
+                // create a new task
+                const task = {
+                    title: `Buy ${ingredient}`,
+                    due: new Date(dateInMs - daysInAdvanceBuy*oneDayInMs), // 3 days before meal date, 3 days = 259200000 ms
+                    notes: `Buy ${ingredient} for "${recipeName}" in ${daysInAdvanceBuy} day(s).`
+                };
+                await tasks.tasks.insert({ tasklist: taskListId, resource: task });
+            }
+        }));
+    }
+    else {
+        console.log(`Meal reminder for ${recipeName} on ${new Date(dateInMs).toISOString().split("T")[0]} already exists.`);
+        throw { status: 409, message: `Meal reminder for ${recipeName} on ${new Date(dateInMs).toISOString().split("T")[0]} already exists.` };
     }
 
-    // create tasks for defrosting and buying ingredients
-    await Promise.all(frozenIngredients.map(async (ingredient) => {
-        const task = {
-            title: `Defrost ${ingredient}`,
-            due: new Date(dateInMs - daysInAdvanceDefrost*oneDayInMs), // 1 day before meal date, 1 day = 86400000 ms
-            notes: `Defrost ${ingredient} for ${recipeName} in ${daysInAdvanceDefrost} day(s).`
-        };
-        await tasks.tasks.insert({ tasklist: taskListId, resource: task });
-    }));
-
-    await Promise.all(shoppingListIngredients.map(async (ingredient) => {
-        const task = {
-            title: `Buy ${ingredient}`,
-            due: new Date(dateInMs - daysInAdvanceBuy*oneDayInMs), // 3 days before meal date, 3 days = 259200000 ms
-            notes: `Buy ${ingredient} for ${recipeName} in ${daysInAdvanceBuy} day(s).`
-        };
-        await tasks.tasks.insert({ tasklist: taskListId, resource: task});
-    }));
+    
 }
 
 export async function addAllMealReminders(uid, googleAccessToken, daysInAdvanceDefrost=1, daysInAdvanceBuy=3) {
@@ -103,13 +182,6 @@ export async function addAllMealReminders(uid, googleAccessToken, daysInAdvanceD
         throw { status: 401, message: "Google access token required." };
     }
 
-    //let now = new Date();
-    //now.setHours(0, 0, 0, 0);
-    
-    //const today = now.toISOString();
-    //const oneWeekLater = new Date(now.getMilliseconds() + 604800000).toISOString();
-
-    
     // get the meal plans for the week
     // want to access _seconds of date field object
     const mealPlansRef = db.collection('Users').doc(uid).collection('MealPlan')

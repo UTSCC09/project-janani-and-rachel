@@ -28,6 +28,7 @@ router.get('/search-keyword', (req, res, next) => {
 
 router.get('/search-most-matching', (req, res, next) => {
     try {
+        const uid = req.uid;    
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         searchRecipesByMaxMatching(uid, page, limit)
@@ -40,6 +41,7 @@ router.get('/search-most-matching', (req, res, next) => {
 
 router.get('/search-least-missing', (req, res, next) => {
     try {
+        const uid = req.uid;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         searchRecipesByMinMissing(uid, page, limit)

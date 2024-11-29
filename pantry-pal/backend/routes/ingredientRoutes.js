@@ -23,6 +23,7 @@ router.get('/pantry', sanitizeAndValidateGetIngredientQuery, (req, res, next) =>
     });
 });
 
+// add ingredient to pantry
 router.post('/pantry', sanitizeAndValidateIngredient, (req, res, next) => {
     const uid = req.uid;
     console.log("here");
@@ -36,9 +37,11 @@ router.post('/pantry', sanitizeAndValidateIngredient, (req, res, next) => {
     });
 });
 
+// modify ingredient in pantry
 router.patch('/pantry', sanitizeAndValidateIngredient, (req, res, next) => {
     const uid = req.uid;
-    modifyInPantry(uid, req.body).then((ingredient) => {
+    const googleAccessToken = req.headers['googleaccesstoken'];
+    modifyInPantry(uid, req.body, googleAccessToken).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
         console.error("Error modifying in pantry:", error);
@@ -49,8 +52,9 @@ router.patch('/pantry', sanitizeAndValidateIngredient, (req, res, next) => {
 
 router.delete('/pantry/:ingredientName', (req, res, next) => {
     const uid = req.uid;
+    const googleAccessToken = req.headers['googleaccesstoken'];
     const ingredientName = req.params.ingredientName;
-    removeFromPantry(uid, ingredientName).then((ingredient) => {
+    removeFromPantry(uid, ingredientName, googleAccessToken).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
         console.error("Error removing from pantry:", error);
@@ -97,8 +101,9 @@ router.patch('/shopping-list', sanitizeAndValidateIngredient, (req, res, next) =
 
 router.delete('/shopping-list/:ingredientName', (req, res, next) => {
     const uid = req.uid;
+    const googleAccessToken = req.headers['googleaccesstoken'];
     const ingredientName = req.params.ingredientName;
-    removeFromShoppingList(uid, ingredientName).then((ingredient) => {
+    removeFromShoppingList(uid, ingredientName, googleAccessToken).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
         console.error("Error removing from shopping list:", error);

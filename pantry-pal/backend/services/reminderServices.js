@@ -210,3 +210,42 @@ export async function addAllMealReminders(uid, googleAccessToken, daysInAdvanceD
     }));
     
 }
+
+// if you delete an ingredient in your pantry, check if you have a google task for buying it ever
+// if you do, delete it
+export async function deleteDefrostTask(uid, ingredientName, googleAccessToken) {
+    // look at google tasks for today and delete the task if it exists
+    // doesnt need to happy today, just needs to exist
+    const oauth2Client = new google.auth.OAuth2();
+    oauth2Client.setCredentials({ access_token: googleAccessToken });
+    const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
+    const taskLists = await tasks.tasklists.list();
+    const pantryPalTaskList = taskLists.data.items.find((list) => list.title === 'Pantry Pal: Meal Prep Reminders');
+    const taskListId = pantryPalTaskList.id;
+    const taskList = await tasks.tasks.list({ tasklist: taskListId });
+    const buyTask = taskList.data.items.find((task) => task.title === `Defrost ${ingredientName}`);
+    if (buyTask) {
+        await tasks.tasks.delete({ tasklist: taskListId, task: buyTask.id });
+    }
+}
+
+
+// if you delete an ingredient from you shopping list, check if you have a google task buying it ever
+// if you do, delete it
+export async function deleteBuyTask(uid, ingredientName, googleAccessToken) {
+    // look at google tasks for today and delete the task if it exists
+    // doesnt need to happy today, just needs to exist
+    const oauth2Client = new google.auth.OAuth2();
+    oauth2Client.setCredentials({ access_token: googleAccessToken });
+    const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
+    const taskLists = await tasks.tasklists.list();
+    const pantryPalTaskList = taskLists.data.items.find((list) => list.title === 'Pantry Pal: Meal Prep Reminders');
+    const taskListId = pantryPalTaskList.id;
+    const taskList = await tasks.tasks.list({ tasklist: taskListId });
+    const buyTask = taskList.data.items.find((task) => task.title === `Buy ${ingredientName}`);
+    if (buyTask) {
+        await tasks.tasks.delete({ tasklist: taskListId, task: buyTask.id });
+    }
+}
+
+

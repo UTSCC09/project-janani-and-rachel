@@ -105,7 +105,8 @@ router.delete('/shopping-list/:ingredientName', (req, res, next) => {
     const uid = req.uid;
     const googleAccessToken = req.headers['googleaccesstoken'];
     const ingredientName = req.params.ingredientName;
-    removeFromShoppingList(uid, ingredientName, googleAccessToken).then((ingredient) => {
+    const move = req.query.move;
+    removeFromShoppingList(uid, ingredientName, move, googleAccessToken).then((ingredient) => {
         res.json(ingredient);
     }).catch((error) => {
         console.error("Error removing from shopping list:", error);

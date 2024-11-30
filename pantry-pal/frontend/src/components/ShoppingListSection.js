@@ -153,7 +153,7 @@ export default function ShoppingListSection() {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      await fetch(`${domain}/api/ingredients/shopping-list/${encodeURIComponent(ingredientName)}`, {
+      await fetch(`${domain}/api/ingredients/shopping-list/${encodeURIComponent(ingredientName)}?move=true`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

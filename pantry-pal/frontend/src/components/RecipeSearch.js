@@ -52,7 +52,7 @@ export default function RecipeSearch({ onSearch }) {
       setRecipes(data); // Update the recipes state
       onSearch(data); // Pass the results back to the parent component (optional)
     } catch (err) {
-      setError("There was an error searching for recipes.");
+      // setError("There was an error searching for recipes.");
       console.error(err);
     } finally {
       setLoading(false);

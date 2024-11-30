@@ -20,6 +20,7 @@ import RecipeSection from "@/components/RecipeSection";
 import ShoppingListSection from "@/components/ShoppingListSection";
 import CalendarSection from "@/components/CalendarSection";
 import RecipeSearch from "@/components/RecipeSearch";
+import GroupsSection from "@/components/GroupsSection";
 import styles from "@/styles/Home.module.css";
 import { auth } from "../../config/firebase"; // Adjust the import path as needed
 import { GoogleAuthProvider } from "firebase/auth";
@@ -117,7 +118,6 @@ export default function Home() {
         <title>Pantry Pal</title>
         <meta
           name="description"
-          content="Plan meals, track ingredients, and create shopping lists."
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -140,16 +140,16 @@ export default function Home() {
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
-              justifyContent: "flex-start", // Align to the left
+              justifyContent: "flex-start", 
               flexGrow: 0, // Ensure it doesn't grow to take extra space
             }}
           >
             <img
-              src="/pantry_pal-removebg-preview.png" // Replace with the actual path to your logo
-              alt="Pantry Pal Logo"
+              src="/pantry_pal-removebg-preview.png"
+              alt="Logo"
               style={{
-                maxWidth: "85px", // Set a max width for responsiveness
-                height: "auto", // Maintain aspect ratio
+                maxWidth: "85px",
+                height: "auto", 
                 objectFit: "contain",
               }}
             />
@@ -176,6 +176,7 @@ export default function Home() {
                   <MenuItem onClick={() => handleMenuClose("shoppingList")}>Shopping List</MenuItem>
                   <MenuItem onClick={() => handleMenuClose("calendar")}>Meal Plan</MenuItem>
                   <MenuItem onClick={() => handleMenuClose("recipeSearch")}>Recipe Search</MenuItem>
+                  <MenuItem onClick={() => handleMenuClose("groups")}>Groups</MenuItem>
                   <MenuItem onClick={handleSignout}>Sign Out</MenuItem>
                 </Menu>
               </>
@@ -203,6 +204,7 @@ export default function Home() {
             {activeSection === "ingredients" && <IngredientsSection />}
             {activeSection === "shoppingList" && <ShoppingListSection />}
             {activeSection === "calendar" && <CalendarSection />}
+            {activeSection === "groups" && <GroupsSection />}
             {activeSection === "recipeSearch" && <RecipeSearch onSearch={() => {}} />}
           </>
         ) : (

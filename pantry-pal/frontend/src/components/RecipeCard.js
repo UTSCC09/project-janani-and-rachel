@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, Box, Typography, IconButton, Tooltip, Button, TextField, Checkbox, List, ListItem, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress } from '@mui/material';
 import { MdEvent } from "react-icons/md";
 import DeleteButton from './DeleteButton';
@@ -58,7 +58,6 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
         return response.json();
       })
       .then(data => {
-        console.log('AI Pantry split:', data);
         if (data && data.matchingIngredients && data.missingIngredients) {
           setAiSplit({
             inPantry: data.matchingIngredients,
@@ -89,14 +88,25 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
 
   const handleAddToMealPlan = (e) => {
     e.preventDefault();
-    const mealPlanData = {
+    const mealPlanData = manualSplit ? {
       recipeId: recipe.recipeId,
       ingredients: ingredients.map(ingredient => ({
         ingredientName: ingredient.name,
         inPantry: ingredient.inPantry,
       })),
       date: selectedDate,
-    };
+    } : {
+      recipeId: recipe.recipeId,
+      ingredients: aiSplit.inPantry.map(ingredient => ({
+        ingredientName: ingredient,
+        inPantry: true,
+      })).concat(aiSplit.notInPantry.map(ingredient => ({
+        ingredientName: ingredient,
+        inPantry: false,
+      }))),
+      date: selectedDate,
+    }
+
 
     fetch(`${domain}/api/recipes/meal-plan`, {
       method: "POST",

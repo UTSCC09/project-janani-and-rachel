@@ -9,8 +9,8 @@ const ReminderForm = ({ open, onClose, onSubmit }) => {
   const [daysInAdvanceBuy, setDaysInAdvanceBuy] = useState('');
 
   const handleSubmit = () => {
-    const defrostDays = daysInAdvanceDefrost === '' ? 3 : parseInt(daysInAdvanceDefrost, 10);
-    const buyDays = daysInAdvanceBuy === '' ? 1 : parseInt(daysInAdvanceBuy, 10);
+    const defrostDays = daysInAdvanceDefrost === '' ? 1 : parseInt(daysInAdvanceDefrost, 10);
+    const buyDays = daysInAdvanceBuy === '' ? 3 : parseInt(daysInAdvanceBuy, 10);
     onSubmit({ daysInAdvanceDefrost: defrostDays, daysInAdvanceBuy: buyDays });
     onClose();
   };

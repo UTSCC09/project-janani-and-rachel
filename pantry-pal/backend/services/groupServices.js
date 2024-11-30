@@ -209,10 +209,16 @@ export async function leaveGroup(uid, groupId) {
     return { message: `User left group '${groupData.groupName}' successfully` };
 }
 
-export async function getUsersGroups(uid) {
+export async function getUsersGroups(uid, limit=10, lastVisibleGroup=null) {
     const groups = [];
     const userGroupsRef = db.collection('Users').doc(uid).collection('Groups');
-    const userGroupsDoc = await userGroupsRef.where('pending', '==', false).get();
+    let query = userGroupsRef.orderBy('groupName').limit(limit);
+    if (lastVisibleGroup) {
+        const lastGroup = await userGroupsRef.doc(lastVisibleGroup).get();
+        query = query.startAfter(lastGroup);
+    }
+    const userGroupsDoc = await query.get();
+
     await Promise.all(userGroupsDoc.docs.map(async (doc) => {
         // get the creators email
         const creator = await auth.getUser(doc.data().createdBy);

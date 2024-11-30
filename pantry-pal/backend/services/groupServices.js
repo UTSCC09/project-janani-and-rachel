@@ -209,12 +209,12 @@ export async function leaveGroup(uid, groupId) {
     return { message: `User left group '${groupData.groupName}' successfully` };
 }
 
-export async function getUsersGroups(uid, limit=10, lastVisibleGroup=null) {
+export async function getUsersGroups(uid, limit=10, lastVisibleGroupId=null) {
     const groups = [];
     const userGroupsRef = db.collection('Users').doc(uid).collection('Groups');
     let query = userGroupsRef.orderBy('groupName').limit(limit);
-    if (lastVisibleGroup) {
-        const lastGroup = await userGroupsRef.doc(lastVisibleGroup).get();
+    if (lastVisibleGroupId) {
+        const lastGroup = await userGroupsRef.doc(lastVisibleGroupId).get();
         query = query.startAfter(lastGroup);
     }
     const userGroupsDoc = await query.get();

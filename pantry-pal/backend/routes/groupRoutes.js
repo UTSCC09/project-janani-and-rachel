@@ -208,7 +208,9 @@ router.delete('/:groupId/recipes/:recipeId', sanitizeAndValidateGroupParams, (re
 // get all groups for user
 router.get('/', (req, res, next) => {
     const uid = req.uid;
-    getUsersGroups(uid).then((groups) => {
+    const limit = parseInt(req.query.limit) || 10;
+    const lastVisibleGroupId = req.query.lastVisibleGroupId;
+    getUsersGroups(uid, limit, lastVisibleGroupId).then((groups) => {
         res.json(groups);
     }).catch((error) => {
         console.error("Error fetching user's groups:", error);

@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Accordion, AccordionSummary, AccordionDetails, Typography, List, ListItem, ListItemText, IconButton, Box, TextField, Button, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import {
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Typography,
+  List,
+  Snackbar,
+  Alert,
+} from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import StarIcon from '@mui/icons-material/Star'; // Leader icon
-import ExitToAppIcon from '@mui/icons-material/ExitToApp'; // Leave group icon
-import GroupIcon from '@mui/icons-material/Group'; // Members icon
 import CreateGroup from './CreateGroup'; // Import CreateGroup component
+import GroupCard from './GroupCard'; // Import GroupCard component
 
 const PURPLE = "#7e91ff";
 const YELLOW = "#fffae1";
@@ -14,9 +20,13 @@ const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 const MyGroups = () => {
   const [myGroups, setMyGroups] = useState([]);
   const [createdGroups, setCreatedGroups] = useState([]);
-  const [selectedGroup, setSelectedGroup] = useState('');
+  const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [memberEmail, setMemberEmail] = useState('');
   const [inviteResponse, setInviteResponse] = useState(null);
+  const [warning, setWarning] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -34,9 +44,13 @@ const MyGroups = () => {
         }
 
         const data = await response.json();
-        setMyGroups(data);
+        console.log("my groups", data.groups);
+        setMyGroups(data.groups);
       } catch (error) {
-        console.error('Error fetching groups:', error);
+        // console.error('Error fetching groups:', error);
+        setSnackbarMessage('Failed to fetch groups');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
       }
     };
 
@@ -55,10 +69,12 @@ const MyGroups = () => {
         }
 
         const data = await response.json();
-        console.log("created groups", data);
-        setCreatedGroups(data);
+        setCreatedGroups(data.groups);
       } catch (error) {
         console.error('Error fetching created groups:', error);
+        setSnackbarMessage('Failed to fetch created groups');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
       }
     };
 
@@ -66,20 +82,23 @@ const MyGroups = () => {
     fetchCreatedGroups();
 
     // Short polling to update groups every 10 seconds
-    const intervalId = setInterval(fetchGroups, 10000);
+    const intervalId = setInterval(() => {
+      fetchGroups();
+      fetchCreatedGroups();
+    }, 10000);
 
     // Cleanup interval on component unmount
     return () => clearInterval(intervalId);
   }, []);
 
   const handleInvite = async () => {
-    if (!selectedGroup) {
-      alert('Please select a group to invite the member to.');
+    if (!selectedGroupId) {
+      setWarning('Please select a group to invite the member to.');
       return;
     }
 
     try {
-      const response = await fetch(`${domain}/api/groups/${selectedGroup}/members`, {
+      const response = await fetch(`${domain}/api/groups/${selectedGroupId}/members`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -89,26 +108,90 @@ const MyGroups = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to invite member');
+        const errorData = await response.json();
+        if (response.status === 400 && errorData.message === 'User is already invited to join this group.') {
+          setSnackbarMessage('User is already invited to join this group.');
+          setSnackbarSeverity('error');
+          setSnackbarOpen(true);
+        } else {
+          console.error('Error inviting member:', errorData.message || 'Unknown error');
+          setSnackbarMessage('Failed to invite member');
+          setSnackbarSeverity('error');
+          setSnackbarOpen(true);
+        }
+      } else {
+        const data = await response.json();
+        setInviteResponse(data);
+        setMemberEmail(''); // Clear the input field
+        setWarning(''); // Clear the warning message
+        setSnackbarMessage('Member invited successfully!');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true); // Show the snackbar
       }
-
-      const data = await response.json();
-      setInviteResponse(data);
-      setMemberEmail(''); // Clear the input field
     } catch (error) {
       console.error('Error inviting member:', error);
+      setSnackbarMessage('Failed to invite member');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     }
+  };
+
+  const handleGroupSelect = (groupId) => {
+    setSelectedGroupId(groupId);
+    setWarning(''); // Clear the warning message
+  };
+
+  const handleCancelInvite = () => {
+    setSelectedGroupId(null); // Hide the invite form
+    setMemberEmail(''); // Clear the input field
+    setWarning(''); // Clear the warning message
+  };
+
+  const handleLeaveGroup = async (groupId, isCreator) => {
+    try {
+      const response = await fetch(`${domain}/api/groups/${groupId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to leave group');
+      }
+
+      setMyGroups((prevGroups) => prevGroups.filter((group) => group.groupId !== groupId));
+      if (isCreator) {
+        setCreatedGroups((prevGroups) => prevGroups.filter((group) => group.groupId !== groupId));
+      }
+
+      setSnackbarMessage(isCreator ? 'Group deleted successfully!' : 'Left group successfully!');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true); // Show the snackbar
+    } catch (error) {
+      console.error('Error leaving group:', error);
+      setSnackbarMessage('Failed to leave group');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false); // Hide the snackbar
   };
 
   return (
     <>
-      <CreateGroup onGroupCreated={(newGroup) => {
-        setMyGroups((prevGroups) => [...prevGroups, newGroup]);
-        setCreatedGroups((prevGroups) => [...prevGroups, newGroup]);
-      }} />
+      <CreateGroup
+        onGroupCreated={(newGroup) => {
+          setMyGroups((prevGroups) => [...prevGroups, newGroup]);
+          setCreatedGroups((prevGroups) => [...prevGroups, newGroup]);
+        }}
+      />
 
       <Accordion>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ backgroundColor: YELLOW, width: '100%' }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ backgroundColor: YELLOW }}>
           <Typography variant="h6" sx={{ color: PURPLE, fontWeight: 'bold' }}>
             My Groups
           </Typography>
@@ -116,93 +199,30 @@ const MyGroups = () => {
         <AccordionDetails>
           <List>
             {myGroups.map((group) => (
-              <ListItem key={group.groupld} sx={{ borderBottom: `1px solid ${PURPLE}`, flexDirection: 'column', alignItems: 'flex-start' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                  <ListItemText primary={group.groupName} />
-                  {createdGroups.some(createdGroup => createdGroup.groupld === group.groupld) && (
-                    <StarIcon sx={{ color: PURPLE }} />
-                  )}
-                  <IconButton
-                    sx={{
-                      color: PURPLE,
-                      '&:hover': {
-                        backgroundColor: 'rgba(126, 145, 255, 0.1)', // Adjust the hover background color if needed
-                      },
-                    }}
-                    onClick={() => {/* Leave group logic */}}
-                  >
-                    <ExitToAppIcon />
-                  </IconButton>
-                </Box>
-                <Box sx={{ marginTop: 1, marginBottom: 1, width: '100%' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <GroupIcon sx={{ color: PURPLE, marginRight: 1 }} />
-                    <Typography variant="body2" sx={{ color: PURPLE }}>
-                      Members:
-                    </Typography>
-                  </Box>
-                  <List>
-                    {group.groupMembers && group.groupMembers.map((member, index) => (
-                      <ListItem key={index} sx={{ paddingLeft: 0 }}>
-                        <ListItemText primary={member} />
-                      </ListItem>
-                    ))}
-                  </List>
-                </Box>
-              </ListItem>
+              <GroupCard
+                key={group.groupId}
+                group={group}
+                createdGroups={createdGroups}
+                selectedGroupId={selectedGroupId}
+                memberEmail={memberEmail}
+                warning={warning}
+                setWarning={setWarning}
+                handleGroupSelect={handleGroupSelect}
+                handleInvite={handleInvite}
+                handleCancelInvite={handleCancelInvite}
+                setMemberEmail={setMemberEmail}
+                handleLeaveGroup={handleLeaveGroup}
+              />
             ))}
           </List>
         </AccordionDetails>
       </Accordion>
 
-      {createdGroups.length > 0 && (
-        <Box sx={{ marginTop: 4 }}>
-          <Typography variant="h6" sx={{ color: PURPLE, fontWeight: 'bold', marginBottom: 2 }}>
-            Invite Member to Group
-          </Typography>
-          <FormControl fullWidth sx={{ marginBottom: 2 }}>
-            <InputLabel id="select-group-label">Select Group</InputLabel>
-            <Select
-              labelId="select-group-label"
-              value={selectedGroup}
-              onChange={(e) => setSelectedGroup(e.target.value)}
-              label="Select Group"
-            >
-              {createdGroups.map((group) => (
-                <MenuItem key={group.groupld} value={group.groupld}>
-                  {group.groupName}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <TextField
-            label="Member Email"
-            variant="outlined"
-            fullWidth
-            value={memberEmail}
-            onChange={(e) => setMemberEmail(e.target.value)}
-            sx={{ marginBottom: 2 }}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleInvite}
-            sx={{
-              backgroundColor: PURPLE,
-              '&:hover': {
-                backgroundColor: PURPLE,
-              },
-            }}
-          >
-            Invite
-          </Button>
-          {inviteResponse && (
-            <Typography variant="body2" sx={{ color: PURPLE, marginTop: 2 }}>
-              Member invited successfully!
-            </Typography>
-          )}
-        </Box>
-      )}
+      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

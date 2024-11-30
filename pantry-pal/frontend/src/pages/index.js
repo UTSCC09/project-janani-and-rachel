@@ -23,7 +23,6 @@ import RecipeSearch from "@/components/RecipeSearch";
 import GroupsSection from "@/components/GroupsSection";
 import styles from "@/styles/Home.module.css";
 import { auth } from "../../config/firebase"; // Adjust the import path as needed
-import { GoogleAuthProvider } from "firebase/auth";
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState("signin");
@@ -32,56 +31,12 @@ export default function Home() {
   const [sessionExpired, setSessionExpired] = useState(false);
 
   useEffect(() => {
-    const checkAuthState = async () => {
-      const idToken = localStorage.getItem("idToken");
-      if (idToken) {
-        auth.onAuthStateChanged(async (user) => {
-          if (user) {
-            try {
-              const idToken = await user.getIdToken(true); // Force refresh the token
-              const credential = GoogleAuthProvider.credentialFromResult({ user });
-              const googleAccessToken = credential ? credential.accessToken : null; // Get Google access token
-              localStorage.setItem("idToken", idToken);
-              if (googleAccessToken) {
-                localStorage.setItem("accessToken", googleAccessToken); // Store Google access token
-              }
-              setIsAuthenticated(true);
-              setActiveSection("recipes"); // Set the default section for authenticated users
-            } catch (error) {
-              console.error("Error getting ID token:", error);
-              setSessionExpired(true); // Show Snackbar if there's an error getting the new token
-            }
-          } else {
-            setSessionExpired(true); // Show Snackbar if the user is not authenticated
-          }
-        });
-      } else {
-        setSessionExpired(true); // Show Snackbar if the user is not authenticated
-      }
-    };
-
-    checkAuthState();
-
-    const unsubscribe = auth.onIdTokenChanged(async (user) => {
-      if (user) {
-        try {
-          const idToken = await user.getIdToken(true); // Force refresh the token
-          const credential = GoogleAuthProvider.credentialFromResult({ user });
-          const googleAccessToken = credential ? credential.accessToken : null; // Get Google access token
-          localStorage.setItem("idToken", idToken);
-          if (googleAccessToken) {
-            localStorage.setItem("accessToken", googleAccessToken); // Store Google access token
-          }
-        } catch (error) {
-          console.error("Error getting ID token:", error);
-          setSessionExpired(true); // Show Snackbar if there's an error getting the new token
-        }
-      } else {
-        setSessionExpired(true); // Show Snackbar if the user is not authenticated
-      }
-    });
-
-    return () => unsubscribe();
+    // Check if the token is present in localStorage
+    const token = localStorage.getItem("idToken");
+    if (token) {
+      setIsAuthenticated(true);
+      setActiveSection("recipes"); // Set the default section for authenticated users
+    }
   }, []);
 
   const handleSignIn = () => {
@@ -91,11 +46,13 @@ export default function Home() {
   };
 
   const handleSignout = () => {
-    setIsAuthenticated(false);
-    setActiveSection("signin");
-    setAnchorEl(null); // Ensure the dropdown menu is closed
-    localStorage.removeItem("idToken");
-    localStorage.removeItem("accessToken");
+    auth.signOut().then(() => {
+      setIsAuthenticated(false);
+      setActiveSection("signin");
+      setAnchorEl(null); // Ensure the dropdown menu is closed
+      localStorage.removeItem("idToken");
+      localStorage.removeItem("accessToken");
+    });
   };
 
   const handleMenuOpen = (event) => {
@@ -109,16 +66,13 @@ export default function Home() {
 
   const handleCloseSnackbar = () => {
     setSessionExpired(false);
-    handleSignout();
   };
 
   return (
     <>
       <Head>
         <title>Pantry Pal</title>
-        <meta
-          name="description"
-        />
+        <meta name="description" content="Pantry management made easy!" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -131,29 +85,29 @@ export default function Home() {
           boxShadow: "none",
         }}
       >
-      <Container maxWidth="lg" sx={{ padding: "0" }}>
-        <Toolbar disableGutters sx={{ justifyContent: "space-between", padding: 0 }}>
-          {/* Pantry Pal Logo */}
-          <Box
-            onClick={() => setActiveSection(isAuthenticated ? "recipes" : "signin")}
-            sx={{
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-start", 
-              flexGrow: 0, // Ensure it doesn't grow to take extra space
-            }}
-          >
-            <img
-              src="/pantry_pal-removebg-preview.png"
-              alt="Logo"
-              style={{
-                maxWidth: "85px",
-                height: "auto", 
-                objectFit: "contain",
+        <Container maxWidth="lg" sx={{ padding: "0" }}>
+          <Toolbar disableGutters sx={{ justifyContent: "space-between", padding: 0 }}>
+            {/* Pantry Pal Logo */}
+            <Box
+              onClick={() => setActiveSection(isAuthenticated ? "recipes" : "signin")}
+              sx={{
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-start",
+                flexGrow: 0, // Ensure it doesn't grow to take extra space
               }}
-            />
-          </Box>
+            >
+              <img
+                src="/pantry_pal-removebg-preview.png"
+                alt="Logo"
+                style={{
+                  maxWidth: "85px",
+                  height: "auto",
+                  objectFit: "contain",
+                }}
+              />
+            </Box>
 
             {/* Hamburger Menu - Only visible if authenticated */}
             {isAuthenticated && (
@@ -200,16 +154,16 @@ export default function Home() {
       >
         {isAuthenticated ? (
           <>
-            {activeSection === "recipes" && <RecipeSection onSignOut={handleSignout} />}
+            {activeSection === "recipes" && <RecipeSection />}
             {activeSection === "ingredients" && <IngredientsSection />}
             {activeSection === "shoppingList" && <ShoppingListSection />}
             {activeSection === "calendar" && <CalendarSection />}
             {activeSection === "groups" && <GroupsSection />}
-            {activeSection === "recipeSearch" && <RecipeSearch onSearch={() => {}} />}
+            {activeSection === "recipeSearch" && <RecipeSearch />}
           </>
         ) : (
           <>
-            {activeSection === "signup" && <Signup onSignInClick={() => setActiveSection("signin")} onRecipeSectionClick={() => { setActiveSection("recipes"); setIsAuthenticated(true); }} />}
+            {activeSection === "signup" && <Signup onSignInClick={() => setActiveSection("signin")} />}
             {activeSection === "signin" && <Signin onSignIn={handleSignIn} onSignUpClick={() => setActiveSection("signup")} />}
           </>
         )}
@@ -221,8 +175,8 @@ export default function Home() {
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
       >
-        <Alert onClose={handleCloseSnackbar} severity="warning" sx={{ width: '100%' }}>
-          Your session expired. Please log out and log back in.
+        <Alert onClose={handleCloseSnackbar} severity="warning" sx={{ width: "100%" }}>
+          Your session expired. Please log back in.
         </Alert>
       </Snackbar>
     </>

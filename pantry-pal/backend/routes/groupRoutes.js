@@ -30,7 +30,9 @@ router.get('/:groupId/pantry', sanitizeAndValidateGroupParams, (req, res, next) 
 router.get('/:groupId/recipes', sanitizeAndValidateGroupParams, (req, res, next) => {
     const uid = req.uid;
     const groupId = req.params.groupId;
-    getRecipesForGroup(uid, groupId).then((recipes) => {
+    const limit = parseInt(req.query.limit) || 10;
+    const lastVisibleRecipeId = req.query.lastVisibleRecipeId;
+    getRecipesForGroup(uid, groupId, limit, lastVisibleRecipeId).then((recipes) => {
         res.json(recipes);
     }).catch((error) => {
         console.error("Error fetching recipes for group:", error);
@@ -78,7 +80,9 @@ router.get('/:groupId/members/:memberId/pantry', sanitizeAndValidateGroupParams,
     const uid = req.uid;
     const groupId = req.params.groupId;
     const memberId = req.params.memberId;
-    getPantryOfGroupMember(uid, groupId, memberId).then((ingredients) => {
+    const limit = parseInt(req.query.limit) || 10;
+    const lastVisibleIngredient = req.query.lastVisibleIngredient || null;
+    getPantryOfGroupMember(uid, groupId, memberId, limit, lastVisibleIngredient).then((ingredients) => {
         res.json(ingredients);
     }).catch((error) => {
         console.error("Error fetching pantry ingredients for group member:", error);
@@ -104,7 +108,9 @@ router.post('/:groupId/members', sanitizeAndValidateGroupParams, sanitizeAndVali
 // get all group invites
 router.get('/invites', (req, res, next) => {
     const uid = req.uid;
-    getGroupInvites(uid).then((invites) => {
+    const limit = parseInt(req.query.limit) || 10;
+    const lastVisibleGroupId = req.query.lastVisibleGroupId;
+    getGroupInvites(uid, limit, lastVisibleGroupId).then((invites) => {
         res.json(invites);
     }).catch((error) => {
         console.error("Error fetching group invites:", error);
@@ -168,7 +174,9 @@ router.get('/:groupId/members', sanitizeAndValidateGroupParams, (req, res, next)
 // get all groups created by user
 router.get('/created-by-me', (req, res, next) => {
     const uid = req.uid;
-    getGroupsICreated(uid).then((groups) => {
+    const limit = parseInt(req.query.limit) || 10;
+    const lastVisibleGroupId = req.query.lastVisibleGroupId;
+    getGroupsICreated(uid, limit, lastVisibleGroupId).then((groups) => {
         res.json(groups);
     }).catch((error) => {
         console.error("Error fetching groups created by user:", error);

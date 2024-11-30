@@ -84,27 +84,40 @@ export async function addMemberToGroup(uid, groupId, memberEmail) {
     }
 }
 
-export async function getGroupInvites(uid) {
+export async function getGroupInvites(uid, limit=10, lastVisibleGroupId=null) {
     const groups = [];
     const userGroupsRef = db.collection('Users').doc(uid).collection('Groups');
-    const userGroupsDoc = await userGroupsRef.where('pending', '==', true).get();
+    let query = userGroupsRef.where('pending', '==', true).orderBy('groupName').limit(limit);
+    if (lastVisibleGroupId) {
+        const lastGroup = await userGroupsRef.doc(lastVisibleGroupId).get();
+        query = query.startAfter(lastGroup);
+    }
+    
+    const userGroupsDoc = await query.get();
     await Promise.all(userGroupsDoc.docs.map(async (doc) => {
         // get the creators email
         const creator = await auth.getUser(doc.data().createdBy);
-        groups.push({ ...doc.data(), creatorEmail: creator.email });
+        groups.push({ groupId: doc.id, ...doc.data(), creatorEmail: creator.email });
     }));
 
-    return groups;
+    const lastVisible = userGroupsDoc.docs[userGroupsDoc.docs.length - 1].id;
+    return {groups, lastVisible};
 }
 
-export async function getGroupsICreated(uid) {
+export async function getGroupsICreated(uid, limit=10, lastVisibleGroupId=null) {
     const groups = [];
     const groupsRef = db.collection('Groups');
-    const groupsDoc = await groupsRef.where('createdBy', '==', uid).get();
+    let query = groupsRef.where('createdBy', '==', uid).orderBy('groupName').limit(limit);
+    if (lastVisibleGroupId) {
+        const lastGroup = await groupsRef.doc(lastVisibleGroupId).get();
+        query = query.startAfter(lastGroup);
+    }
+    const groupsDoc = await query.get();
     await Promise.all(groupsDoc.docs.map(async (doc) => {
         groups.push({ ...doc.data() });
     }));
-    return groups;
+    const lastVisible = groupsDoc.docs[groupsDoc.docs.length - 1].id;
+    return {groups, lastVisible};
 }
 
 export async function acceptGroupInvite(uid, groupId) {
@@ -225,7 +238,9 @@ export async function getUsersGroups(uid, limit=10, lastVisibleGroupId=null) {
         groups.push({ groupId: doc.id, ...doc.data(), creatorEmail: creator.email });
     }));
 
-    return groups;
+    const lastVisible = userGroupsDoc.docs[userGroupsDoc.docs.length - 1].id;
+
+    return {groups, lastVisible};
 }
 
 export async function getGroupMembers(uid, groupId) {
@@ -281,7 +296,9 @@ export async function getPantryOfGroupMember(uid, groupId, memberUid, limit=10, 
     console.log("pantryDocs:", pantryDocs.docs);
     const pantry = pantryDocs.docs.map((doc) => doc.data());
 
-    return pantry;
+    const lastVisible = pantryDocs.docs[pantryDocs.docs.length - 1].id;
+
+    return {pantry, lastVisible};
 }
 
 export async function getPantryForGroup(uid, groupId) {
@@ -336,7 +353,9 @@ export async function getRecipesForGroup(uid, groupId, limit=10, lastVisibleReci
         recipes.push({ recipeId: doc.id, ...doc.data() });
     });
 
-    return recipes;
+    const lastVisible = recipeDocs.docs[recipeDocs.docs.length - 1].id;
+
+    return { recipes, lastVisible };
 }
 
 export async function addRecipeToGroup(uid, groupId, recipe) {

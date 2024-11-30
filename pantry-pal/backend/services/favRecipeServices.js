@@ -173,7 +173,8 @@ async function addFavRecipe(uid, recipe) {
         totalIngredientCount: recipe.totalIngredientCount,
         ingredients: recipe.ingredients,
         instructions: recipe.instructions,
-        sourceUrl: recipe.sourceUrl
+        sourceUrl: recipe.sourceUrl,
+        nutrition: recipe.nutrition,
     };
 
     recipeRef.set(recipeData).then(() => {

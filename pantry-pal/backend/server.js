@@ -17,6 +17,7 @@ app.use(express.json()); // middleware to parse JSON
 app.use((req, res, next) => {
   console.log(`HTTP request ${req.method} ${req.path} ${req.body ? JSON.stringify(req.body) : ''}`);
   console.log(`HTTP request query: ${JSON.stringify(req.query)}`);
+  //console.log(`HTTP request headers: ${JSON.stringify(req.headers)}`);
   next();
 });
 

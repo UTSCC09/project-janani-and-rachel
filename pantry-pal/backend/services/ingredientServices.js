@@ -1,6 +1,7 @@
 import { google } from 'googleapis';
 import { db } from '../config/firebase.js';
-import { deleteBuyTask, deleteDefrostTask, renameFrozenIngredient, renameShoppingListIngredient } 
+import { markDefrostTaskComplete, markDefrostTaskIncomplete, renameFrozenIngredient, deleteDefrostTask,
+    renameShoppingListIngredient, markBuyTaskComplete, deleteBuyTask } 
     from './reminderServices.js';
 
 export async function getPantry(uid, lim=10, lastVisibleIngredient=null) {
@@ -99,6 +100,7 @@ async function changePantryIngredientNameInMealPlan(uid, mealPlanId, ingredientN
     });
 }
 
+// another helper for managing frozen ingredients in meal plans
 async function updateFrozenIngredientsInMealPlan(uid, mealPlanId, ingredientName, frozen) {
     const mealPlansRef = db.collection('Users').doc(uid).collection('MealPlan').doc(mealPlanId);
     const mealPlanData = await mealPlansRef.get();
@@ -156,14 +158,18 @@ export async function modifyInPantry(uid, ingredient, googleAccessToken) {
                 await updateFrozenIngredientsInMealPlan(uid, mealPlanId, newIngredientData.ingredientName, ingredient.frozen);
             }
         }));
-        // if the ingredient is no longer frozen, delete the defrost task
-        // it would only have a task if you have a google access token and its on a meal plan
-        if (ingredient.frozen && ingredient.frozen === false && googleAccessToken && newIngredientData.mealPlans) { 
-            await deleteDefrostTask(uid, newIngredientData.ingredientName, googleAccessToken);
-        }
         // if we renamed the ingredient, we need to rename the reminders
         if (newIngredientName && googleAccessToken) {
             await renameFrozenIngredient(uid, ingredient.ingredientName, newIngredientName, googleAccessToken);
+        }
+
+        // if the ingredient is no longer frozen, delete the defrost task
+        // it would only have a task if you have a google access token and its on a meal plan
+        if (ingredient.frozen != undefined && ingredient.frozen == false && googleAccessToken) { 
+            await markDefrostTaskComplete(uid, newIngredientData.ingredientName, googleAccessToken);
+        } 
+        else if (ingredient.frozen && ingredient.frozen == true && googleAccessToken) {
+            await markDefrostTaskIncomplete(uid, newIngredientData.ingredientName, googleAccessToken);
         }
     }
     return newIngredientData;
@@ -254,7 +260,6 @@ async function addShoppingListIngredientToMealPlan(uid, mealPlanId, ingredientNa
     }
 }
 
-
 export async function addToShoppingList(uid, ingredientName, mealPlans=[]) {
     const shoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList').doc(ingredientName);
     const ingredientData = { 
@@ -271,6 +276,7 @@ export async function addToShoppingList(uid, ingredientName, mealPlans=[]) {
     return ingredientData;
 }
 
+// helper function to change the name of a shopping list ingredient in a meal plan
 async function changeShoppingListIngredientNameInMealPlan(uid, mealPlanId, ingredientName, newIngredientName) {
     const mealPlansRef = db.collection('Users').doc(uid).collection('MealPlan').doc(mealPlanId);
     const mealPlanData = await mealPlansRef.get();
@@ -332,6 +338,7 @@ export async function modifyInShoppingList(uid, ingredient, googleAccessToken) {
     return newIngredientData.data();
 }
 
+// helper function to delete a shopping list ingredient from a meal plan
 async function deleteShoppingListIngredientFromMealPlan(uid, mealPlanId, ingredientName) {
     const mealPlanRef = db.collection('Users').doc(uid).collection('MealPlan').doc(mealPlanId);
     const mealPlanData = await mealPlanRef.get();
@@ -347,7 +354,7 @@ async function deleteShoppingListIngredientFromMealPlan(uid, mealPlanId, ingredi
     });
 }
 
-export async function removeFromShoppingList(uid, ingredientName, googleAccessToken) {
+export async function removeFromShoppingList(uid, ingredientName, move, googleAccessToken) {
     const shoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList').doc(ingredientName);
     const ingredientData = await shoppingListRef.get();
     if (!ingredientData.exists) {
@@ -360,9 +367,13 @@ export async function removeFromShoppingList(uid, ingredientName, googleAccessTo
         await Promise.all(ingredientData.data().mealPlans.map(async (mealPlanId) => {
             await deleteShoppingListIngredientFromMealPlan(uid, mealPlanId, ingredientName);
         }));
-        // also delete the buy task
+        // also delete the buy task or mark it as complete depending whether we just move or deleted
         if (googleAccessToken) {
-            await deleteBuyTask(uid, ingredientName, googleAccessToken);
+            if (move) {
+                await markBuyTaskComplete(uid, ingredientName, googleAccessToken);
+            } else {
+                await deleteBuyTask(uid, ingredientName, googleAccessToken);
+            }
         }
     }
 

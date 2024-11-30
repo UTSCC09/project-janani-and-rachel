@@ -192,162 +192,182 @@ const GroupCard = ({
   };
 
   return (
-<Paper
-  elevation={3}
-  sx={{
-    marginBottom: 2,
-    padding: 2,
-    borderRadius: '8px',
-    '&:hover': {
-      boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)',
-    },
-  }}
->
-  <ListItem sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        width: '100%',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-      }}
-    >
-      <ListItemText
-        primary={group.groupName}
-        primaryTypographyProps={{ fontWeight: 'bold', fontSize: '1.2rem' }}
-      />
-      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
-        {createdGroups.some((createdGroup) => createdGroup.groupId === group.groupId) && (
-          <StarIcon
-            sx={{
-              color: PURPLE,
-              marginRight: 1,
-              transition: 'transform 0.2s ease-in-out',
-              '&:hover': { transform: 'scale(1.2)' },
-            }}
-          />
-        )}
-        <IconButton
-          sx={{
-            color: PURPLE,
-            transition: 'all 0.3s ease',
-            '&:hover': {
-              backgroundColor: 'rgba(126, 145, 255, 0.1)',
-              transform: 'scale(1.1)',
-              boxShadow: '0px 2px 8px rgba(126, 145, 255, 0.4)',
-            },
-          }}
-          onClick={handleOpenDialog}
-        >
-          <ExitToAppIcon />
-        </IconButton>
-        {createdGroups.some((createdGroup) => createdGroup.groupId === group.groupId) && (
-          <IconButton
-            sx={{
-              color: PURPLE,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                backgroundColor: 'rgba(126, 145, 255, 0.1)',
-                transform: 'scale(1.1)',
-                boxShadow: '0px 2px 8px rgba(126, 145, 255, 0.4)',
-              },
-            }}
-            onClick={() => handleGroupSelect(group.groupId)}
-          >
-            <PersonAddIcon />
-          </IconButton>
-        )}
-      </Box>
-    </Box>
-    <Divider sx={{ marginY: 2 }} />
-    <Box sx={{ width: '100%' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 1 }}>
-        <GroupIcon
-          sx={{
-            color: PURPLE,
-            marginRight: 1,
-            transition: 'all 0.3s ease',
-            '&:hover': { color: 'rgba(126, 145, 255, 0.8)', transform: 'scale(1.2)' },
-          }}
-        />
-        <Typography variant="body2" sx={{ color: PURPLE, fontWeight: 'bold' }}>
-          Members:
-        </Typography>
-      </Box>
-      <List>
-        {groupMembers.map((member) => (
-          <Accordion
-            key={member.uid}
-            onChange={() => fetchMemberIngredients(member.uid)}
-            sx={{
-              marginBottom: 1,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                backgroundColor: 'rgba(126, 145, 255, 0.1)',
-                boxShadow: '0px 2px 8px rgba(126, 145, 255, 0.4)',
-              },
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
+    <Paper elevation={3} sx={{ marginBottom: 2, padding: 2, borderRadius: '8px' }}>
+      <ListItem sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          <ListItemText primary={group.groupName} primaryTypographyProps={{ fontWeight: 'bold', fontSize: '1.2rem' }} />
+          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'nowrap' }}>
+            {createdGroups.some((createdGroup) => createdGroup.groupId === group.groupId) && (
+              <StarIcon sx={{ color: PURPLE, marginRight: 1 }} />
+            )}
+            <IconButton
               sx={{
-                backgroundColor: LIGHT_PURPLE,
-                transition: 'background-color 0.3s ease',
-                '&:hover': { backgroundColor: 'rgba(126, 145, 255, 0.2)' },
+                color: PURPLE,
+                '&:hover': {
+                  backgroundColor: 'rgba(126, 145, 255, 0.1)',
+                },
               }}
+              onClick={handleOpenDialog}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box
-                  sx={{
-                    width: 32,
-                    height: 32,
-                    backgroundColor: PURPLE,
-                    borderRadius: '50%',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    color: 'white',
-                    fontWeight: 'bold',
-                  }}
-                >
-                  {member.email.charAt(0).toUpperCase()}
-                </Box>
-                <Typography>{member.email}</Typography>
-              </Box>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography
-                variant="subtitle2"
-                sx={{ marginBottom: 1, fontWeight: 'bold' }}
+              <ExitToAppIcon />
+            </IconButton>
+            {createdGroups.some((createdGroup) => createdGroup.groupId === group.groupId) && (
+              <IconButton
+                sx={{
+                  color: PURPLE,
+                  '&:hover': {
+                    backgroundColor: 'rgba(126, 145, 255, 0.1)',
+                  },
+                }}
+                onClick={() => handleGroupSelect(group.groupId)}
               >
-                Pantry Ingredients:
-              </Typography>
-              {memberIngredients[member.uid]?.length > 0 ? (
-                <List sx={{ padding: 0 }}>
-                  {memberIngredients[member.uid].map((ingredient, index) => (
-                    <ListItem key={index} sx={{ paddingLeft: 0, paddingTop: 0, paddingBottom: 0 }}>
-                      <ListItemText
-                        primary={ingredient.ingredientName}
-                        primaryTypographyProps={{ variant: 'body2' }}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              ) : (
-                <Typography variant="body2" color="textSecondary">
-                  No ingredients available
-                </Typography>
-              )}
-            </AccordionDetails>
-          </Accordion>
-        ))}
-      </List>
-    </Box>
-  </ListItem>
-</Paper>
+                <PersonAddIcon />
+              </IconButton>
+            )}
+          </Box>
+        </Box>
+        <Divider sx={{ marginY: 2 }} />
+        <Box sx={{ width: '100%' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 1 }}>
+            <GroupIcon sx={{ color: PURPLE, marginRight: 1 }} />
+            <Typography variant="body2" sx={{ color: PURPLE, fontWeight: 'bold' }}>
+              Members:
+            </Typography>
+          </Box>
+          <List>
+            {groupMembers.map((member) => (
+              <Accordion key={member.uid} onChange={() => fetchMemberIngredients(member.uid)} sx={{ marginBottom: 1 }}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ backgroundColor: LIGHT_PURPLE }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        backgroundColor: PURPLE,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        color: 'white',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {member.email.charAt(0).toUpperCase()}
+                    </Box>
+                    <Typography
+                      sx={{
+                        '&:hover': {
+                          color: PURPLE,
+                          textDecoration: 'underline',
+                          cursor: 'pointer',
+                        },
+                      }}
+                    >
+                      {member.email}
+                    </Typography>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Typography variant="subtitle2" sx={{ marginBottom: 1, fontWeight: 'bold' }}>
+                    Pantry Ingredients:
+                  </Typography>
+                  {memberIngredients[member.uid]?.length > 0 ? (
+                    <List sx={{ padding: 0 }}>
+                      {memberIngredients[member.uid].map((ingredient, index) => (
+                        <ListItem key={index} sx={{ paddingLeft: 0, paddingTop: 0, paddingBottom: 0 }}>
+                          <ListItemText
+                            primary={ingredient.ingredientName}
+                            primaryTypographyProps={{ variant: 'body2' }}
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  ) : (
+                    <Typography variant="body2" color="textSecondary">
+                      No ingredients available
+                    </Typography>
+                  )}
+                </AccordionDetails>
+              </Accordion>
+            ))}
+          </List>
+        </Box>
+        {selectedGroupId === group.groupId && (
+          <Box sx={{ marginTop: 2, width: '100%' }}>
+            <Typography variant="h6" sx={{ color: PURPLE, fontWeight: 'bold', marginBottom: 2 }}>
+              Invite Member to Group
+            </Typography>
+            {warning && (
+              <Alert severity="warning" sx={{ marginBottom: 2 }}>
+                {warning}
+              </Alert>
+            )}
+            <TextField
+              label="Member Email"
+              variant="outlined"
+              fullWidth
+              value={memberEmail}
+              onChange={(e) => setMemberEmail(e.target.value)}
+              sx={{ marginBottom: 2 }}
+            />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'nowrap' }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleInviteMember}
+                sx={{
+                  backgroundColor: PURPLE,
+                  '&:hover': {
+                    backgroundColor: PURPLE,
+                  },
+                }}
+              >
+                Invite
+              </Button>
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={handleCancelInvite}
+                sx={{
+                  color: PURPLE,
+                  '&:hover': {
+                    backgroundColor: 'rgba(126, 145, 255, 0.1)',
+                  },
+                }}
+              >
+                Cancel
+              </Button>
+            </Box>
+          </Box>
+        )}
+      </ListItem>
+
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Leave Group</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {createdGroups.some((createdGroup) => createdGroup.groupId === group.groupId)
+              ? 'You are the creator of this group. Leaving will delete the entire group. Are you sure you want to proceed?'
+              : 'Are you sure you want to leave this group?'}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} sx={{ color: PURPLE, '&:hover': { backgroundColor: LIGHT_PURPLE } }}>
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmLeave} sx={{ color: PURPLE, '&:hover': { backgroundColor: LIGHT_PURPLE } }} autoFocus>
+            Leave
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+    </Paper>
   );
-  
 };
 
 export default GroupCard;

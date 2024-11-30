@@ -19,8 +19,8 @@ export default function CalendarSection() {
   const [expanded, setExpanded] = useState({});
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [daysInAdvanceDefrost, setDaysInAdvanceDefrost] = useState(3);
-  const [daysInAdvanceBuy, setDaysInAdvanceBuy] = useState(1);
+  const [daysInAdvanceDefrost, setDaysInAdvanceDefrost] = useState(1);
+  const [daysInAdvanceBuy, setDaysInAdvanceBuy] = useState(3);
 
   useEffect(() => {
     fetchMealPlans();
@@ -28,7 +28,8 @@ export default function CalendarSection() {
 
   const fetchMealPlans = () => {
     setLoading(true);
-    const url = `${domain}/api/recipes/meal-plan?lastVisibleMealId=${(lastVisible || '').trim()}`;    const headers = {
+    const url = `${domain}/api/recipes/meal-plan?lastVisibleMealId=${lastVisible}`;    
+    const headers = {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
       "GoogleAccessToken": localStorage.getItem('accessToken')

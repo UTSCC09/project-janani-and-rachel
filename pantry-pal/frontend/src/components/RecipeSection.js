@@ -36,7 +36,6 @@ export default function RecipeList() {
         }
       })
       .then((response) => {
-        //console.log("Response:", response); // Log the response
         return response.json();
       })
         .then((data) => {

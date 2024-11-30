@@ -34,6 +34,7 @@ const GroupInvites = () => {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+            'GoogleAccessToken': localStorage.getItem('accessToken'),
           },
         });
 
@@ -67,6 +68,7 @@ const GroupInvites = () => {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+          'GoogleAccessToken': localStorage.getItem('accessToken'),
         },
       });
 
@@ -93,6 +95,7 @@ const GroupInvites = () => {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+          'GoogleAccessToken': localStorage.getItem('accessToken'),
         },
       });
 

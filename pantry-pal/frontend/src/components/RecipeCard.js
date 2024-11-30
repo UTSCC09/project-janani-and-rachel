@@ -256,6 +256,7 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
 
       </CardContent>
 
+
       {/* Edit, Delete, and Meal Plan Buttons */}
       <Box
         sx={{

@@ -36,6 +36,7 @@ const MyGroups = () => {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+            'GoogleAccessToken': localStorage.getItem('accessToken'),
           },
         });
 
@@ -44,7 +45,7 @@ const MyGroups = () => {
         }
 
         const data = await response.json();
-        console.log("my groups", data.groups);
+        // console.log("my groups", data.groups);
         setMyGroups(data.groups);
       } catch (error) {
         // console.error('Error fetching groups:', error);
@@ -61,6 +62,7 @@ const MyGroups = () => {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+            'GoogleAccessToken': localStorage.getItem('accessToken'),
           },
         });
 
@@ -103,6 +105,7 @@ const MyGroups = () => {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+          'GoogleAccessToken': localStorage.getItem('accessToken'),
         },
         body: JSON.stringify({ memberEmail }),
       });
@@ -154,6 +157,7 @@ const MyGroups = () => {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+          'GoogleAccessToken': localStorage.getItem('accessToken'),
         },
       });
 

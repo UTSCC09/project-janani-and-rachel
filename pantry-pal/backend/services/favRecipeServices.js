@@ -54,7 +54,10 @@ async function getFavRecipes(uid, lim=10, lastVisibleId=null) {
     );
 
     // get new last visible document
-    const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
+    let newLastVisible = null;
+    if (snapshot.docs.length > 0) {
+        newLastVisible = snapshot.docs[snapshot.docs.length - 1];
+    }
 
     return {
         recipes: recipes,
@@ -90,8 +93,10 @@ async function getPlannedFavRecipes(uid, lim=10, lastVisibleId=null) {
         })
     );
 
-    const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
-
+    let newLastVisible = null;
+    if (snapshot.docs.length > 0) {
+        newLastVisible = snapshot.docs[snapshot.docs.length - 1];
+    }
     return {
         recipes: recipes,
         lastVisible: newLastVisible.id,
@@ -126,8 +131,10 @@ async function getUnPlannedFavRecipes(uid, lim = 10, lastVisibleId = null) {
         })
     );
 
-    const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
-
+    let newLastVisible = null;
+    if (snapshot.docs.length > 0) {
+        newLastVisible = snapshot.docs[snapshot.docs.length - 1];
+    }
     return {
         recipes: recipes,
         lastVisible: newLastVisible.id,

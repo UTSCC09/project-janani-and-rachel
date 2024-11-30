@@ -238,7 +238,7 @@ export async function leaveGroup(uid, groupId) {
 export async function getUsersGroups(uid, limit=10, lastVisibleGroupId=null) {
     const groups = [];
     const userGroupsRef = db.collection('Users').doc(uid).collection('Groups');
-    let query = userGroupsRef.orderBy('groupName').limit(limit);
+    let query = userGroupsRef.where('pending', '==', false).orderBy('groupName').limit(limit);
     if (lastVisibleGroupId) {
         const lastGroup = await userGroupsRef.doc(lastVisibleGroupId).get();
         query = query.startAfter(lastGroup);

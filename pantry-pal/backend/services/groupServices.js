@@ -103,7 +103,10 @@ export async function getGroupInvites(uid, limit=10, lastVisibleGroupId=null) {
     // sort groups by group name
     groups.sort((a, b) => a.groupName.localeCompare(b.groupName));
 
-    const lastVisible = userGroupsDoc.docs[userGroupsDoc.docs.length - 1].id;
+    let lastVisible = null;
+    if (!userGroupsDoc.empty) {
+        lastVisible = userGroupsDoc.docs[userGroupsDoc.docs.length - 1].id;
+    }
     return {groups, lastVisible};
 }
 
@@ -123,7 +126,10 @@ export async function getGroupsICreated(uid, limit=10, lastVisibleGroupId=null) 
     // sort groups by group name
     groups.sort((a, b) => a.groupName.localeCompare(b.groupName));
 
-    const lastVisible = groupsDoc.docs[groupsDoc.docs.length - 1].id;
+    let lastVisible = null;
+    if (!groupsDoc.empty) {
+        lastVisible = groupsDoc.docs[groupsDoc.docs.length - 1].id;
+    }
     return {groups, lastVisible};
 }
 
@@ -245,8 +251,10 @@ export async function getUsersGroups(uid, limit=10, lastVisibleGroupId=null) {
         groups.push({ groupId: doc.id, ...doc.data(), creatorEmail: creator.email });
     }));
 
-    const lastVisible = userGroupsDoc.docs[userGroupsDoc.docs.length - 1].id;
-
+    let lastVisible = null;
+    if (!userGroupsDoc.empty) {
+        lastVisible = userGroupsDoc.docs[userGroupsDoc.docs.length - 1].id;
+    }
     // sort groups by group name
     groups.sort((a, b) => a.groupName.localeCompare(b.groupName));
 
@@ -306,8 +314,10 @@ export async function getPantryOfGroupMember(uid, groupId, memberUid, limit=10, 
     console.log("pantryDocs:", pantryDocs.docs);
     const pantry = pantryDocs.docs.map((doc) => doc.data());
 
-    const lastVisible = pantryDocs.docs[pantryDocs.docs.length - 1].id;
-
+    let lastVisible = null;
+    if (!pantryDocs.empty) {
+        lastVisible = pantryDocs.docs[pantryDocs.docs.length - 1].id;
+    }
     return {pantry, lastVisible};
 }
 
@@ -364,8 +374,10 @@ export async function getRecipesForGroup(uid, groupId, limit=10, lastVisibleReci
         recipes.push({ recipeId: doc.id, ...doc.data() });
     });
 
-    const lastVisible = recipeDocs.docs[recipeDocs.docs.length - 1].id;
-
+    let lastVisible = null;
+    if (!recipeDocs.empty) {
+        lastVisible = recipeDocs.docs[recipeDocs.docs.length - 1].id;
+    }
     return { recipes, lastVisible };
 }
 

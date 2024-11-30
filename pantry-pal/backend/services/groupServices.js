@@ -85,7 +85,6 @@ export async function addMemberToGroup(uid, groupId, memberEmail) {
 }
 
 export async function getGroupInvites(uid, limit=10, lastVisibleGroupId=null) {
-    const groups = [];
     const userGroupsRef = db.collection('Users').doc(uid).collection('Groups');
     let query = userGroupsRef.where('pending', '==', true).orderBy('groupName').limit(limit);
     if (lastVisibleGroupId) {
@@ -94,21 +93,16 @@ export async function getGroupInvites(uid, limit=10, lastVisibleGroupId=null) {
     }
     
     const userGroupsDoc = await query.get();
-    await Promise.all(userGroupsDoc.docs.map(async (doc) => {
-        // get the creators email
-        const creator = await auth.getUser(doc.data().createdBy);
-        groups.push({ groupId: doc.id, ...doc.data(), creatorEmail: creator.email });
-    }));
-
-    // sort groups by group name
-    groups.sort((a, b) => a.groupName.localeCompare(b.groupName));
+    const groups = userGroupsDoc.docs.map((doc) => {
+        const creator = auth.getUser(doc.data().createdBy);
+        return { groupId: doc.id, ...doc.data(), creatorEmail: creator.email };
+    });
 
     const lastVisible = userGroupsDoc.docs[userGroupsDoc.docs.length - 1].id;
     return {groups, lastVisible};
 }
 
 export async function getGroupsICreated(uid, limit=10, lastVisibleGroupId=null) {
-    const groups = [];
     const groupsRef = db.collection('Groups');
     let query = groupsRef.where('createdBy', '==', uid).orderBy('groupName').limit(limit);
     if (lastVisibleGroupId) {
@@ -116,12 +110,8 @@ export async function getGroupsICreated(uid, limit=10, lastVisibleGroupId=null) 
         query = query.startAfter(lastGroup);
     }
     const groupsDoc = await query.get();
-    await Promise.all(groupsDoc.docs.map(async (doc) => {
-        groups.push({ ...doc.data() });
-    }));
 
-    // sort groups by group name
-    groups.sort((a, b) => a.groupName.localeCompare(b.groupName));
+    const groups = groupsDoc.docs.map((doc) => doc.data());
 
     const lastVisible = groupsDoc.docs[groupsDoc.docs.length - 1].id;
     return {groups, lastVisible};
@@ -230,7 +220,6 @@ export async function leaveGroup(uid, groupId) {
 }
 
 export async function getUsersGroups(uid, limit=10, lastVisibleGroupId=null) {
-    const groups = [];
     const userGroupsRef = db.collection('Users').doc(uid).collection('Groups');
     let query = userGroupsRef.orderBy('groupName').limit(limit);
     if (lastVisibleGroupId) {
@@ -239,16 +228,14 @@ export async function getUsersGroups(uid, limit=10, lastVisibleGroupId=null) {
     }
     const userGroupsDoc = await query.get();
 
-    await Promise.all(userGroupsDoc.docs.map(async (doc) => {
+    const groups = userGroupsDoc.forEach(async (doc) => {
         // get the creators email
         const creator = await auth.getUser(doc.data().createdBy);
-        groups.push({ groupId: doc.id, ...doc.data(), creatorEmail: creator.email });
-    }));
+        return { groupId: doc.id, ...doc.data(), creatorEmail: creator.email };
+    });
 
     const lastVisible = userGroupsDoc.docs[userGroupsDoc.docs.length - 1].id;
 
-    // sort groups by group name
-    groups.sort((a, b) => a.groupName.localeCompare(b.groupName));
 
     return {groups, lastVisible};
 }

@@ -100,6 +100,9 @@ export async function getGroupInvites(uid, limit=10, lastVisibleGroupId=null) {
         groups.push({ groupId: doc.id, ...doc.data(), creatorEmail: creator.email });
     }));
 
+    // sort groups by group name
+    groups.sort((a, b) => a.groupName.localeCompare(b.groupName));
+
     const lastVisible = userGroupsDoc.docs[userGroupsDoc.docs.length - 1].id;
     return {groups, lastVisible};
 }
@@ -116,6 +119,10 @@ export async function getGroupsICreated(uid, limit=10, lastVisibleGroupId=null) 
     await Promise.all(groupsDoc.docs.map(async (doc) => {
         groups.push({ ...doc.data() });
     }));
+
+    // sort groups by group name
+    groups.sort((a, b) => a.groupName.localeCompare(b.groupName));
+
     const lastVisible = groupsDoc.docs[groupsDoc.docs.length - 1].id;
     return {groups, lastVisible};
 }
@@ -240,6 +247,9 @@ export async function getUsersGroups(uid, limit=10, lastVisibleGroupId=null) {
 
     const lastVisible = userGroupsDoc.docs[userGroupsDoc.docs.length - 1].id;
 
+    // sort groups by group name
+    groups.sort((a, b) => a.groupName.localeCompare(b.groupName));
+
     return {groups, lastVisible};
 }
 
@@ -324,6 +334,7 @@ export async function getPantryForGroup(uid, groupId) {
         const ingredients = pantryDoc.docs.map((doc) => doc.data());
         pantry.push({uid: member, pantry: ingredients});
     }));
+
 
     return pantry;
 }

@@ -85,6 +85,7 @@ export async function addMemberToGroup(uid, groupId, memberEmail) {
 }
 
 export async function getGroupInvites(uid, limit=10, lastVisibleGroupId=null) {
+    const groups = [];
     const userGroupsRef = db.collection('Users').doc(uid).collection('Groups');
     let query = userGroupsRef.where('pending', '==', true).orderBy('groupName').limit(limit);
     if (lastVisibleGroupId) {
@@ -93,16 +94,21 @@ export async function getGroupInvites(uid, limit=10, lastVisibleGroupId=null) {
     }
     
     const userGroupsDoc = await query.get();
-    const groups = await userGroupsDoc.docs.map((doc) => {
-        const creator = auth.getUser(doc.data().createdBy);
-        return { groupId: doc.id, ...doc.data(), creatorEmail: creator.email };
-    });
+    await Promise.all(userGroupsDoc.docs.map(async (doc) => {
+        // get the creators email
+        const creator = await auth.getUser(doc.data().createdBy);
+        groups.push({ groupId: doc.id, ...doc.data(), creatorEmail: creator.email });
+    }));
+
+    // sort groups by group name
+    groups.sort((a, b) => a.groupName.localeCompare(b.groupName));
 
     const lastVisible = userGroupsDoc.docs[userGroupsDoc.docs.length - 1].id;
     return {groups, lastVisible};
 }
 
 export async function getGroupsICreated(uid, limit=10, lastVisibleGroupId=null) {
+    const groups = [];
     const groupsRef = db.collection('Groups');
     let query = groupsRef.where('createdBy', '==', uid).orderBy('groupName').limit(limit);
     if (lastVisibleGroupId) {
@@ -110,8 +116,12 @@ export async function getGroupsICreated(uid, limit=10, lastVisibleGroupId=null) 
         query = query.startAfter(lastGroup);
     }
     const groupsDoc = await query.get();
+    await Promise.all(groupsDoc.docs.map(async (doc) => {
+        groups.push({ ...doc.data() });
+    }));
 
-    const groups = await groupsDoc.docs.map((doc) => doc.data());
+    // sort groups by group name
+    groups.sort((a, b) => a.groupName.localeCompare(b.groupName));
 
     const lastVisible = groupsDoc.docs[groupsDoc.docs.length - 1].id;
     return {groups, lastVisible};
@@ -220,6 +230,7 @@ export async function leaveGroup(uid, groupId) {
 }
 
 export async function getUsersGroups(uid, limit=10, lastVisibleGroupId=null) {
+    const groups = [];
     const userGroupsRef = db.collection('Users').doc(uid).collection('Groups');
     let query = userGroupsRef.orderBy('groupName').limit(limit);
     if (lastVisibleGroupId) {
@@ -228,14 +239,16 @@ export async function getUsersGroups(uid, limit=10, lastVisibleGroupId=null) {
     }
     const userGroupsDoc = await query.get();
 
-    const groups = await userGroupsDoc.map(async (doc) => {
+    await Promise.all(userGroupsDoc.docs.map(async (doc) => {
         // get the creators email
         const creator = await auth.getUser(doc.data().createdBy);
-        return { groupId: doc.id, ...doc.data(), creatorEmail: creator.email };
-    });
+        groups.push({ groupId: doc.id, ...doc.data(), creatorEmail: creator.email });
+    }));
 
     const lastVisible = userGroupsDoc.docs[userGroupsDoc.docs.length - 1].id;
 
+    // sort groups by group name
+    groups.sort((a, b) => a.groupName.localeCompare(b.groupName));
 
     return {groups, lastVisible};
 }
@@ -291,7 +304,7 @@ export async function getPantryOfGroupMember(uid, groupId, memberUid, limit=10, 
     }
     const pantryDocs = await query.get();
     console.log("pantryDocs:", pantryDocs.docs);
-    const pantry = await pantryDocs.docs.map((doc) => doc.data());
+    const pantry = pantryDocs.docs.map((doc) => doc.data());
 
     const lastVisible = pantryDocs.docs[pantryDocs.docs.length - 1].id;
 
@@ -318,7 +331,7 @@ export async function getPantryForGroup(uid, groupId) {
         const pantryRef = db.collection('Users').doc(member).collection('Pantry');
         const pantryDoc = await pantryRef.get();
         // get list of ingredient in this member's pantry
-        const ingredients = await pantryDoc.docs.map((doc) => doc.data());
+        const ingredients = pantryDoc.docs.map((doc) => doc.data());
         pantry.push({uid: member, pantry: ingredients});
     }));
 
@@ -347,7 +360,7 @@ export async function getRecipesForGroup(uid, groupId, limit=10, lastVisibleReci
         query = query.startAfter(lastRecipe);
     }
     const recipeDocs = await query.get();
-    await recipeDocs.forEach((doc) => {
+    recipeDocs.forEach((doc) => {
         recipes.push({ recipeId: doc.id, ...doc.data() });
     });
 

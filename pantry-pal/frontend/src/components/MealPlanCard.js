@@ -7,6 +7,7 @@ import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import DeleteButton from './DeleteButton';
 import ReminderForm from './ReminderForm';
+import { format, parseISO } from 'date-fns';
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
@@ -17,9 +18,9 @@ const MealPlanCard = ({ mealPlan, index, expanded, handleToggle, handleDelete })
   const [reminderFormOpen, setReminderFormOpen] = useState(false);
   const [notificationState, setNotificationState] = useState('default'); // 'default', 'loading', 'success'
 
-  // Parse the date string
-  const date = new Date(mealPlan.date);
-  const formattedDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000).toLocaleDateString();
+  const parsedDate = new Date(mealPlan.date._seconds * 1000); // Multiply by 1000 to convert seconds to milliseconds
+  const formattedDate = parsedDate.toISOString().split('T')[0]; // Extract YYYY-MM-DD in UTC
+
 
   const handleNotification = () => {
     setReminderFormOpen(true);

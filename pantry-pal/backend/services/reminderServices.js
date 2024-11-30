@@ -205,175 +205,203 @@ export async function addAllMealReminders(uid, googleAccessToken, daysInAdvanceD
 
 // the the ingredient exists, mark it as defrosted
 export async function markDefrostTaskComplete(uid, ingredientName, googleAccessToken) {
-    // look at google tasks for today and delete the task if it exists
-    // doesnt need to happy today, just needs to exist
-    if (!googleAccessToken) {
+    try {
+        // look at google tasks for today and delete the task if it exists
+        // doesnt need to happy today, just needs to exist
+        if (!googleAccessToken) {
+            return;
+        }
+        const oauth2Client = new google.auth.OAuth2();
+        oauth2Client.setCredentials({ access_token: googleAccessToken });
+        const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
+        const taskLists = await tasks.tasklists.list();
+        const pantryPalTaskList = await taskLists.data.items.find((list) => list.title === 'Pantry Pal: Meal Prep Reminders');
+        if (!pantryPalTaskList) {
+            return;
+        }
+        const taskListId = pantryPalTaskList.id;
+        const taskList = await tasks.tasks.list({ tasklist: taskListId });
+        // mark all ingredient like this as complete if their date is after rn
+        const defrostTasks = await taskList.data.items.filter((task) => task.title === `Defrost ${ingredientName}`);
+        await Promise.all(defrostTasks.map(async (task) => {
+            task.status = 'completed';
+            await tasks.tasks.update({ tasklist: taskListId, task: task.id, resource: task });
+        }));
+    } catch (error) {
         return;
     }
-    const oauth2Client = new google.auth.OAuth2();
-    oauth2Client.setCredentials({ access_token: googleAccessToken });
-    const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
-    const taskLists = await tasks.tasklists.list();
-    const pantryPalTaskList = await taskLists.data.items.find((list) => list.title === 'Pantry Pal: Meal Prep Reminders');
-    if (!pantryPalTaskList) {
-        return;
-    }
-    const taskListId = pantryPalTaskList.id;
-    const taskList = await tasks.tasks.list({ tasklist: taskListId });
-    // mark all ingredient like this as complete if their date is after rn
-    const defrostTasks = await taskList.data.items.filter((task) => task.title === `Defrost ${ingredientName}`);
-    await Promise.all(defrostTasks.map(async (task) => {
-        task.status = 'completed';
-        await tasks.tasks.update({ tasklist: taskListId, task: task.id, resource: task });
-    }));
 }
 
 export async function deleteDefrostTask(uid, ingredientName, googleAccessToken) {
-    if (!googleAccessToken) {
+    try {
+        if (!googleAccessToken) {
+            return;
+        }
+        const oauth2Client = new google.auth.OAuth2();
+        oauth2Client.setCredentials({ access_token: googleAccessToken });
+        const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
+        const taskLists = await tasks.tasklists.list();
+        const pantryPalTaskList = await taskLists.data.items.find((list) => list.title === 'Pantry Pal: Meal Prep Reminders');
+        if (!pantryPalTaskList) {
+            return;
+        }
+        const taskListId = pantryPalTaskList.id;
+        const taskList = await tasks.tasks.list({ tasklist: taskListId });
+        // delete all ingredient like this if their date is after rn
+        const defrostTasks = await taskList.data.items.filter((task) => task.title === `Defrost ${ingredientName}`);
+        await Promise.all(defrostTasks.map(async (task) => {
+            await tasks.tasks.delete({ tasklist: taskListId, task: task.id });
+        }));
+    } catch (error) {
         return;
     }
-    const oauth2Client = new google.auth.OAuth2();
-    oauth2Client.setCredentials({ access_token: googleAccessToken });
-    const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
-    const taskLists = await tasks.tasklists.list();
-    const pantryPalTaskList = await taskLists.data.items.find((list) => list.title === 'Pantry Pal: Meal Prep Reminders');
-    if (!pantryPalTaskList) {
-        return;
-    }
-    const taskListId = pantryPalTaskList.id;
-    const taskList = await tasks.tasks.list({ tasklist: taskListId });
-    // delete all ingredient like this if their date is after rn
-    const defrostTasks = await taskList.data.items.filter((task) => task.title === `Defrost ${ingredientName}`);
-    await Promise.all(defrostTasks.map(async (task) => {
-        await tasks.tasks.delete({ tasklist: taskListId, task: task.id });
-    }));
 }
 
 // the the ingredient exists, mark it as not defrosted
 export async function markDefrostTaskIncomplete(uid, ingredientName, googleAccessToken) {
-    if (!googleAccessToken) {
-        return;
-    }
-    const oauth2Client = new google.auth.OAuth2();
-    oauth2Client.setCredentials({ access_token: googleAccessToken });
-    const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
-    const taskLists = await tasks.tasklists.list();
-    const pantryPalTaskList = await taskLists.data.items.find((list) => list.title === 'Pantry Pal: Meal Prep Reminders');
-    if (!pantryPalTaskList) {
-        return;
-    }
-    const taskListId = pantryPalTaskList.id;
-    const taskList = await tasks.tasks.list({ tasklist: taskListId });
-    // mark all ingredient like this as incomplete if their date is after rn
-    const defrostTasks = await taskList.data.items.filter((task) => task.title === `Defrost ${ingredientName}`);
-    const today = new Date().toISOString().split("T")[0];
-    const todayInMs = new Date(today).getTime();
-    await Promise.all(defrostTasks.map(async (task) => {
-        const taskDueDate = new Date(task.due).getTime();
-        if (taskDueDate >= todayInMs) {
-            task.status = 'needsAction';
-            await tasks.tasks.update({ tasklist: taskListId, task: task.id, resource: task });
+    try {
+        if (!googleAccessToken) {
+            return;
         }
-    }));
+        const oauth2Client = new google.auth.OAuth2();
+        oauth2Client.setCredentials({ access_token: googleAccessToken });
+        const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
+        const taskLists = await tasks.tasklists.list();
+        const pantryPalTaskList = await taskLists.data.items.find((list) => list.title === 'Pantry Pal: Meal Prep Reminders');
+        if (!pantryPalTaskList) {
+            return;
+        }
+        const taskListId = pantryPalTaskList.id;
+        const taskList = await tasks.tasks.list({ tasklist: taskListId });
+        // mark all ingredient like this as incomplete if their date is after rn
+        const defrostTasks = await taskList.data.items.filter((task) => task.title === `Defrost ${ingredientName}`);
+        const today = new Date().toISOString().split("T")[0];
+        const todayInMs = new Date(today).getTime();
+        await Promise.all(defrostTasks.map(async (task) => {
+            const taskDueDate = new Date(task.due).getTime();
+            if (taskDueDate >= todayInMs) {
+                task.status = 'needsAction';
+                await tasks.tasks.update({ tasklist: taskListId, task: task.id, resource: task });
+            }
+        }));
+    } catch (error) {
+        return;
+    }
 }
 
 
 // if you delete an ingredient from you shopping list, check if you have a google task buying it ever
 // if you do, delete it
 export async function deleteBuyTask(uid, ingredientName, googleAccessToken) {
-    if (!googleAccessToken) {
+    try {
+        if (!googleAccessToken) {
+            return;
+        }
+        const oauth2Client = new google.auth.OAuth2();
+        oauth2Client.setCredentials({ access_token: googleAccessToken });
+        const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
+        const taskLists = await tasks.tasklists.list();
+        const pantryPalTaskList = await taskLists.data.items.find((list) => list.title === 'Pantry Pal: Meal Prep Reminders');
+        if (!pantryPalTaskList) {
+            return;
+        }
+        const taskListId = pantryPalTaskList.id;
+        const taskList = await tasks.tasks.list({ tasklist: taskListId });
+        // delete all buy tasks
+        const buyTasks = await taskList.data.items.filter((task) => task.title === `Buy ${ingredientName}`);
+        await Promise.all(buyTasks.map(async (task) => {
+            await tasks.tasks.delete({ tasklist: taskListId, task: task.id });
+        }));
+    } catch (error) {
         return;
     }
-    const oauth2Client = new google.auth.OAuth2();
-    oauth2Client.setCredentials({ access_token: googleAccessToken });
-    const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
-    const taskLists = await tasks.tasklists.list();
-    const pantryPalTaskList = await taskLists.data.items.find((list) => list.title === 'Pantry Pal: Meal Prep Reminders');
-    if (!pantryPalTaskList) {
-        return;
-    }
-    const taskListId = pantryPalTaskList.id;
-    const taskList = await tasks.tasks.list({ tasklist: taskListId });
-    // delete all buy tasks
-    const buyTasks = await taskList.data.items.filter((task) => task.title === `Buy ${ingredientName}`);
-    await Promise.all(buyTasks.map(async (task) => {
-        await tasks.tasks.delete({ tasklist: taskListId, task: task.id });
-    }));
 }
 
 export async function markBuyTaskComplete(uid, ingredientName, googleAccessToken) {
-    if (!googleAccessToken) {
+    try {
+        if (!googleAccessToken) {
+            return;
+        }
+        const oauth2Client = new google.auth.OAuth2();
+        oauth2Client.setCredentials({ access_token: googleAccessToken });
+        const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
+        const taskLists = await tasks.tasklists.list();
+        const pantryPalTaskList = await taskLists.data.items.find((list) => list.title === 'Pantry Pal: Meal Prep Reminders');
+        if (!pantryPalTaskList) {
+            return;
+        }
+        const taskListId = pantryPalTaskList.id;
+        const taskList = await tasks.tasks.list({ tasklist: taskListId });
+        // mark all ingredient like this as complete
+        const buyTasks = await taskList.data.items.filter((task) => task.title === `Buy ${ingredientName}`);
+        await Promise.all(buyTasks.map(async (task) => {
+            task.status = 'completed';
+            await tasks.tasks.update({ tasklist: taskListId, task: task.id, resource: task });
+        }));
+    } catch (error) {
         return;
     }
-    const oauth2Client = new google.auth.OAuth2();
-    oauth2Client.setCredentials({ access_token: googleAccessToken });
-    const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
-    const taskLists = await tasks.tasklists.list();
-    const pantryPalTaskList = await taskLists.data.items.find((list) => list.title === 'Pantry Pal: Meal Prep Reminders');
-    if (!pantryPalTaskList) {
-        return;
-    }
-    const taskListId = pantryPalTaskList.id;
-    const taskList = await tasks.tasks.list({ tasklist: taskListId });
-    // mark all ingredient like this as complete
-    const buyTasks = await taskList.data.items.filter((task) => task.title === `Buy ${ingredientName}`);
-    await Promise.all(buyTasks.map(async (task) => {
-        task.status = 'completed';
-        await tasks.tasks.update({ tasklist: taskListId, task: task.id, resource: task });
-    }));
 }
 
 export async function renameFrozenIngredient(uid, oldIngredientName, newIngredientName, googleAccessToken) {
-    if (!googleAccessToken) {
-        return;
-    }
-    const oauth2Client = new google.auth.OAuth2();
-    oauth2Client.setCredentials({ access_token: googleAccessToken });
-    const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
-    const taskLists = await tasks.tasklists.list();
-    const pantryPalTaskList = await taskLists.data.items.find((list) => list.title === 'Pantry Pal: Meal Prep Reminders');
-    if (!pantryPalTaskList) {
-        return;
-    }
-    const taskListId = pantryPalTaskList.id;
-    const taskList = await tasks.tasks.list({ tasklist: taskListId });
-    // rename all tasks with the old ingredient name to the new ingredient name and after today
-    const defrostTasks = await taskList.data.items.filter((task) => task.title === `Defrost ${oldIngredientName}`);
-    const today = new Date().toISOString().split("T")[0];
-    const todayInMs = new Date(today).getTime();
-    await Promise.all(defrostTasks.map(async (task) => {
-        const taskDueDate = new Date(task.due).getTime();
-        if (taskDueDate >= todayInMs) {
-            task.title = `Defrost ${newIngredientName}`;
-            task.notes = task.notes.replace(oldIngredientName, newIngredientName);
-            await tasks.tasks.update({ tasklist: taskListId, task: task.id, resource: task });
+    try {
+        if (!googleAccessToken) {
+            return;
         }
-    }));
+        const oauth2Client = new google.auth.OAuth2();
+        oauth2Client.setCredentials({ access_token: googleAccessToken });
+        const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
+        const taskLists = await tasks.tasklists.list();
+        const pantryPalTaskList = await taskLists.data.items.find((list) => list.title === 'Pantry Pal: Meal Prep Reminders');
+        if (!pantryPalTaskList) {
+            return;
+        }
+        const taskListId = pantryPalTaskList.id;
+        const taskList = await tasks.tasks.list({ tasklist: taskListId });
+        // rename all tasks with the old ingredient name to the new ingredient name and after today
+        const defrostTasks = await taskList.data.items.filter((task) => task.title === `Defrost ${oldIngredientName}`);
+        const today = new Date().toISOString().split("T")[0];
+        const todayInMs = new Date(today).getTime();
+        await Promise.all(defrostTasks.map(async (task) => {
+            const taskDueDate = new Date(task.due).getTime();
+            if (taskDueDate >= todayInMs) {
+                task.title = `Defrost ${newIngredientName}`;
+                task.notes = task.notes.replace(oldIngredientName, newIngredientName);
+                await tasks.tasks.update({ tasklist: taskListId, task: task.id, resource: task });
+            }
+        }));
+    } catch (error) {
+        return;
+    }
 }
 
 export async function renameShoppingListIngredient(uid, oldIngredientName, newIngredientName, googleAccessToken) {
-    if (!googleAccessToken) {
+    try {
+        if (!googleAccessToken) {
+            return;
+        }
+        const oauth2Client = new google.auth.OAuth2();
+        oauth2Client.setCredentials({ access_token: googleAccessToken });
+        const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
+        const taskLists = await tasks.tasklists.list();
+        const pantryPalTaskList = await taskLists.data.items.find((list) => list.title === 'Pantry Pal: Meal Prep Reminders');
+        const taskListId = pantryPalTaskList.id;
+        const taskList = await tasks.tasks.list({ tasklist: taskListId });
+        // rename all tasks with the old ingredient name to the new ingredient name and after today
+        const buyTasks = await taskList.data.items.filter((task) => task.title === `Buy ${oldIngredientName}`);
+        const today = new Date().toISOString().split("T")[0];
+        const todayInMs = new Date(today).getTime();
+        await Promise.all(buyTasks.map(async (task) => {
+            const taskDueDate = new Date(task.due).getTime();
+            if (taskDueDate >= todayInMs) {
+                task.title = `Buy ${newIngredientName}`;
+                task.notes = task.notes.replace(oldIngredientName, newIngredientName);
+                await tasks.tasks.update({ tasklist: taskListId, task: task.id, resource: task });
+            }
+        }));
+    } catch (error) {
         return;
     }
-    const oauth2Client = new google.auth.OAuth2();
-    oauth2Client.setCredentials({ access_token: googleAccessToken });
-    const tasks = google.tasks({ version: 'v1', auth: oauth2Client });
-    const taskLists = await tasks.tasklists.list();
-    const pantryPalTaskList = await taskLists.data.items.find((list) => list.title === 'Pantry Pal: Meal Prep Reminders');
-    const taskListId = pantryPalTaskList.id;
-    const taskList = await tasks.tasks.list({ tasklist: taskListId });
-    // rename all tasks with the old ingredient name to the new ingredient name and after today
-    const buyTasks = await taskList.data.items.filter((task) => task.title === `Buy ${oldIngredientName}`);
-    const today = new Date().toISOString().split("T")[0];
-    const todayInMs = new Date(today).getTime();
-    await Promise.all(buyTasks.map(async (task) => {
-        const taskDueDate = new Date(task.due).getTime();
-        if (taskDueDate >= todayInMs) {
-            task.title = `Buy ${newIngredientName}`;
-            task.notes = task.notes.replace(oldIngredientName, newIngredientName);
-            await tasks.tasks.update({ tasklist: taskListId, task: task.id, resource: task });
-        }
-    }));
 }
 
 

@@ -281,6 +281,9 @@ export async function getGroupMembers(uid, groupId) {
         groupMembers.push({ uid: member, email: user.email });
     }));
 
+    // sort group members by email
+    groupMembers.sort((a, b) => a.email.localeCompare(b.email));
+
     return groupMembers;
 }
 

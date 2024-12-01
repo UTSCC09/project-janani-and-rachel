@@ -60,6 +60,9 @@ export async function getMealById(uid, mealId) {
 
 export async function addRecipeToMealPlan(uid, recipeId, ingredients=[], date=new Date()) {
     recipeId = String(recipeId);
+    if (!ingredients) {
+        ingredients = [];
+    }
 
     try {
         // add recipe to meal plan
@@ -92,7 +95,7 @@ export async function addRecipeToMealPlan(uid, recipeId, ingredients=[], date=ne
         let frozenIngredients = [];
         const pantryRef = db.collection('Users').doc(uid).collection('Pantry');
         const shoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList');
-        await Promise.all(ingredients.map(async (ingredient) => {
+                await Promise.all(ingredients.map(async (ingredient) => {
             if (ingredient.inPantry) {
                 // check if ingredient exists in pantry
                 const pantryIngredient = await pantryRef.doc(ingredient.ingredientName).get();
@@ -182,6 +185,9 @@ export async function removeRecipeFromMealPlan(uid, mealId) {
         // remove link to this meal in the pantry or shopping list
         const pantryRef = db.collection('Users').doc(uid).collection('Pantry');
         const shoppingListRef = db.collection('Users').doc(uid).collection('ShoppingList');
+        if (!pantryIngredients) {
+            pantryIngredients = [];
+        }
         await Promise.all(pantryIngredients.map(async (ingredientName) => {
             const pantryIngredient = await pantryRef.doc(ingredientName).get();
             if (pantryIngredient.exists) {
@@ -191,6 +197,9 @@ export async function removeRecipeFromMealPlan(uid, mealId) {
                 });
             }
         }));
+        if (!shoppingListIngredients) {
+            shoppingListIngredients = [];
+        }
         await Promise.all(shoppingListIngredients.map(async (ingredientName) => {
             const shoppingListIngredient = await shoppingListRef.doc(ingredientName).get();
             if (shoppingListIngredient.exists) {

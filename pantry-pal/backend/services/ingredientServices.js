@@ -62,6 +62,11 @@ export async function addToPantry(uid, ingredientName, purchaseDate=new Date(), 
     };
     await pantryRef.set(ingredientData);
 
+    if (!mealPlan) {
+        return ingredientData;
+    }
+
+
     // add ingredient to pantry section of meal plan if it doesn't exist
     await Promise.all(mealPlans.map(async (mealPlanId) => {
         await addPantryIngredientToMealPlan(uid, mealPlanId, ingredientName);
@@ -79,9 +84,10 @@ async function changePantryIngredientNameInMealPlan(uid, mealPlanId, ingredientN
     }
 
     // change the name of the ingredient in the ingredients list and frozen ingredients list
-    const mealPlanIngredients = mealPlanData.data().pantryIngredients;
-    const mealPlanFrozenIngredients = mealPlanData.data().frozenIngredients;
-    const newMealPlanIngredients = mealPlanIngredients.map((ingredient) => {
+    const mealPlanIngredients = mealPlanData.data().pantryIngredients || [];
+    const mealPlanFrozenIngredients = mealPlanData.data().frozenIngredients || [];
+    let newMealPlanIngredients = [];
+    newMealPlanIngredients = mealPlanIngredients.map((ingredient) => {
         if (ingredient === ingredientName) {
             return newIngredientName;
         }
@@ -284,7 +290,7 @@ async function changeShoppingListIngredientNameInMealPlan(uid, mealPlanId, ingre
         return;
     }
 
-    const mealPlanIngredients = mealPlanData.data().shoppingListIngredients;
+    const mealPlanIngredients = mealPlanData.data().shoppingListIngredients || [];
     const newShoppingListIngredients = mealPlanIngredients.map((ingredient) => {
         if (ingredient === ingredientName) {
             return newIngredientName;

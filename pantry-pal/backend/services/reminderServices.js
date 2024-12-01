@@ -99,6 +99,9 @@ export async function addMealReminders(uid, mealId, googleAccessToken, daysInAdv
         }
 
         // create tasks for defrosting and buying ingredients
+        if (!frozenIngredients) {
+            frozenIngredients = [];
+        }
         await Promise.all(frozenIngredients.map(async (ingredient) => {            
             const task = {
                 title: `Defrost ${ingredient}`,
@@ -108,6 +111,9 @@ export async function addMealReminders(uid, mealId, googleAccessToken, daysInAdv
             await tasks.tasks.insert({ tasklist: taskListId, resource: task });
         }));
 
+        if (!shoppingListIngredients) {
+            shoppingListIngredients = [];
+        }
         await Promise.all(shoppingListIngredients.map(async (ingredient) => {
             // if we are already buying the ingredient for the meal, 
                 // update the reminder to be the earlier of the two
@@ -190,6 +196,12 @@ export async function addAllMealReminders(uid, googleAccessToken, daysInAdvanceD
         } catch (error) {
             console.error(`Failed to add reminders for meal ${firstMealPlan.id}:`, error);
         }
+    } else {
+        return;
+    }
+
+    if (mealPlans.docs.length === 1) {
+        return;
     }
 
     // loop through each meal plan and add to tasks list using above function 
@@ -223,6 +235,9 @@ export async function markDefrostTaskComplete(uid, ingredientName, googleAccessT
         const taskList = await tasks.tasks.list({ tasklist: taskListId });
         // mark all ingredient like this as complete if their date is after rn
         const defrostTasks = await taskList.data.items.filter((task) => task.title === `Defrost ${ingredientName}`);
+        if (!defrostTasks) {
+            return;
+        }
         await Promise.all(defrostTasks.map(async (task) => {
             task.status = 'completed';
             await tasks.tasks.update({ tasklist: taskListId, task: task.id, resource: task });

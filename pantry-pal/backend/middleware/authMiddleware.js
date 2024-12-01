@@ -2,7 +2,7 @@ import { auth } from '../config/firebase.js';
 
 export const verifyToken = async (req, res, next) => {
     const idToken = req.headers.authorization?.split("Bearer ")[1];
-
+    //console.log("idToken:", idToken);
     if (!idToken) {
         console.log("no token");
         return res.status(401).json({ error: 'Unauthorized, no token' });

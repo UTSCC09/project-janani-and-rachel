@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { Box, Button, TextField, Snackbar, Alert } from '@mui/material';
-import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import React, { useState } from "react";
+import { Box, Button, TextField, Snackbar, Alert } from "@mui/material";
+import GroupAddIcon from "@mui/icons-material/GroupAdd";
 
 const PURPLE = "#7e91ff";
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
 const CreateGroup = ({ onGroupCreated }) => {
-  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupName, setNewGroupName] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [error, setError] = useState(null);
@@ -15,45 +15,44 @@ const CreateGroup = ({ onGroupCreated }) => {
     e.preventDefault();
     try {
       const response = await fetch(`${domain}/api/groups`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
-          'GoogleAccessToken': localStorage.getItem('accessToken'),
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("idToken")}`,
+          GoogleAccessToken: localStorage.getItem("accessToken"),
         },
         body: JSON.stringify({ groupName: newGroupName }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create group');
+        throw new Error("Failed to create group");
       }
 
       const data = await response.json();
-      console.log('Group created successfully:', data);
       onGroupCreated(data); // Update the groups state in MyGroups.js
       setSnackbarOpen(true); // Show success message
-      setNewGroupName(''); // Clear the input field
+      setNewGroupName(""); // Clear the input field
       setShowForm(false); // Hide the form
     } catch (error) {
-      console.error('Error creating group:', error);
-      setError('Failed to create group');
+      console.error("Error creating group:", error);
+      setError("Failed to create group");
     }
   };
 
   const handleCancel = () => {
-    setNewGroupName(''); // Reset the group name
+    setNewGroupName(""); // Reset the group name
     setShowForm(false); // Hide the form
   };
 
   const handleSnackbarClose = (event, reason) => {
-    if (reason === 'clickaway') {
+    if (reason === "clickaway") {
       return;
     }
     setSnackbarOpen(false);
   };
 
   return (
-    <Box sx={{ textAlign: 'center', marginBottom: 4 }}>
+    <Box sx={{ textAlign: "center", marginBottom: 4 }}>
       <Button
         variant="contained"
         color="primary"
@@ -61,12 +60,12 @@ const CreateGroup = ({ onGroupCreated }) => {
         onClick={() => setShowForm((prev) => !prev)}
         sx={{
           backgroundColor: PURPLE,
-          '&:hover': {
+          "&:hover": {
             backgroundColor: PURPLE,
           },
         }}
       >
-        {showForm ? 'Cancel' : 'Create New Group'}
+        {showForm ? "Cancel" : "Create New Group"}
       </Button>
 
       {showForm && (
@@ -82,25 +81,25 @@ const CreateGroup = ({ onGroupCreated }) => {
             onChange={(e) => setNewGroupName(e.target.value)}
             sx={{
               marginBottom: 2,
-              '& .MuiOutlinedInput-root': {
-                '&.Mui-focused fieldset': {
+              "& .MuiOutlinedInput-root": {
+                "&.Mui-focused fieldset": {
                   borderColor: PURPLE,
                 },
               },
-              '& .MuiInputLabel-root': {
-                '&.Mui-focused': {
+              "& .MuiInputLabel-root": {
+                "&.Mui-focused": {
                   color: PURPLE,
                 },
               },
             }}
           />
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
             <Button
               onClick={handleCancel}
               sx={{
                 color: PURPLE,
-                '&:hover': {
-                  backgroundColor: 'rgba(126, 145, 255, 0.1)',
+                "&:hover": {
+                  backgroundColor: "rgba(126, 145, 255, 0.1)",
                 },
               }}
             >
@@ -112,7 +111,7 @@ const CreateGroup = ({ onGroupCreated }) => {
               color="primary"
               sx={{
                 backgroundColor: PURPLE,
-                '&:hover': {
+                "&:hover": {
                   backgroundColor: PURPLE,
                 },
               }}
@@ -123,15 +122,31 @@ const CreateGroup = ({ onGroupCreated }) => {
         </Box>
       )}
 
-      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
-        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
           Group created successfully!
         </Alert>
       </Snackbar>
 
       {error && (
-        <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)}>
-          <Alert onClose={() => setError(null)} severity="error" sx={{ width: '100%' }}>
+        <Snackbar
+          open={!!error}
+          autoHideDuration={6000}
+          onClose={() => setError(null)}
+        >
+          <Alert
+            onClose={() => setError(null)}
+            severity="error"
+            sx={{ width: "100%" }}
+          >
             {error}
           </Alert>
         </Snackbar>

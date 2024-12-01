@@ -9,11 +9,7 @@ import {
   CircularProgress,
   Chip,
 } from "@mui/material";
-import {
-  FaSearch,
-  FaRegFrown,
-  FaCheckCircle,
-} from "react-icons/fa";
+import { FaSearch, FaRegFrown, FaCheckCircle } from "react-icons/fa";
 import FavoriteButton from "./FavouriteButton";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
@@ -34,11 +30,13 @@ export default function RecipeSuggestion({ ingredients }) {
     setSuggestedRecipes([]); // Clear previous suggestions
 
     try {
-      const response = await fetch(`${domain}/api/recipes/search-most-matching`, 
+      const response = await fetch(
+        `${domain}/api/recipes/search-most-matching`,
         {
-          headers: {"Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-                    'GoogleAccessToken': localStorage.getItem('accessToken')
-                    }
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("idToken")}`,
+            GoogleAccessToken: localStorage.getItem("accessToken"),
+          },
         }
       );
       if (!response.ok) {
@@ -66,8 +64,8 @@ export default function RecipeSuggestion({ ingredients }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-          'GoogleAccessToken': localStorage.getItem('accessToken')
+          Authorization: `Bearer ${localStorage.getItem("idToken")}`,
+          GoogleAccessToken: localStorage.getItem("accessToken"),
         },
         body: JSON.stringify({
           recipeId: recipe.recipeId,
@@ -86,7 +84,7 @@ export default function RecipeSuggestion({ ingredients }) {
       }
 
       setFavorites(
-        (prevFavorites) => new Set(prevFavorites.add(recipe.recipeId)),
+        (prevFavorites) => new Set(prevFavorites.add(recipe.recipeId))
       );
     } catch (err) {
       console.error("Error adding to favorites", err);
@@ -95,21 +93,22 @@ export default function RecipeSuggestion({ ingredients }) {
 
   const addMissingIngredientsToShoppingList = async (
     missedIngredients,
-    recipeId,
+    recipeId
   ) => {
     try {
       for (let ingredient of missedIngredients) {
-        const response = await fetch(`${domain}/api/ingredients/shopping-list`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-            'GoogleAccessToken': localStorage.getItem('accessToken')
-          },
-          body: JSON.stringify({ ingredientName: ingredient }),
-        });
-        console.log(response);
-
+        const response = await fetch(
+          `${domain}/api/ingredients/shopping-list`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("idToken")}`,
+              GoogleAccessToken: localStorage.getItem("accessToken"),
+            },
+            body: JSON.stringify({ ingredientName: ingredient }),
+          }
+        );
         if (!response.ok) {
           throw new Error("Failed to add ingredient to shopping list");
         }
@@ -122,8 +121,8 @@ export default function RecipeSuggestion({ ingredients }) {
                 ...recipe,
                 successMessage: "Missing ingredients added to shopping list!",
               }
-            : recipe,
-        ),
+            : recipe
+        )
       );
     } catch (err) {
       console.error("Error adding ingredients to shopping list", err);
@@ -187,42 +186,53 @@ export default function RecipeSuggestion({ ingredients }) {
           {suggestedRecipes.length > 0 ? (
             suggestedRecipes.map((recipe) => (
               <Card
-              key={recipe.recipeId}
-              sx={{
-                marginBottom: "1.5rem",
-                borderRadius: "8px",
-                boxShadow: 3,
-                backgroundColor: "#fffae1",
-                position: "relative",
-              }}
+                key={recipe.recipeId}
+                sx={{
+                  marginBottom: "1.5rem",
+                  borderRadius: "8px",
+                  boxShadow: 3,
+                  backgroundColor: "#fffae1",
+                  position: "relative",
+                }}
               >
                 <CardContent>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}>
-                <Typography
-      variant="h6"
-      sx={{
-        color: "#ffffff",
-        backgroundColor: "#7e91ff",
-        maxWidth: "88%",
-        padding: "8px",
-        borderRadius: "4px",
-        marginBottom: "1rem",
-        flexGrow: 1, // Allow the title to take up available space
-      }}
-      gutterBottom
-    >
-      {recipe.recipeName}
-    </Typography>
-    <Box sx={{ position: "absolute", top: "8px", right: "16px" }}>
-                  <FavoriteButton
-                    isFavorite={favorites.has(recipe.recipeId)}
-                    onClick={() => handleFavoriteClick(recipe)}
+                  <Box
                     sx={{
-                      color: favorites.has(recipe.recipeId) ? "#ff4081" : "#7e91ff",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      position: "relative",
                     }}
-                  />
-                </Box>
-  </Box>
+                  >
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        color: "#ffffff",
+                        backgroundColor: "#7e91ff",
+                        maxWidth: "88%",
+                        padding: "8px",
+                        borderRadius: "4px",
+                        marginBottom: "1rem",
+                        flexGrow: 1, // Allow the title to take up available space
+                      }}
+                      gutterBottom
+                    >
+                      {recipe.recipeName}
+                    </Typography>
+                    <Box
+                      sx={{ position: "absolute", top: "8px", right: "16px" }}
+                    >
+                      <FavoriteButton
+                        isFavorite={favorites.has(recipe.recipeId)}
+                        onClick={() => handleFavoriteClick(recipe)}
+                        sx={{
+                          color: favorites.has(recipe.recipeId)
+                            ? "#ff4081"
+                            : "#7e91ff",
+                        }}
+                      />
+                    </Box>
+                  </Box>
                   <Box
                     sx={{
                       display: "flex",
@@ -271,27 +281,27 @@ export default function RecipeSuggestion({ ingredients }) {
 
                   <Divider sx={{ marginY: "1rem" }} />
                   <Box
-                  sx={{
-                    backgroundColor: "white",
-                    padding: "16px",
-                    borderRadius: "8px",
-                    boxShadow: 1,
-                    marginBottom: "1rem",
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Instructions:</strong>
-                  </Typography>
-                  <ul>
-                    {recipe.instructions.map((instruction, index) => (
-                      <li key={index}>
-                        <Typography variant="body2">
-                          {instruction.step}
-                        </Typography>
-                      </li>
-                    ))}
-                  </ul>
-                </Box>
+                    sx={{
+                      backgroundColor: "white",
+                      padding: "16px",
+                      borderRadius: "8px",
+                      boxShadow: 1,
+                      marginBottom: "1rem",
+                    }}
+                  >
+                    <Typography variant="body2" color="text.secondary">
+                      <strong>Instructions:</strong>
+                    </Typography>
+                    <ul>
+                      {recipe.instructions.map((instruction, index) => (
+                        <li key={index}>
+                          <Typography variant="body2">
+                            {instruction.step}
+                          </Typography>
+                        </li>
+                      ))}
+                    </ul>
+                  </Box>
                 </CardContent>
 
                 <Box
@@ -319,17 +329,21 @@ export default function RecipeSuggestion({ ingredients }) {
                     onClick={() =>
                       addMissingIngredientsToShoppingList(
                         recipe.missedIngredients,
-                        recipe.recipeId,
+                        recipe.recipeId
                       )
                     }
                     disabled={recipe.missedIngredients.length === 0}
                     fullWidth
-                    sx={{ padding: "1rem", textTransform: "none", color: "#7e91ff", // Button text color
+                    sx={{
+                      padding: "1rem",
+                      textTransform: "none",
+                      color: "#7e91ff", // Button text color
                       color: "#ffffff", // Button text color
                       backgroundColor: "#7e91ff", // Button background color
                       "&:hover": {
                         backgroundColor: "#fffae1", // Button background color on hover
-                      }, }}
+                      },
+                    }}
                     startIcon={<FaCheckCircle />}
                   >
                     Add Missing Ingredients to Shopping List

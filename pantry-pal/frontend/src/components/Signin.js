@@ -1,6 +1,20 @@
 import { useState } from "react";
-import { Box, TextField, Button, Typography, Snackbar, Alert, Link, Paper, Divider } from "@mui/material";
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Snackbar,
+  Alert,
+  Link,
+  Paper,
+  Divider,
+} from "@mui/material";
+import {
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
 import { auth } from "../../config/firebase"; // Adjust the import path as needed
 import ResetPassword from "./ResetPassword"; // Import the ResetPassword component
 
@@ -14,7 +28,11 @@ export default function Signin({ onSignIn, onSignUpClick }) {
   const handleSignIn = async (e) => {
     e.preventDefault();
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
       if (!user.emailVerified) {
         setError("Please verify your email before signing in.");
@@ -65,14 +83,33 @@ export default function Signin({ onSignIn, onSignUpClick }) {
   };
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-      <Paper elevation={6} sx={{ padding: 4, maxWidth: "400px", width: "100%" }}>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+      }}
+    >
+      <Paper
+        elevation={6}
+        sx={{ padding: 4, maxWidth: "400px", width: "100%" }}
+      >
         {activeSection === "signin" ? (
           <>
-            <Typography variant="h4" gutterBottom align="center" sx={{ fontWeight: "bold", color: "#7e91ff" }}>
+            <Typography
+              variant="h4"
+              gutterBottom
+              align="center"
+              sx={{ fontWeight: "bold", color: "#7e91ff" }}
+            >
               Welcome Back!
             </Typography>
-            <Box component="form" onSubmit={handleSignIn} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Box
+              component="form"
+              onSubmit={handleSignIn}
+              sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+            >
               <TextField
                 label="Email"
                 type="email"
@@ -89,11 +126,22 @@ export default function Signin({ onSignIn, onSignUpClick }) {
                 fullWidth
                 required
               />
-              <Button type="submit" variant="contained" sx={{ backgroundColor: "#7e91ff", "&:hover": { backgroundColor: "#6b82e0" } }}>
+              <Button
+                type="submit"
+                variant="contained"
+                sx={{
+                  backgroundColor: "#7e91ff",
+                  "&:hover": { backgroundColor: "#6b82e0" },
+                }}
+              >
                 Sign In
               </Button>
               <Typography variant="body2" align="center" sx={{ marginTop: 1 }}>
-                <Link href="#" onClick={onForgotPasswordClick} sx={{ color: "#7e91ff" }}>
+                <Link
+                  href="#"
+                  onClick={onForgotPasswordClick}
+                  sx={{ color: "#7e91ff" }}
+                >
                   Forgot your password?
                 </Link>
               </Typography>
@@ -102,14 +150,27 @@ export default function Signin({ onSignIn, onSignUpClick }) {
             <Box display="flex" justifyContent="center" alignItems="center">
               <Button
                 onClick={handleGoogleSignIn}
-                sx={{ padding: 0, minWidth: 'auto', backgroundColor: "transparent", "&:hover": { backgroundColor: "transparent" } }}
+                sx={{
+                  padding: 0,
+                  minWidth: "auto",
+                  backgroundColor: "transparent",
+                  "&:hover": { backgroundColor: "transparent" },
+                }}
               >
-                <img src="https://hackaday.com/wp-content/uploads/2016/08/google-g-logo.png" alt="Sign In with Google" style={{ width: '24px', height: '24px' }} />
+                <img
+                  src="https://hackaday.com/wp-content/uploads/2016/08/google-g-logo.png"
+                  alt="Sign In with Google"
+                  style={{ width: "24px", height: "24px" }}
+                />
               </Button>
             </Box>
             <Typography variant="body2" align="center" sx={{ marginTop: 2 }}>
               Don't have an account?{" "}
-              <Link href="#" onClick={onSignUpClick} sx={{ color: "#7e91ff", fontWeight: "bold" }}>
+              <Link
+                href="#"
+                onClick={onSignUpClick}
+                sx={{ color: "#7e91ff", fontWeight: "bold" }}
+              >
                 Sign up
               </Link>
             </Typography>
@@ -118,8 +179,16 @@ export default function Signin({ onSignIn, onSignUpClick }) {
           <ResetPassword setActiveSection={setActiveSection} />
         )}
       </Paper>
-      <Snackbar open={!!error || !!success} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity={error ? "error" : "success"} sx={{ width: '100%' }}>
+      <Snackbar
+        open={!!error || !!success}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={error ? "error" : "success"}
+          sx={{ width: "100%" }}
+        >
           {error || success}
         </Alert>
       </Snackbar>

@@ -8,8 +8,8 @@ import {
   Box,
   Container,
 } from "@mui/material";
-import StyledTitle from './StyledTitle';
-import RecipeCard from './RecipeCard';
+import StyledTitle from "./StyledTitle";
+import RecipeCard from "./RecipeCard";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
@@ -31,15 +31,14 @@ export default function RecipeList() {
 
       fetch(url, {
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-          'GoogleAccessToken': localStorage.getItem('accessToken')
-        }
+          Authorization: `Bearer ${localStorage.getItem("idToken")}`,
+          GoogleAccessToken: localStorage.getItem("accessToken"),
+        },
       })
-      .then((response) => {
-        return response.json();
-      })
+        .then((response) => {
+          return response.json();
+        })
         .then((data) => {
-          console.log(data);
           const processedData = Array.isArray(data.recipes)
             ? data.recipes.map((item) => ({
                 ...item,
@@ -81,14 +80,13 @@ export default function RecipeList() {
   );
 
   const handleDelete = (recipeId) => {
-    console.log("recipeId", recipeId);
     // Send DELETE request to the backend
     fetch(`${domain}/api/recipes/favorites/${encodeURIComponent(recipeId)}`, {
       method: "DELETE",
       headers: {
-        "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-        'GoogleAccessToken': localStorage.getItem('accessToken')
-      }
+        Authorization: `Bearer ${localStorage.getItem("idToken")}`,
+        GoogleAccessToken: localStorage.getItem("accessToken"),
+      },
     })
       .then((response) => {
         if (response.ok) {
@@ -110,23 +108,26 @@ export default function RecipeList() {
       <Box sx={{ marginBottom: 6 }}>
         <StyledTitle>Favorite Recipes</StyledTitle>
       </Box>
-  
+
       {/* Recipe Cards */}
       <Box>
         {allRecipes.map((recipe, index) => (
           <RecipeCard
             key={recipe.recipeId}
             recipe={recipe}
-            lastRecipeElementRef={index === allRecipes.length - 1 ? lastRecipeElementRef : null}
+            lastRecipeElementRef={
+              index === allRecipes.length - 1 ? lastRecipeElementRef : null
+            }
             handleDelete={handleDelete}
           />
         ))}
       </Box>
-  
+
       {/* Loading Spinner */}
       {loading && (
         <Box sx={{ display: "flex", justifyContent: "center", marginTop: 2 }}>
-          <CircularProgress sx={{ color: "#D8A6FF" }} /> {/* Purple color for loading */}
+          <CircularProgress sx={{ color: "#D8A6FF" }} />{" "}
+          {/* Purple color for loading */}
         </Box>
       )}
     </Container>

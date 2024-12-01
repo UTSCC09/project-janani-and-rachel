@@ -47,8 +47,10 @@ const IngredientForm = ({
         fullWidth
         margin="normal"
         required
-        InputLabelProps={{
-          shrink: true,
+        slotProps={{
+          inputLabel: {
+            shrink: true,
+          },
         }}
       />
       <TextField
@@ -59,8 +61,10 @@ const IngredientForm = ({
         onChange={onChange}
         fullWidth
         margin="normal"
-        InputLabelProps={{
-          shrink: true,
+        slotProps={{
+          inputLabel: {
+            shrink: true,
+          },
         }}
       />
       <FormControlLabel

@@ -1,6 +1,21 @@
 import { useState } from "react";
-import { Box, TextField, Button, Typography, Snackbar, Alert, Link, Paper, Divider } from "@mui/material";
-import { createUserWithEmailAndPassword, sendEmailVerification, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Snackbar,
+  Alert,
+  Link,
+  Paper,
+  Divider,
+} from "@mui/material";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
 import { auth } from "../../config/firebase.js";
 
 export default function Signup({ onSignInClick, onRecipeSectionClick }) {
@@ -12,10 +27,16 @@ export default function Signup({ onSignInClick, onRecipeSectionClick }) {
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
       await sendEmailVerification(user);
-      setSuccess("Signup successful! Please check your email to verify your account.");
+      setSuccess(
+        "Signup successful! Please check your email to verify your account."
+      );
       setEmail("");
       setPassword("");
     } catch (error) {
@@ -52,8 +73,18 @@ export default function Signup({ onSignInClick, onRecipeSectionClick }) {
   };
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-      <Paper elevation={6} sx={{ padding: 4, maxWidth: "400px", width: "100%" }}>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+      }}
+    >
+      <Paper
+        elevation={6}
+        sx={{ padding: 4, maxWidth: "400px", width: "100%" }}
+      >
         <Button
           variant="outlined"
           onClick={handleGoogleSignIn} // Trigger Google sign-in on click
@@ -80,10 +111,19 @@ export default function Signup({ onSignInClick, onRecipeSectionClick }) {
           />
         </Button>
         <Divider sx={{ marginY: 2 }}>Or</Divider>
-        <Typography variant="h4" gutterBottom align="center" sx={{ fontWeight: "bold", color: "#7e91ff" }}>
+        <Typography
+          variant="h4"
+          gutterBottom
+          align="center"
+          sx={{ fontWeight: "bold", color: "#7e91ff" }}
+        >
           Sign Up
         </Typography>
-        <Box component="form" onSubmit={handleSignup} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box
+          component="form"
+          onSubmit={handleSignup}
+          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+        >
           <TextField
             label="Email"
             type="email"
@@ -100,19 +140,38 @@ export default function Signup({ onSignInClick, onRecipeSectionClick }) {
             fullWidth
             required
           />
-          <Button type="submit" variant="contained" sx={{ backgroundColor: "#7e91ff", "&:hover": { backgroundColor: "#6b82e0" } }}>
+          <Button
+            type="submit"
+            variant="contained"
+            sx={{
+              backgroundColor: "#7e91ff",
+              "&:hover": { backgroundColor: "#6b82e0" },
+            }}
+          >
             Sign Up
           </Button>
         </Box>
         <Typography variant="body2" align="center" sx={{ marginTop: 2 }}>
           Already have an account?{" "}
-          <Link href="#" onClick={onSignInClick} sx={{ color: "#7e91ff", fontWeight: "bold" }}>
+          <Link
+            href="#"
+            onClick={onSignInClick}
+            sx={{ color: "#7e91ff", fontWeight: "bold" }}
+          >
             Sign in
           </Link>
         </Typography>
       </Paper>
-      <Snackbar open={!!error || !!success} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity={error ? "error" : "success"} sx={{ width: '100%' }}>
+      <Snackbar
+        open={!!error || !!success}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={error ? "error" : "success"}
+          sx={{ width: "100%" }}
+        >
           {error || success}
         </Alert>
       </Snackbar>

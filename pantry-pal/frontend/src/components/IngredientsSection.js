@@ -16,28 +16,25 @@ import {
   Alert,
 } from "@mui/material";
 
-import {
-  FaPlus,
-  FaMinus,
-} from "react-icons/fa";
+import { FaPlus, FaMinus } from "react-icons/fa";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
 export default function IngredientsSection() {
   const formRef = useRef(null);
-  const [ingredients, setIngredients] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [ingredients, setIngredients] = useState([]); // list of ingredients
+  const [loading, setLoading] = useState(true); // loading state for fetching ingredients
   const [newIngredient, setNewIngredient] = useState({
     ingredientName: "",
     purchaseDate: new Date().toISOString().split("T")[0],
     expirationDate: "",
     frozen: false,
   });
-  const [editingIngredient, setEditingIngredient] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  const [lastVisible, setLastVisible] = useState(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [error, setError] = useState(null);
+  const [editingIngredient, setEditingIngredient] = useState(null); // Current ingredient being edited
+  const [showForm, setShowForm] = useState(false); // Visibility of the form
+  const [lastVisible, setLastVisible] = useState(null); // Last fetched ingredient for pagination
+  const [hasMore, setHasMore] = useState(true); // Indicates if there are more ingredients to fetch
+  const [error, setError] = useState(null); // Error message for user feedback
   const observer = useRef();
   const initialFetch = useRef(true);
 
@@ -51,10 +48,10 @@ export default function IngredientsSection() {
 
       fetch(url, {
         headers: {
-          'Authorization':`Bearer ${localStorage.getItem('idToken')}`,
-          'GoogleAccessToken': localStorage.getItem('accessToken'),
-          "GoogleAccessToken": localStorage.getItem('accessToken')
-        }
+          Authorization: `Bearer ${localStorage.getItem("idToken")}`,
+          GoogleAccessToken: localStorage.getItem("accessToken"),
+          GoogleAccessToken: localStorage.getItem("accessToken"),
+        },
       })
         .then((response) => response.json())
         .then((data) => {
@@ -86,6 +83,7 @@ export default function IngredientsSection() {
     }
   }, [fetchIngredients]);
 
+  // for infinite scrolling
   const lastIngredientElementRef = useCallback(
     (node) => {
       if (loading) return;
@@ -110,10 +108,22 @@ export default function IngredientsSection() {
 
   const handleAddOrUpdateIngredient = (e) => {
     e.preventDefault();
-  
+    
+    // check for duplicate ingredient names
     if (
-      (!editingIngredient && ingredients.some((ingredient) => ingredient.ingredientName.toLowerCase() === newIngredient.ingredientName.toLowerCase())) ||
-      (editingIngredient && ingredients.some((ingredient) => ingredient.ingredientName.toLowerCase() === newIngredient.ingredientName.toLowerCase() && ingredient.ingredientName !== editingIngredient.ingredientName))
+      (!editingIngredient &&
+        ingredients.some(
+          (ingredient) =>
+            ingredient.ingredientName.toLowerCase() ===
+            newIngredient.ingredientName.toLowerCase()
+        )) ||
+      (editingIngredient &&
+        ingredients.some(
+          (ingredient) =>
+            ingredient.ingredientName.toLowerCase() ===
+              newIngredient.ingredientName.toLowerCase() &&
+            ingredient.ingredientName !== editingIngredient.ingredientName
+        ))
     ) {
       setError("Ingredient already exists.");
       return;
@@ -127,13 +137,13 @@ export default function IngredientsSection() {
           newIngredientName: newIngredient.ingredientName,
         }
       : newIngredient;
-  
+
     fetch(endpoint, {
       method: method,
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem('idToken')}`,
-        'GoogleAccessToken': localStorage.getItem('accessToken')
+        Authorization: `Bearer ${localStorage.getItem("idToken")}`,
+        GoogleAccessToken: localStorage.getItem("accessToken"),
       },
       body: JSON.stringify(requestBody),
     })
@@ -149,14 +159,18 @@ export default function IngredientsSection() {
           setIngredients((prev) =>
             prev.map((ingredient) =>
               ingredient.ingredientName === editingIngredient.ingredientName
-                ? { ...ingredient, ...newIngredient, ingredientName: newIngredient.ingredientName }
+                ? {
+                    ...ingredient,
+                    ...newIngredient,
+                    ingredientName: newIngredient.ingredientName,
+                  }
                 : ingredient
             )
           );
         } else {
           setIngredients((prev) => [...prev, newIngredient]);
         }
-  
+
         setEditingIngredient(null);
         setNewIngredient({
           ingredientName: "",
@@ -172,13 +186,17 @@ export default function IngredientsSection() {
   };
 
   const handleDeleteIngredient = (ingredientName) => {
-    fetch(`${domain}/api/ingredients/pantry/${encodeURIComponent(ingredientName)}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json",
-                  "Authorization":`Bearer ${localStorage.getItem('idToken')}`,
-                  'GoogleAccessToken': localStorage.getItem('accessToken')
-               }
-    })
+    fetch(
+      `${domain}/api/ingredients/pantry/${encodeURIComponent(ingredientName)}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("idToken")}`,
+          GoogleAccessToken: localStorage.getItem("accessToken"),
+        },
+      }
+    )
       .then((response) => {
         if (response.ok) {
           setIngredients((prev) =>
@@ -200,11 +218,13 @@ export default function IngredientsSection() {
     setNewIngredient({
       ingredientName: ingredient.ingredientName,
       purchaseDate: formatDate(ingredient.purchaseDate), // Use formatDate for consistent formatting
-      expirationDate: ingredient.expirationDate ? formatDate(ingredient.expirationDate) : "", // Handle expirationDate as well
+      expirationDate: ingredient.expirationDate
+        ? formatDate(ingredient.expirationDate)
+        : "", // Handle expirationDate as well
       frozen: ingredient.frozen,
     });
     setShowForm(true);
-  
+
     setTimeout(() => {
       formRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 100);
@@ -230,28 +250,32 @@ export default function IngredientsSection() {
     setError(null);
   };
 
-const formatDate = (timestamp) => {
-  if (!timestamp) return "N/A";
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "N/A";
 
-  let date;
-  if (timestamp._seconds !== undefined && timestamp._nanoseconds !== undefined) {
-    date = new Date(timestamp._seconds * 1000 + timestamp._nanoseconds / 1000000);
-  } else {
-    date = new Date(timestamp);
-  }
+    let date;
+    if (
+      timestamp._seconds !== undefined &&
+      timestamp._nanoseconds !== undefined
+    ) {
+      date = new Date(
+        timestamp._seconds * 1000 + timestamp._nanoseconds / 1000000
+      );
+    } else {
+      date = new Date(timestamp);
+    }
 
-  if (isNaN(date.getTime())) {
-    return "Invalid Date";
-  }
+    if (isNaN(date.getTime())) {
+      return "Invalid Date";
+    }
 
-  // Adjust for timezone offset
-  const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+    // Adjust for timezone offset
+    const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
 
-  // Format as YYYY-MM-DD
-  return utcDate.toISOString().split("T")[0];
-};
+    // Format as YYYY-MM-DD
+    return utcDate.toISOString().split("T")[0];
+  };
 
-  
   return (
     <Box sx={{ padding: 3, maxWidth: "900px", margin: "0 auto" }}>
       <StyledTitle>Pantry Ingredients</StyledTitle>
@@ -259,7 +283,11 @@ const formatDate = (timestamp) => {
         {ingredients.map((ingredient, index) => (
           <Box key={index}>
             <ListItem
-              ref={index === ingredients.length - 1 ? lastIngredientElementRef : null}
+              ref={
+                index === ingredients.length - 1
+                  ? lastIngredientElementRef
+                  : null
+              }
               sx={{
                 marginBottom: 2,
                 backgroundColor: "#fffae1",
@@ -275,10 +303,15 @@ const formatDate = (timestamp) => {
                 },
               }}
             >
-              <IngredientDetails ingredient={ingredient} formatDate={formatDate} />
+              <IngredientDetails
+                ingredient={ingredient}
+                formatDate={formatDate}
+              />
               <IngredientActions
                 onEdit={() => handleEditIngredient(ingredient)}
-                onDelete={() => handleDeleteIngredient(ingredient.ingredientName)}
+                onDelete={() =>
+                  handleDeleteIngredient(ingredient.ingredientName)
+                }
               />
             </ListItem>
             {editingIngredient === ingredient && (
@@ -346,7 +379,11 @@ const formatDate = (timestamp) => {
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
       >
-        <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity="error"
+          sx={{ width: "100%" }}
+        >
           {error}
         </Alert>
       </Snackbar>

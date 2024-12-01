@@ -1,14 +1,14 @@
-import React from 'react';
-import { Typography, Box } from '@mui/material';
+import React from "react";
+import { Typography, Box } from "@mui/material";
 
 const StyledTitle = ({ children }) => {
   return (
     <Box
       sx={{
         marginBottom: 6,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
         marginTop: 5,
       }}
     >

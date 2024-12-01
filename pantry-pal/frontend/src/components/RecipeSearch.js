@@ -18,10 +18,7 @@ import {
   TableContainer,
   TableRow,
 } from "@mui/material";
-import {
-  FaSearch,
-  FaExclamationCircle,
-} from "react-icons/fa";
+import { FaSearch, FaExclamationCircle } from "react-icons/fa";
 import { ExpandMore, ExpandLess } from "@mui/icons-material";
 
 import FavoriteButton from "./FavouriteButton";
@@ -53,7 +50,9 @@ export default function RecipeSearch({ onSearch }) {
 
     try {
       const res = await fetch(
-        `${domain}/api/recipes/search-keyword?keyword=${encodeURIComponent(ingredients)}`,
+        `${domain}/api/recipes/search-keyword?keyword=${encodeURIComponent(
+          ingredients
+        )}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("idToken")}`,
@@ -74,7 +73,6 @@ export default function RecipeSearch({ onSearch }) {
   };
 
   const handleFavoriteClick = async (recipe) => {
-    // console.log("recipe from search: ", recipe);
     try {
       const res = await fetch(`${domain}/api/recipes/favorites`, {
         method: "POST",
@@ -107,7 +105,7 @@ export default function RecipeSearch({ onSearch }) {
           backgroundColor: "#fffae1",
         }}
       >
-      <TextField
+        <TextField
           label="Enter a keyword (e.g., chicken)"
           variant="outlined"
           placeholder="e.g., chicken"
@@ -235,27 +233,27 @@ export default function RecipeSearch({ onSearch }) {
                   </ul>
                 </Paper>
                 <Box sx={{ marginTop: "1rem" }}>
-                <Button
-                size="small"
-                startIcon={
-                  expandedNutrition[recipe.recipeId] ? (
-                    <ExpandLess />
-                  ) : (
-                    <ExpandMore />
-                  )
-                }
-                onClick={() => toggleNutrition(recipe.recipeId)}
-                sx={{
-                  color: "#b39ddb", // Light purple text color
-                  "&:hover": {
-                    backgroundColor: "#e0e0e0", // Grey hover background
-                  },
-                }}
-              >
-                {expandedNutrition[recipe.recipeId]
-                  ? "Hide Nutrition Info"
-                  : "Show Nutrition Info"}
-              </Button>
+                  <Button
+                    size="small"
+                    startIcon={
+                      expandedNutrition[recipe.recipeId] ? (
+                        <ExpandLess />
+                      ) : (
+                        <ExpandMore />
+                      )
+                    }
+                    onClick={() => toggleNutrition(recipe.recipeId)}
+                    sx={{
+                      color: "#b39ddb", // Light purple text color
+                      "&:hover": {
+                        backgroundColor: "#e0e0e0", // Grey hover background
+                      },
+                    }}
+                  >
+                    {expandedNutrition[recipe.recipeId]
+                      ? "Hide Nutrition Info"
+                      : "Show Nutrition Info"}
+                  </Button>
 
                   <Collapse
                     in={expandedNutrition[recipe.recipeId]}

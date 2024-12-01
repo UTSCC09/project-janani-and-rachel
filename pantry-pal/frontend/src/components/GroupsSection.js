@@ -6,21 +6,8 @@ import MyGroups from './MyGroups';
 import CreateGroup from './CreateGroup';
 
 const GroupsSection = () => {
-  const [groupInvites, setGroupInvites] = useState([
-    { id: 1, name: 'Group Invite 1' },
-    { id: 2, name: 'Group Invite 2' },
-  ]);
-  const [myGroups, setMyGroups] = useState([
-    { id: 1, name: 'My Group 1' },
-    { id: 2, name: 'My Group 2' },
-  ]);
-  const [createGroupDialogOpen, setCreateGroupDialogOpen] = useState(false);
-  const [newGroupName, setNewGroupName] = useState('');
-  const [inviteEmail, setInviteEmail] = useState('');
-
-  const handleCreateGroup = () => {
-    setCreateGroupDialogOpen(false);
-  };
+  const [groupInvites, setGroupInvites] = useState([]);
+  const [myGroups, setMyGroups] = useState([]);
 
   return (
     <Container maxWidth="lg">

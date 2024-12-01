@@ -20,7 +20,10 @@ export default function Signout({ onSignout }) {
       variant="contained"
       color="secondary"
       onClick={handleSignout}
-      sx={{ backgroundColor: "#f44336", "&:hover": { backgroundColor: "#d32f2f" } }}
+      sx={{
+        backgroundColor: "#f44336",
+        "&:hover": { backgroundColor: "#d32f2f" },
+      }}
     >
       Signout
     </Button>

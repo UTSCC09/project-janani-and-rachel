@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { Box, Typography } from "@mui/material";
 import { FaRegCalendarAlt, FaRegCalendar, FaCheckCircle } from "react-icons/fa";
 
@@ -34,7 +34,7 @@ const IngredientDetails = ({ ingredient, formatDate }) => {
             style={{
               marginRight: "8px",
               fontSize: "16px",
-              color: "#7e91ff",
+              color: PURPLE,
             }}
           />
           <Typography variant="body2" sx={{ color: "#777" }}>
@@ -47,7 +47,7 @@ const IngredientDetails = ({ ingredient, formatDate }) => {
             style={{
               marginRight: "8px",
               fontSize: "16px",
-              color: "#7e91ff",
+              color: PURPLE,
             }}
           />
           <Typography variant="body2" sx={{ color: "#777" }}>
@@ -57,12 +57,12 @@ const IngredientDetails = ({ ingredient, formatDate }) => {
 
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <FaCheckCircle
-            color={ingredient.frozen ? "#7e91ff" : "gray"}
+            color={ingredient.frozen ? PURPLE : "gray"}
             style={{ marginRight: "8px", fontSize: "16px" }}
           />
           <Typography
             variant="body2"
-            sx={{ color: ingredient.frozen ? "#7e91ff" : "gray" }}
+            sx={{ color: ingredient.frozen ? PURPLE : "gray" }}
           >
             {ingredient.frozen ? "Frozen" : "Not Frozen"}
           </Typography>

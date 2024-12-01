@@ -1,26 +1,40 @@
-import React, { useState } from 'react';
-import { Box, Typography, Card, CardContent, List, ListItem, IconButton, Tooltip, CircularProgress } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import DeleteButton from './DeleteButton';
-import ReminderForm from './ReminderForm';
-import { format, parseISO } from 'date-fns';
+import React, { useState } from "react";
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  List,
+  ListItem,
+  IconButton,
+  Tooltip,
+  CircularProgress,
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import DeleteButton from "./DeleteButton";
+import ReminderForm from "./ReminderForm";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 
 const PURPLE = "#7e91ff";
 const YELLOW = "#fffae1";
 
-const MealPlanCard = ({ mealPlan, index, expanded, handleToggle, handleDelete }) => {
+const MealPlanCard = ({
+  mealPlan,
+  index,
+  expanded,
+  handleToggle,
+  handleDelete,
+}) => {
   const [reminderFormOpen, setReminderFormOpen] = useState(false);
-  const [notificationState, setNotificationState] = useState('default'); // 'default', 'loading', 'success'
+  const [notificationState, setNotificationState] = useState("default"); // 'default', 'loading', 'success'
 
   const parsedDate = new Date(mealPlan.date._seconds * 1000); // Multiply by 1000 to convert seconds to milliseconds
-  const formattedDate = parsedDate.toISOString().split('T')[0]; // Extract YYYY-MM-DD in UTC
-
+  const formattedDate = parsedDate.toISOString().split("T")[0]; // Extract YYYY-MM-DD in UTC
 
   const handleNotification = () => {
     setReminderFormOpen(true);
@@ -28,25 +42,30 @@ const MealPlanCard = ({ mealPlan, index, expanded, handleToggle, handleDelete })
 
   const handleReminderSubmit = (reminders) => {
     const { daysInAdvanceDefrost, daysInAdvanceBuy } = reminders;
-    setNotificationState('loading');
-    fetch(`${domain}/api/recipes/meal-plan/${mealPlan.mealId}/reminders?daysInAdvanceDefrost=${daysInAdvanceDefrost}&daysInAdvanceBuy=${daysInAdvanceBuy}`, {
-      method: 'POST',
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-        "GoogleAccessToken": localStorage.getItem('accessToken')
+    setNotificationState("loading");
+    fetch(
+      `${domain}/api/recipes/meal-plan/${mealPlan.mealId}/reminders?daysInAdvanceDefrost=${daysInAdvanceDefrost}&daysInAdvanceBuy=${daysInAdvanceBuy}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("idToken")}`,
+          GoogleAccessToken: localStorage.getItem("accessToken"),
+        },
       }
-    }).then(response => {
-      if (response.ok) {
-        setNotificationState('success');
-      } else {
-        console.error('Failed to set reminders');
-        setNotificationState('default');
-      }
-    }).catch(error => {
-      console.error('Error setting reminders:', error);
-      setNotificationState('default');
-    });
+    )
+      .then((response) => {
+        if (response.ok) {
+          setNotificationState("success");
+        } else {
+          console.error("Failed to set reminders");
+          setNotificationState("default");
+        }
+      })
+      .catch((error) => {
+        console.error("Error setting reminders:", error);
+        setNotificationState("default");
+      });
   };
 
   return (
@@ -88,41 +107,46 @@ const MealPlanCard = ({ mealPlan, index, expanded, handleToggle, handleDelete })
             {mealPlan.recipe.recipeName}
           </Typography>
           <Box
-  sx={{
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flexBasis: "15%", // Take up 15% of the width of the parent container
-    flexShrink: 0, // Prevent the children from wrapping
-  }}
->
-  <IconButton onClick={() => handleToggle(index)} sx={{ color: "#fff" }}>
-    {expanded[index] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-  </IconButton>
-  <Tooltip title="Add Google Calendar Reminders to defrost and buy ingredients for this meal" arrow>
-    <IconButton onClick={handleNotification} sx={{ color: "#fff" }}>
-      {notificationState === 'default' && <NotificationsIcon />}
-      {notificationState === 'loading' && <CircularProgress size={24} sx={{ color: "#fff" }} />}
-      {notificationState === 'success' && <NotificationsActiveIcon />}
-    </IconButton>
-  </Tooltip>
-  <ReminderForm
-    open={reminderFormOpen}
-    onClose={() => setReminderFormOpen(false)}
-    onSubmit={handleReminderSubmit}
-  />
-  <Tooltip title="Delete Meal Plan" arrow>
-    <DeleteButton onClick={() => handleDelete(mealPlan.mealId)} />
-  </Tooltip>
-</Box>
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexBasis: "15%", // Take up 15% of the width of the parent container
+              flexShrink: 0, // Prevent the children from wrapping
+            }}
+          >
+            <IconButton
+              onClick={() => handleToggle(index)}
+              sx={{ color: "#fff" }}
+            >
+              {expanded[index] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </IconButton>
+            <Tooltip
+              title="Add Google Calendar Reminders to defrost and buy ingredients for this meal"
+              arrow
+            >
+              <IconButton onClick={handleNotification} sx={{ color: "#fff" }}>
+                {notificationState === "default" && <NotificationsIcon />}
+                {notificationState === "loading" && (
+                  <CircularProgress size={24} sx={{ color: "#fff" }} />
+                )}
+                {notificationState === "success" && <NotificationsActiveIcon />}
+              </IconButton>
+            </Tooltip>
+            <ReminderForm
+              open={reminderFormOpen}
+              onClose={() => setReminderFormOpen(false)}
+              onSubmit={handleReminderSubmit}
+            />
+            <DeleteButton onClick={() => handleDelete(mealPlan.mealId)} />
+          </Box>
         </Box>
 
-        <Box sx={{ marginBottom: "1.5rem", display: "flex", alignItems: "center" }}>
+        <Box
+          sx={{ marginBottom: "1.5rem", display: "flex", alignItems: "center" }}
+        >
           <CalendarTodayIcon sx={{ color: PURPLE, marginRight: "0.5rem" }} />
-          <Typography
-            variant="body2"
-            sx={{ fontWeight: "500", color: PURPLE }}
-          >
+          <Typography variant="body2" sx={{ fontWeight: "500", color: PURPLE }}>
             <strong>Planned On:</strong> {formattedDate}
           </Typography>
         </Box>
@@ -140,7 +164,11 @@ const MealPlanCard = ({ mealPlan, index, expanded, handleToggle, handleDelete })
             >
               <Typography
                 variant="body2"
-                sx={{ fontWeight: "500", color: PURPLE, marginBottom: "0.5rem" }}
+                sx={{
+                  fontWeight: "500",
+                  color: PURPLE,
+                  marginBottom: "0.5rem",
+                }}
               >
                 <strong>Instructions:</strong>
               </Typography>
@@ -162,7 +190,11 @@ const MealPlanCard = ({ mealPlan, index, expanded, handleToggle, handleDelete })
             >
               <Typography
                 variant="body2"
-                sx={{ fontWeight: "500", color: PURPLE, marginBottom: "0.5rem" }}
+                sx={{
+                  fontWeight: "500",
+                  color: PURPLE,
+                  marginBottom: "0.5rem",
+                }}
               >
                 <strong>Pantry Ingredients:</strong>
               </Typography>
@@ -188,7 +220,11 @@ const MealPlanCard = ({ mealPlan, index, expanded, handleToggle, handleDelete })
             >
               <Typography
                 variant="body2"
-                sx={{ fontWeight: "500", color: PURPLE, marginBottom: "0.5rem" }}
+                sx={{
+                  fontWeight: "500",
+                  color: PURPLE,
+                  marginBottom: "0.5rem",
+                }}
               >
                 <strong>Shopping List Ingredients:</strong>
               </Typography>

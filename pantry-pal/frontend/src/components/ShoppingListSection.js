@@ -35,12 +35,15 @@ export default function ShoppingListSection() {
     if (!hasMore) return;
     setLoading(true);
     try {
-      const response = await fetch(`${domain}/api/ingredients/shopping-list?lastVisibleIngredient=${lastVisible}`, {
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-          "GoogleAccessToken": localStorage.getItem('accessToken')
-        },
-      });
+      const response = await fetch(
+        `${domain}/api/ingredients/shopping-list?lastVisibleIngredient=${lastVisible}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("idToken")}`,
+            GoogleAccessToken: localStorage.getItem("accessToken"),
+          },
+        }
+      );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -48,7 +51,10 @@ export default function ShoppingListSection() {
       if (data.ingredients && Array.isArray(data.ingredients)) {
         setShoppingList((prevItems) => {
           const newItems = data.ingredients.filter(
-            (item) => !prevItems.some((prevItem) => prevItem.ingredientName === item.ingredientName)
+            (item) =>
+              !prevItems.some(
+                (prevItem) => prevItem.ingredientName === item.ingredientName
+              )
           );
           return [...prevItems, ...newItems];
         });
@@ -92,18 +98,25 @@ export default function ShoppingListSection() {
 
   const handleDeleteItem = async (ingredientName) => {
     try {
-      const response = await fetch(`${domain}/api/ingredients/shopping-list/${encodeURIComponent(ingredientName)}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-          "GoogleAccessToken": localStorage.getItem('accessToken')
-        },
-      });
+      const response = await fetch(
+        `${domain}/api/ingredients/shopping-list/${encodeURIComponent(
+          ingredientName
+        )}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("idToken")}`,
+            GoogleAccessToken: localStorage.getItem("accessToken"),
+          },
+        }
+      );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      setShoppingList((prevItems) => prevItems.filter(item => item.ingredientName !== ingredientName));
+      setShoppingList((prevItems) =>
+        prevItems.filter((item) => item.ingredientName !== ingredientName)
+      );
     } catch (error) {
       console.error("Error deleting item:", error);
     }
@@ -116,15 +129,18 @@ export default function ShoppingListSection() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-          "GoogleAccessToken": localStorage.getItem('accessToken')
+          Authorization: `Bearer ${localStorage.getItem("idToken")}`,
+          GoogleAccessToken: localStorage.getItem("accessToken"),
         },
         body: JSON.stringify({ ingredientName: newItem }),
       });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      setShoppingList((prevItems) => [...prevItems, { ingredientName: newItem }]);
+      setShoppingList((prevItems) => [
+        ...prevItems,
+        { ingredientName: newItem },
+      ]);
       setNewItem("");
     } catch (error) {
       console.error("Error adding item to shopping list:", error);
@@ -132,17 +148,18 @@ export default function ShoppingListSection() {
   };
 
   const handleMoveToPantry = async (ingredientName) => {
-    const ingredient = shoppingList.find(item => item.ingredientName === ingredientName);
+    const ingredient = shoppingList.find(
+      (item) => item.ingredientName === ingredientName
+    );
     if (!ingredient) return;
-    console.log(ingredient);
     const today = new Date().toISOString().split("T")[0];
     try {
       const response = await fetch(`${domain}/api/ingredients/pantry`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-          "GoogleAccessToken": localStorage.getItem('accessToken')
+          Authorization: `Bearer ${localStorage.getItem("idToken")}`,
+          GoogleAccessToken: localStorage.getItem("accessToken"),
         },
         body: JSON.stringify({
           ingredientName,
@@ -153,15 +170,22 @@ export default function ShoppingListSection() {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      await fetch(`${domain}/api/ingredients/shopping-list/${encodeURIComponent(ingredientName)}?move=true`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-          "GoogleAccessToken": localStorage.getItem('accessToken')
-        },
-      });
-      setShoppingList((prevItems) => prevItems.filter(item => item.ingredientName !== ingredientName));
+      await fetch(
+        `${domain}/api/ingredients/shopping-list/${encodeURIComponent(
+          ingredientName
+        )}?move=true`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("idToken")}`,
+            GoogleAccessToken: localStorage.getItem("accessToken"),
+          },
+        }
+      );
+      setShoppingList((prevItems) =>
+        prevItems.filter((item) => item.ingredientName !== ingredientName)
+      );
     } catch (error) {
       console.error("Error moving item to pantry:", error);
     }
@@ -179,8 +203,8 @@ export default function ShoppingListSection() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-          "GoogleAccessToken": localStorage.getItem('accessToken')
+          Authorization: `Bearer ${localStorage.getItem("idToken")}`,
+          GoogleAccessToken: localStorage.getItem("accessToken"),
         },
         body: JSON.stringify({
           ingredientName: editingItem.ingredientName,
@@ -207,7 +231,10 @@ export default function ShoppingListSection() {
   return (
     <Box sx={{ padding: "2rem", maxWidth: 800, margin: "auto" }}>
       <StyledTitle>Shopping List</StyledTitle>
-      <Typography variant="h6" sx={{ marginBottom: "1rem", fontWeight: 600, color: PURPLE}}>
+      <Typography
+        variant="h6"
+        sx={{ marginBottom: "1rem", fontWeight: 600, color: PURPLE }}
+      >
         Add Item to Shopping List
       </Typography>
 
@@ -234,7 +261,7 @@ export default function ShoppingListSection() {
             borderRadius: 1,
             boxShadow: 2,
             "&:hover": { boxShadow: 4 },
-            backgroundColor: PURPLE, 
+            backgroundColor: PURPLE,
             "&:hover": { backgroundColor: "#6b82e0" }, // Darker shade on hover
           }}
           startIcon={<FaPlusCircle />}
@@ -244,7 +271,9 @@ export default function ShoppingListSection() {
       </Box>
 
       {loading && shoppingList.length === 0 ? (
-        <Box sx={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
+        <Box
+          sx={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}
+        >
           <CircularProgress />
         </Box>
       ) : (
@@ -278,45 +307,54 @@ export default function ShoppingListSection() {
               >
                 <ListItemText
                   primary={
-                    editingItem && editingItem.ingredientName === item.ingredientName ? (
-                      <Box component="form" onSubmit={handleUpdateItem} sx={{ display: "flex", alignItems: "center" }}>
-                      <TextField
-                        value={editingItemName}
-                        onChange={handleInputChange}
-                        autoFocus
-                        sx={{
-                          marginRight: 2,
-                          "& .MuiOutlinedInput-root": {
-                            "& fieldset": {
-                              borderColor: "grey",
-                            },
-                            "&:hover fieldset": {
-                              borderColor: "#7e91ff",
-                            },
-                            "&.Mui-focused fieldset": {
-                              borderColor: "#7e91ff",
-                            },
-                          },
-                        }}
-                      />
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        sx={{
-                          backgroundColor: "#7e91ff",
-                          "&:hover": {
-                            backgroundColor: "#6b82e0",
-                          },
-                        }}
+                    editingItem &&
+                    editingItem.ingredientName === item.ingredientName ? (
+                      <Box
+                        component="form"
+                        onSubmit={handleUpdateItem}
+                        sx={{ display: "flex", alignItems: "center" }}
                       >
-                        Save
-                      </Button>
-                    </Box>
+                        <TextField
+                          value={editingItemName}
+                          onChange={handleInputChange}
+                          autoFocus
+                          sx={{
+                            marginRight: 2,
+                            "& .MuiOutlinedInput-root": {
+                              "& fieldset": {
+                                borderColor: "grey",
+                              },
+                              "&:hover fieldset": {
+                                borderColor: "#7e91ff",
+                              },
+                              "&.Mui-focused fieldset": {
+                                borderColor: "#7e91ff",
+                              },
+                            },
+                          }}
+                        />
+                        <Button
+                          type="submit"
+                          variant="contained"
+                          sx={{
+                            backgroundColor: "#7e91ff",
+                            "&:hover": {
+                              backgroundColor: "#6b82e0",
+                            },
+                          }}
+                        >
+                          Save
+                        </Button>
+                      </Box>
                     ) : (
                       <span>{item.ingredientName}</span>
                     )
                   }
-                  sx={{ textDecoration: "none", fontWeight: 500, color: "#333" }}
+                  sx={{
+                    textDecoration: "none",
+                    fontWeight: 500,
+                    color: "#333",
+                  }}
                 />
                 <Box>
                   <EditButton onClick={() => handleEditItem(item)} />
@@ -332,14 +370,22 @@ export default function ShoppingListSection() {
                   </Tooltip>
 
                   <Tooltip title="Delete Ingredient" enterDelay={0}>
-                    <DeleteButton onClick={() => handleDeleteItem(item.ingredientName)} />
+                    <DeleteButton
+                      onClick={() => handleDeleteItem(item.ingredientName)}
+                    />
                   </Tooltip>
                 </Box>
               </Card>
             ))}
           </List>
           {loading && (
-            <Box sx={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                marginTop: "1rem",
+              }}
+            >
               <CircularProgress />
             </Box>
           )}

@@ -203,7 +203,12 @@ async function pantryComparison(uid, recipeId) {
     const recipe = await getFavRecipeById(uid, recipeId);
     const recipeIngredients = recipe.ingredients;
     const pantry = await getPantry(uid, 1000);
-    const pantryIngredients = pantry.ingredients.map(ingredient => ingredient.ingredientName);
+    let pantryIngredients = pantry.ingredients
+    if (pantryIngredients) {
+        pantryIngredients = pantry.ingredients.map(ingredient => ingredient.ingredientName);
+    } else {
+        pantryIngredients = [];
+    }
     const schema = {
         "type": "object",
         "properties": {

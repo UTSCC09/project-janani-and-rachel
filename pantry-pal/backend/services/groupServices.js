@@ -94,6 +94,10 @@ export async function getGroupInvites(uid, limit=10, lastVisibleGroupId=null) {
     }
     
     const userGroupsDoc = await query.get();
+    if (userGroupsDoc.empty) {
+        return {groups, lastVisible: null};
+    }
+
     await Promise.all(userGroupsDoc.docs.map(async (doc) => {
         // get the creators email
         const creator = await auth.getUser(doc.data().createdBy);
@@ -119,6 +123,11 @@ export async function getGroupsICreated(uid, limit=10, lastVisibleGroupId=null) 
         query = query.startAfter(lastGroup);
     }
     const groupsDoc = await query.get();
+
+    if (groupsDoc.empty) {
+        return {groups, lastVisible: null};
+    }
+
     await Promise.all(groupsDoc.docs.map(async (doc) => {
         groups.push({ ...doc.data() });
     }));
@@ -245,6 +254,10 @@ export async function getUsersGroups(uid, limit=10, lastVisibleGroupId=null) {
     }
     const userGroupsDoc = await query.get();
 
+    if (userGroupsDoc.empty) {
+        return {groups, lastVisible: null};
+    }
+
     await Promise.all(userGroupsDoc.docs.map(async (doc) => {
         // get the creators email
         const creator = await auth.getUser(doc.data().createdBy);
@@ -267,7 +280,7 @@ export async function getGroupMembers(uid, groupId) {
     if (!groupDoc.exists) {
         throw { status: 404, message: "Group not found." };
     }
-    const groupData = groupDoc.data();
+    const groupData = groupDoc.data();        
 
     // check if user is a member of the group
     if (!groupData.groupMembers.includes(uid)) {
@@ -314,7 +327,11 @@ export async function getPantryOfGroupMember(uid, groupId, memberUid, limit=10, 
         query = query.startAfter(lastIngredient);
     }
     const pantryDocs = await query.get();
-    console.log("pantryDocs:", pantryDocs.docs);
+    
+    if (pantryDocs.empty) {
+        return { pantry: [], lastVisible: null };
+    }
+
     const pantry = pantryDocs.docs.map((doc) => doc.data());
 
     let lastVisible = null;
@@ -343,6 +360,10 @@ export async function getPantryForGroup(uid, groupId) {
     await Promise.all(groupData.groupMembers.map(async (member) => {
         const pantryRef = db.collection('Users').doc(member).collection('Pantry');
         const pantryDoc = await pantryRef.get();
+        if (pantryDoc.empty) {
+            pantry.push({uid: member, pantry: []});
+            return;
+        }
         // get list of ingredient in this member's pantry
         const ingredients = pantryDoc.docs.map((doc) => doc.data());
         pantry.push({uid: member, pantry: ingredients});

@@ -52,7 +52,8 @@ export default function IngredientsSection() {
       fetch(url, {
         headers: {
           'Authorization':`Bearer ${localStorage.getItem('idToken')}`,
-          'GoogleAccessToken': localStorage.getItem('accessToken')
+          'GoogleAccessToken': localStorage.getItem('accessToken'),
+          "GoogleAccessToken": localStorage.getItem('accessToken')
         }
       })
         .then((response) => response.json())

@@ -73,6 +73,7 @@ const GroupCard = ({
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+            "GoogleAccessToken": localStorage.getItem('accessToken')
           },
         });
 
@@ -106,6 +107,8 @@ const GroupCard = ({
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+          "GoogleAccessToken": localStorage.getItem('accessToken')
+          
         },
       });
 
@@ -117,9 +120,9 @@ const GroupCard = ({
       setMemberIngredients((prev) => ({ ...prev, [memberId]: data.pantry }));
     } catch (error) {
       console.error('Error fetching member ingredients:', error);
-      setSnackbarMessage('Failed to fetch member ingredients');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
+      // setSnackbarMessage('Failed to fetch member ingredients');
+      // setSnackbarSeverity('error');
+      // setSnackbarOpen(true);
     }
   };
 
@@ -142,6 +145,7 @@ const GroupCard = ({
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+          "GoogleAccessToken": localStorage.getItem('accessToken')
         },
       });
 
@@ -176,6 +180,7 @@ const GroupCard = ({
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+          "GoogleAccessToken": localStorage.getItem('accessToken')
         },
       });
 
@@ -190,9 +195,9 @@ const GroupCard = ({
       setSnackbarOpen(true);
     } catch (error) {
       console.error('Error deleting recipe:', error);
-      setSnackbarMessage('Failed to delete recipe');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
+      // setSnackbarMessage('Failed to delete recipe');
+      // setSnackbarSeverity('error');
+      // setSnackbarOpen(true);
     }
   };
 
@@ -221,6 +226,7 @@ const GroupCard = ({
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+          "GoogleAccessToken": localStorage.getItem('accessToken')
         },
         body: JSON.stringify({ memberEmail }),
       });
@@ -269,6 +275,7 @@ const GroupCard = ({
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+          "GoogleAccessToken": localStorage.getItem('accessToken')
         },
       });
   
@@ -282,9 +289,9 @@ const GroupCard = ({
       setShowRecipeSuggestions(true);
     } catch (error) {
       console.error('Error fetching recipes:', error);
-      setSnackbarMessage('Failed to fetch recipes');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
+      // setSnackbarMessage('Failed to fetch recipes');
+      // setSnackbarSeverity('error');
+      // setSnackbarOpen(true);
     }
   };
 

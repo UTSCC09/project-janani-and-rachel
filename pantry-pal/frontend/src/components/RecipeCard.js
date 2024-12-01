@@ -38,7 +38,7 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
     setLoading(true);
     setErrorMessage('');
   
-    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), 1000000));
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), 5000));
   
     Promise.race([
       fetch(`${domain}/api/recipes/favorites/${recipe.recipeId}/pantry-comparison`, {
@@ -68,6 +68,7 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
       })
       .then(data => {
         if (data && data.matchingIngredients && data.missingIngredients) {
+          console.log(data.matchingIngredients);
           setAiSplit({
             inPantry: data.matchingIngredients,
             notInPantry: data.missingIngredients,
@@ -174,7 +175,7 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
         position: "relative", // Enables absolute positioning for children
         transition: "transform 0.3s ease-in-out", // Smooth transition for hover effect
         "&:hover": {
-          transform: "scale(1.05)", // Zoom out effect on hover
+          transform: "scale(1.02)", // Zoom out effect on hover
         },
       }}
     >

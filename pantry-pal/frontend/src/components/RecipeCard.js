@@ -396,7 +396,9 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
                   variant="contained"
                   color="primary"
                   onClick={handleAddToMealPlan}
-                  sx={{ marginTop: "1rem", backgroundColor: "#7e91ff" }}
+                  sx={{ marginTop: "1rem", backgroundColor: "#7e91ff",  "&:hover": {
+                    backgroundColor: "#d3d3d3", // Light grey color
+                  }, }}
                 >
                   Add to Meal Plan
                 </Button>
@@ -442,7 +444,9 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
                 variant="contained"
                 color="primary"
                 onClick={handleAddToMealPlan}
-                sx={{ marginTop: "1rem", backgroundColor: "#7e91ff" }}
+                sx={{ marginTop: "1rem", backgroundColor: "#7e91ff",  "&:hover": {
+                  backgroundColor: "#d3d3d3", // Light grey color
+                }, }}
                 
               >
                 Add to Meal Plan

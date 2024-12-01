@@ -198,17 +198,16 @@ export default function IngredientsSection() {
     setEditingIngredient(ingredient);
     setNewIngredient({
       ingredientName: ingredient.ingredientName,
-      purchaseDate: ingredient.purchaseDate,
-      expirationDate: ingredient.expirationDate,
+      purchaseDate: formatDate(ingredient.purchaseDate), // Use formatDate for consistent formatting
+      expirationDate: ingredient.expirationDate ? formatDate(ingredient.expirationDate) : "", // Handle expirationDate as well
       frozen: ingredient.frozen,
     });
     setShowForm(true);
-
+  
     setTimeout(() => {
       formRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   };
-
   const handleToggleForm = () => {
     if (showForm) {
       setNewIngredient({
@@ -230,25 +229,27 @@ export default function IngredientsSection() {
     setError(null);
   };
 
-  const formatDate = (timestamp) => {
-    if (!timestamp) return "N/A";
-  
-    let date;
-    if (timestamp.seconds !== undefined && timestamp.nanoseconds !== undefined) {
-      date = new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
-    } else {
-      date = new Date(timestamp);
-    }
-  
-    if (isNaN(date.getTime())) {
-      return "Invalid Date";
-    }
-  
-    const options = { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" };
-    return new Intl.DateTimeFormat("en-US", options).format(
-      new Date(date.toLocaleString("en-US", { timeZone: "UTC" }))
-    );
-  };
+const formatDate = (timestamp) => {
+  if (!timestamp) return "N/A";
+
+  let date;
+  if (timestamp._seconds !== undefined && timestamp._nanoseconds !== undefined) {
+    date = new Date(timestamp._seconds * 1000 + timestamp._nanoseconds / 1000000);
+  } else {
+    date = new Date(timestamp);
+  }
+
+  if (isNaN(date.getTime())) {
+    return "Invalid Date";
+  }
+
+  // Adjust for timezone offset
+  const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+
+  // Format as YYYY-MM-DD
+  return utcDate.toISOString().split("T")[0];
+};
+
   
   return (
     <Box sx={{ padding: 3, maxWidth: "900px", margin: "0 auto" }}>

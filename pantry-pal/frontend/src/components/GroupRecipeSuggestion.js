@@ -11,7 +11,6 @@ import {
   Alert,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import DeleteIcon from '@mui/icons-material/Delete';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 
 const PURPLE = "#7e91ff";
@@ -55,34 +54,7 @@ const GroupRecipeSuggestion = ({ groupId, recipes }) => {
       setSnackbarOpen(true);
     }
   };
-
-  const handleDeleteRecipe = async (recipeId) => {
-    try {
-      const response = await fetch(`${domain}/api/groups/${groupId}/recipes/${recipeId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete recipe');
-      }
-
-      const deletedRecipe = await response.json();
-      setGroupRecipes((prev) => prev.filter((recipe) => recipe.recipeId !== recipeId));
-      setSnackbarMessage('Recipe deleted successfully');
-      setSnackbarSeverity('success');
-      setSnackbarOpen(true);
-    } catch (error) {
-      console.error('Error deleting recipe:', error);
-      setSnackbarMessage('Failed to delete recipe');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-    }
-  };
-
+  
   return (
     <Box sx={{ maxWidth: 800, margin: '0 auto', padding: 3 }}>
     <Typography 

@@ -107,7 +107,7 @@ export default function RecipeSearch({ onSearch }) {
           backgroundColor: "#fffae1",
         }}
       >
-        <TextField
+      <TextField
           label="Enter a keyword (e.g., chicken)"
           variant="outlined"
           placeholder="e.g., chicken"
@@ -125,6 +125,17 @@ export default function RecipeSearch({ onSearch }) {
             marginBottom: "1.5rem",
             backgroundColor: "#fff",
             borderRadius: 1,
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "grey",
+              },
+              "&:hover fieldset": {
+                borderColor: "#7e91ff",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "#7e91ff",
+              },
+            },
           }}
         />
         <Box sx={{ display: "flex", justifyContent: "center" }}>

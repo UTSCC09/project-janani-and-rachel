@@ -280,16 +280,38 @@ export default function ShoppingListSection() {
                   primary={
                     editingItem && editingItem.ingredientName === item.ingredientName ? (
                       <Box component="form" onSubmit={handleUpdateItem} sx={{ display: "flex", alignItems: "center" }}>
-                        <TextField
-                          value={editingItemName}
-                          onChange={handleInputChange}
-                          autoFocus
-                          sx={{ marginRight: 2 }}
-                        />
-                        <Button type="submit" variant="contained" color="primary">
-                          Save
-                        </Button>
-                      </Box>
+                      <TextField
+                        value={editingItemName}
+                        onChange={handleInputChange}
+                        autoFocus
+                        sx={{
+                          marginRight: 2,
+                          "& .MuiOutlinedInput-root": {
+                            "& fieldset": {
+                              borderColor: "grey",
+                            },
+                            "&:hover fieldset": {
+                              borderColor: "#7e91ff",
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: "#7e91ff",
+                            },
+                          },
+                        }}
+                      />
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        sx={{
+                          backgroundColor: "#7e91ff",
+                          "&:hover": {
+                            backgroundColor: "#6b82e0",
+                          },
+                        }}
+                      >
+                        Save
+                      </Button>
+                    </Box>
                     ) : (
                       <span>{item.ingredientName}</span>
                     )

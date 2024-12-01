@@ -56,6 +56,10 @@ export default function Home() {
           setIsAuthenticated(false);
           setActiveSection("signin");
         }
+        else {
+          setIsAuthenticated(true);
+          setActiveSection("recipes");
+        }
       }
     };
 

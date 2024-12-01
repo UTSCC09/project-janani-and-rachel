@@ -62,7 +62,7 @@ export async function addToPantry(uid, ingredientName, purchaseDate=new Date(), 
     };
     await pantryRef.set(ingredientData);
 
-    if (!mealPlan) {
+    if (mealPlans.length === 0) {
         return ingredientData;
     }
 

@@ -21,17 +21,26 @@ async function getPantryIngredients(uid) {
 
 async function getPantryIngredientsForGroup(uid, groupId) {
     try {
-      const pantry = await getPantryForGroup(uid, groupId, 1000);
-      if (pantry && pantry.length > 0) {
-        return pantry.map((ingredient) => ingredient.ingredientName);
-      } else {
-        return [];
-      }
+        const pantrys = await getPantryForGroup(uid, groupId);
+        if (pantrys && pantrys.length > 0) {
+            const allIngredients = [];
+            pantrys.forEach(({ uid, pantry }) => {
+                pantry.forEach((ingredient) => {
+                    if (ingredient.ingredientName) {
+                        allIngredients.push(ingredient.ingredientName);
+                    }
+                });
+            });
+            return allIngredients;
+        } else {
+            return [];
+        }
     } catch (error) {
-      console.error("Error fetching pantry ingredients:", error);
-      return [];
+        console.error("Error fetching pantry ingredients:", error);
+        return [];
     }
 }
+
 
 
 function formatRecipes(data) {

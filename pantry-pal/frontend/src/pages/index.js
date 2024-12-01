@@ -5,7 +5,6 @@ import {
   Toolbar,
   Container,
   Box,
-  Typography,
   IconButton,
   Menu,
   MenuItem,
@@ -26,7 +25,8 @@ import { auth } from "../../config/firebase"; // Adjust the import path as neede
 import { jwtDecode } from "jwt-decode";
 
 const isTokenExpired = (token) => {
-  if (!token) return true;
+    // token should always be true since that is how we are calling it. but this is just in case
+  if (!token) return false; 
 
   try {
     const decodedToken = jwtDecode(token);
@@ -45,15 +45,28 @@ export default function Home() {
   const [sessionExpired, setSessionExpired] = useState(false);
 
   useEffect(() => {
-    // Check if the token is present in localStorage
-    const token = localStorage.getItem("idToken");
-    if (isTokenExpired(token)) {
-      setSessionExpired(true);
-      setActiveSection("signin");
-    } else {
-      setIsAuthenticated(true);
-      setActiveSection("recipes");
-    }
+    const checkTokenExpiration = () => {
+      const token = localStorage.getItem("idToken");
+
+      if (!token) {
+        setActiveSection("signin");
+      } else {
+        if (isTokenExpired(token)) {
+          setSessionExpired(true);
+          setIsAuthenticated(false);
+          setActiveSection("signin");
+        }
+      }
+    };
+
+    // Initial check
+    checkTokenExpiration();
+
+    // Set interval to check every 30 seconds (30000 milliseconds)
+    const intervalId = setInterval(checkTokenExpiration, 30000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleSignIn = () => {

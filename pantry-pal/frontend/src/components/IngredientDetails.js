@@ -23,8 +23,8 @@ const IngredientDetails = ({ ingredient, formatDate }) => {
             fontWeight: "bold",
             color: "#ffffff",
           }}
+          dangerouslySetInnerHTML={{ __html: ingredient.ingredientName }}
         >
-          {ingredient.ingredientName}
         </Typography>
       </Box>
 

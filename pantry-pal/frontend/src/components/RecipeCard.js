@@ -191,6 +191,17 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
     setErrorMessage("");
   };
 
+  useEffect(() => {
+    const mainElement = document.getElementById("__next");
+    if (mainElement) {
+      if (open) {
+        mainElement.setAttribute("inert", "true");
+      } else {
+        mainElement.removeAttribute("inert");
+      }
+    }
+  }, [open]);
+
   return (
     <Card
       ref={lastRecipeElementRef}
@@ -223,9 +234,8 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
           <Typography
             variant="h5"
             sx={{ fontWeight: "600", color: "#fff", textAlign: "center" }}
-          >
-            {recipe.recipeName}
-          </Typography>
+            dangerouslySetInnerHTML={{ __html: recipe.recipeName }}
+          />
         </Box>
 
         {/* Instructions Section */}
@@ -316,21 +326,26 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
               marginTop: 2,
             }}
           >
-            <Typography
-              variant="h6"
-              component="div"
-              sx={{ fontWeight: "bold", color: PURPLE }}
-            >
-              Nutrients
-            </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              fontWeight: "500",
+              color: "#7e91ff", // Soft purple for instructions
+              marginBottom: "0.5rem",
+            }}
+          >
+            <strong>Nutrients:</strong>
+          </Typography>
             <List>
               {recipe.nutrition.nutrients.map((nutrient, index) => (
-                <ListItem key={index}>
-                  <ListItemText
-                    primary={`${nutrient.name}: ${nutrient.amount} ${nutrient.unit}`}
-                    secondary={`% of Daily Needs: ${nutrient.percentOfDailyNeeds}`}
-                  />
-                </ListItem>
+                <ListItem key={index} sx={{ padding: "2px 0" }}>
+                <ListItemText
+                  primaryTypographyProps={{ variant: "body2" }}
+                  secondaryTypographyProps={{ variant: "body2" }}
+                  primary={`${nutrient.name}: ${nutrient.amount} ${nutrient.unit}`}
+                  secondary={`% of Daily Needs: ${nutrient.percentOfDailyNeeds}`}
+                />
+              </ListItem>
               ))}
             </List>
           </Box>

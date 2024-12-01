@@ -17,7 +17,6 @@ import MealPlanCard from "./MealPlanCard";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import ReminderForm from "./ReminderForm";
-import DeleteButton from "./DeleteButton";
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
 

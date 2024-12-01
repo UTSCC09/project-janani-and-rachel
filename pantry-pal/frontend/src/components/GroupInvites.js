@@ -145,7 +145,7 @@ const GroupInvites = () => {
                 }}
               >
                 <ListItemText
-                  primary={invite.groupName}
+                  primary = {<span dangerouslySetInnerHTML={{__html: invite.groupName}} />}
                   secondary={`Invited by: ${invite.creatorEmail}`}
                 />
                 <IconButton

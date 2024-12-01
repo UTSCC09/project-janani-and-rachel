@@ -369,11 +369,9 @@ export default function ShoppingListSection() {
                     </IconButton>
                   </Tooltip>
 
-                  <Tooltip title="Delete Ingredient" enterDelay={0}>
-                    <DeleteButton
-                      onClick={() => handleDeleteItem(item.ingredientName)}
-                    />
-                  </Tooltip>
+                  <DeleteButton
+                    onClick={() => handleDeleteItem(item.ingredientName)}
+                  />
                 </Box>
               </Card>
             ))}

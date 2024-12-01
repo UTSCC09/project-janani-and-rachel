@@ -332,7 +332,7 @@ const GroupCard = ({
           }}
         >
           <ListItemText
-            primary={group.groupName}
+            primary={<span dangerouslySetInnerHTML={{ __html: group.groupName }} />}
             primaryTypographyProps={{ fontWeight: "bold", fontSize: "1.2rem" }}
           />
           <Box
@@ -420,15 +420,14 @@ const GroupCard = ({
                     padding: "12px 16px",
                   }}
                 >
-                  <Typography
-                    sx={{
-                      fontWeight: "bold",
-                      fontSize: "1.2rem",
-                      color: PURPLE,
-                    }}
-                  >
-                    {recipe.recipeName}
-                  </Typography>
+                <Typography
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "1.2rem",
+                    color: PURPLE,
+                  }}
+                  dangerouslySetInnerHTML={{ __html: recipe.recipeName }}
+                />
                 </AccordionSummary>
                 <AccordionDetails sx={{ padding: "16px" }}>
                   <Typography
@@ -547,10 +546,10 @@ const GroupCard = ({
                               paddingBottom: 0,
                             }}
                           >
-                            <ListItemText
-                              primary={ingredient.ingredientName}
-                              primaryTypographyProps={{ variant: "body2" }}
-                            />
+                          <ListItemText
+                            primary={<span dangerouslySetInnerHTML={{ __html: ingredient.ingredientName }} />}
+                            primaryTypographyProps={{ variant: "body2" }}
+                          />
                           </ListItem>
                         )
                       )}

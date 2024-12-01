@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, Box, Typography, IconButton, Tooltip, Button, TextField, Checkbox, List, ListItem, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress } from '@mui/material';
+import { Collapse, Card, CardContent, Box, Typography, IconButton, Tooltip, Button, TextField, Checkbox, List, ListItem, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress, ListItemText } from '@mui/material';
 import { MdEvent } from "react-icons/md";
 import DeleteButton from './DeleteButton';
 import InfoIcon from '@mui/icons-material/Info';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 
 const domain = process.env.NEXT_PUBLIC_BACKEND_DOMAIN;
@@ -20,6 +22,13 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
   })));
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  const [showNutrients, setShowNutrients] = useState(false);
+
+  const toggleNutrients = () => {
+    setShowNutrients(!showNutrients);
+  };
+
 
   const handleDateChange = (e) => {
     setSelectedDate(e.target.value);
@@ -254,7 +263,39 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
           )}
         </Box>
 
+        <Button
+          onClick={toggleNutrients}
+          endIcon={showNutrients ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          sx={{
+            color: PURPLE,
+            textTransform: 'none',
+            '&:hover': {
+              backgroundColor: LIGHT_GRAY,
+            },
+          }}
+        >
+          {showNutrients ? 'Hide Nutrients' : 'Show Nutrients'}
+        </Button>
+        <Collapse in={showNutrients}>
+          <Box sx={{ backgroundColor: 'white', padding: 2, borderRadius: 1, marginTop: 2 }}>
+            <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', color: PURPLE }}>
+              Nutrients
+            </Typography>
+            <List>
+              {recipe.nutrition.nutrients.map((nutrient, index) => (
+                <ListItem key={index}>
+                  <ListItemText
+                    primary={`${nutrient.name}: ${nutrient.amount} ${nutrient.unit}`}
+                    secondary={`% of Daily Needs: ${nutrient.percentOfDailyNeeds}`}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        </Collapse>
+
       </CardContent>
+
 
       {/* Edit, Delete, and Meal Plan Buttons */}
       <Box
@@ -355,7 +396,9 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
                   variant="contained"
                   color="primary"
                   onClick={handleAddToMealPlan}
-                  sx={{ marginTop: "1rem", backgroundColor: "#7e91ff" }}
+                  sx={{ marginTop: "1rem", backgroundColor: "#7e91ff",  "&:hover": {
+                    backgroundColor: "#d3d3d3", // Light grey color
+                  }, }}
                 >
                   Add to Meal Plan
                 </Button>
@@ -401,7 +444,9 @@ const RecipeCard = ({ recipe, lastRecipeElementRef, handleDelete }) => {
                 variant="contained"
                 color="primary"
                 onClick={handleAddToMealPlan}
-                sx={{ marginTop: "1rem", backgroundColor: "#7e91ff" }}
+                sx={{ marginTop: "1rem", backgroundColor: "#7e91ff",  "&:hover": {
+                  backgroundColor: "#d3d3d3", // Light grey color
+                }, }}
                 
               >
                 Add to Meal Plan

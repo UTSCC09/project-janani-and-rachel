@@ -10,11 +10,19 @@ import {
   Card,
   CardContent,
   Divider,
+  Collapse,
+  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
 } from "@mui/material";
 import {
   FaSearch,
   FaExclamationCircle,
 } from "react-icons/fa";
+import { ExpandMore, ExpandLess } from "@mui/icons-material";
 
 import FavoriteButton from "./FavouriteButton";
 import StyledTitle from "./StyledTitle";
@@ -27,6 +35,14 @@ export default function RecipeSearch({ onSearch }) {
   const [error, setError] = useState(null);
   const [recipes, setRecipes] = useState([]);
   const [favorites, setFavorites] = useState(new Set());
+  const [expandedNutrition, setExpandedNutrition] = useState({});
+
+  const toggleNutrition = (recipeId) => {
+    setExpandedNutrition((prevState) => ({
+      ...prevState,
+      [recipeId]: !prevState[recipeId],
+    }));
+  };
 
   const handleSearch = async () => {
     if (!ingredients) return;
@@ -40,8 +56,8 @@ export default function RecipeSearch({ onSearch }) {
         `${domain}/api/recipes/search-keyword?keyword=${encodeURIComponent(ingredients)}`,
         {
           headers: {
-            "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-            'GoogleAccessToken': localStorage.getItem('accessToken')
+            Authorization: `Bearer ${localStorage.getItem("idToken")}`,
+            GoogleAccessToken: localStorage.getItem("accessToken"),
           },
         }
       );
@@ -49,10 +65,8 @@ export default function RecipeSearch({ onSearch }) {
         throw new Error("Failed to fetch recipes");
       }
       const data = await res.json();
-      setRecipes(data); // Update the recipes state
-      onSearch(data); // Pass the results back to the parent component (optional)
+      setRecipes(data);
     } catch (err) {
-      // setError("There was an error searching for recipes.");
       console.error(err);
     } finally {
       setLoading(false);
@@ -60,24 +74,16 @@ export default function RecipeSearch({ onSearch }) {
   };
 
   const handleFavoriteClick = async (recipe) => {
+    // console.log("recipe from search: ", recipe);
     try {
       const res = await fetch(`${domain}/api/recipes/favorites`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("idToken")}`,
-          'GoogleAccessToken': localStorage.getItem('accessToken')
+          Authorization: `Bearer ${localStorage.getItem("idToken")}`,
+          GoogleAccessToken: localStorage.getItem("accessToken"),
         },
-        body: JSON.stringify({
-          recipeId: recipe.recipeId,
-          recipeName: recipe.recipeName,
-          missedIngredientCount: recipe.missedIngredientCount,
-          missedIngredients: recipe.missedIngredients,
-          totalIngredientCount: recipe.totalIngredientCount,
-          ingredients: recipe.ingredients,
-          instructions: recipe.instructions,
-          sourceUrl: recipe.sourceUrl,
-        }),
+        body: JSON.stringify(recipe),
       });
 
       if (res.ok) {
@@ -93,8 +99,15 @@ export default function RecipeSearch({ onSearch }) {
   return (
     <Box sx={{ padding: "2rem", maxWidth: 1000, margin: "auto" }}>
       <StyledTitle>Search For Recipes by Keyword</StyledTitle>
-      <Paper elevation={6} sx={{ padding: "2rem", borderRadius: "8px", backgroundColor: "#fffae1" }}>
-        <TextField
+      <Paper
+        elevation={6}
+        sx={{
+          padding: "2rem",
+          borderRadius: "8px",
+          backgroundColor: "#fffae1",
+        }}
+      >
+      <TextField
           label="Enter a keyword (e.g., chicken)"
           variant="outlined"
           placeholder="e.g., chicken"
@@ -108,7 +121,22 @@ export default function RecipeSearch({ onSearch }) {
               </InputAdornment>
             ),
           }}
-          sx={{ marginBottom: "1.5rem", backgroundColor: "#fff", borderRadius: 1 }}
+          sx={{
+            marginBottom: "1.5rem",
+            backgroundColor: "#fff",
+            borderRadius: 1,
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: "grey",
+              },
+              "&:hover fieldset": {
+                borderColor: "#7e91ff",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "#7e91ff",
+              },
+            },
+          }}
         />
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           <Button
@@ -116,7 +144,12 @@ export default function RecipeSearch({ onSearch }) {
             variant="contained"
             disabled={loading}
             startIcon={loading ? <CircularProgress size={24} /> : <FaSearch />}
-            sx={{ padding: "0.8rem 2rem", fontWeight: "bold", backgroundColor: "#7e91ff", "&:hover": { backgroundColor: "#6b82e0" } }}
+            sx={{
+              padding: "0.8rem 2rem",
+              fontWeight: "bold",
+              backgroundColor: "#7e91ff",
+              "&:hover": { backgroundColor: "#6b82e0" },
+            }}
           >
             {loading ? "Searching..." : "Search Recipes"}
           </Button>
@@ -138,34 +171,56 @@ export default function RecipeSearch({ onSearch }) {
         )}
       </Paper>
 
-      {/* Display the list of recipes */}
       <Box sx={{ marginTop: "3rem" }}>
         {recipes.length > 0 ? (
           recipes.map((recipe) => (
             <Card
               key={recipe.recipeId}
-              sx={{ marginBottom: "1.5rem", borderRadius: "8px", boxShadow: 3, backgroundColor: "#fffae1" }}
+              sx={{
+                marginBottom: "1.5rem",
+                borderRadius: "8px",
+                boxShadow: 3,
+                backgroundColor: "#fffae1",
+              }}
             >
               <CardContent>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}>
-              <Typography variant="h6" sx={{ fontWeight: "bold", color: "#7e91ff" }} gutterBottom>
-              {recipe.recipeName}
-              </Typography>
-              <Box sx={{ position: "absolute", top: "-4px", right: "-4px" }}> {/* Adjusted top value */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    position: "relative",
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: "bold", color: "#7e91ff" }}
+                    gutterBottom
+                  >
+                    {recipe.recipeName}
+                  </Typography>
                   <FavoriteButton
                     isFavorite={favorites.has(recipe.recipeId)}
                     onClick={() => handleFavoriteClick(recipe)}
                     sx={{
-                      color: favorites.has(recipe.recipeId) ? "#ff4081" : "#7e91ff",
+                      color: favorites.has(recipe.recipeId)
+                        ? "#ff4081"
+                        : "#7e91ff",
                     }}
                   />
                 </Box>
-            </Box>
                 <Typography variant="body2" color="text.secondary">
                   <strong>Ingredients:</strong> {recipe.ingredients.join(", ")}
                 </Typography>
                 <Divider sx={{ marginY: "1rem" }} />
-                <Paper elevation={3} sx={{ padding: "1rem", backgroundColor: "#fff", borderRadius: "8px" }}>
+                <Paper
+                  elevation={3}
+                  sx={{
+                    padding: "1rem",
+                    backgroundColor: "#fff",
+                    borderRadius: "8px",
+                  }}
+                >
                   <Typography variant="body2" color="text.secondary">
                     <strong>Instructions:</strong>
                   </Typography>
@@ -179,19 +234,55 @@ export default function RecipeSearch({ onSearch }) {
                     ))}
                   </ul>
                 </Paper>
-                <Typography
-                  variant="body2"
-                  color="primary"
-                  sx={{ marginTop: "1rem" }}
-                >
-                  <a
-                    href={recipe.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                <Box sx={{ marginTop: "1rem" }}>
+                <Button
+                size="small"
+                startIcon={
+                  expandedNutrition[recipe.recipeId] ? (
+                    <ExpandLess />
+                  ) : (
+                    <ExpandMore />
+                  )
+                }
+                onClick={() => toggleNutrition(recipe.recipeId)}
+                sx={{
+                  color: "#b39ddb", // Light purple text color
+                  "&:hover": {
+                    backgroundColor: "#e0e0e0", // Grey hover background
+                  },
+                }}
+              >
+                {expandedNutrition[recipe.recipeId]
+                  ? "Hide Nutrition Info"
+                  : "Show Nutrition Info"}
+              </Button>
+
+                  <Collapse
+                    in={expandedNutrition[recipe.recipeId]}
+                    timeout="auto"
+                    unmountOnExit
                   >
-                    Full Recipe Source
-                  </a>
-                </Typography>
+                    <TableContainer>
+                      <Table>
+                        <TableBody>
+                          {recipe.nutrition.nutrients.map((nutrient, index) => (
+                            <TableRow key={index}>
+                              <TableCell>
+                                <strong>{nutrient.name}</strong>
+                              </TableCell>
+                              <TableCell>
+                                {nutrient.amount} {nutrient.unit}
+                              </TableCell>
+                              <TableCell>
+                                {nutrient.percentOfDailyNeeds}%
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </Collapse>
+                </Box>
               </CardContent>
             </Card>
           ))

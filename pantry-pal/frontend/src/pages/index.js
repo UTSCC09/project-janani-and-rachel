@@ -23,6 +23,20 @@ import RecipeSearch from "@/components/RecipeSearch";
 import GroupsSection from "@/components/GroupsSection";
 import styles from "@/styles/Home.module.css";
 import { auth } from "../../config/firebase"; // Adjust the import path as needed
+import { jwtDecode } from "jwt-decode";
+
+const isTokenExpired = (token) => {
+  if (!token) return true;
+
+  try {
+    const decodedToken = jwtDecode(token);
+    const currentTime = Date.now() / 1000; // Convert to seconds
+    return decodedToken.exp < currentTime;
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return true;
+  }
+};
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState("signin");
@@ -33,9 +47,12 @@ export default function Home() {
   useEffect(() => {
     // Check if the token is present in localStorage
     const token = localStorage.getItem("idToken");
-    if (token) {
+    if (isTokenExpired(token)) {
+      setSessionExpired(true);
+      setActiveSection("signin");
+    } else {
       setIsAuthenticated(true);
-      setActiveSection("recipes"); // Set the default section for authenticated users
+      setActiveSection("recipes");
     }
   }, []);
 

@@ -19,6 +19,7 @@ const CreateGroup = ({ onGroupCreated }) => {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+          'GoogleAccessToken': localStorage.getItem('accessToken'),
         },
         body: JSON.stringify({ groupName: newGroupName }),
       });

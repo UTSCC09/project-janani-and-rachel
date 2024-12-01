@@ -26,6 +26,9 @@ import StarIcon from '@mui/icons-material/Star'; // Leader icon
 import ExitToAppIcon from '@mui/icons-material/ExitToApp'; // Leave group icon
 import GroupIcon from '@mui/icons-material/Group'; // Members icon
 import PersonAddIcon from '@mui/icons-material/PersonAdd'; // Add member icon
+import SearchIcon from '@mui/icons-material/Search'; // Search icon
+import DeleteIcon from '@mui/icons-material/Delete'; // Delete icon
+import GroupRecipeSuggestion from './GroupRecipeSuggestion'; // Import GroupRecipeSuggestion component
 
 const PURPLE = "#7e91ff";
 const LIGHT_PURPLE = "#d1d9ff";
@@ -51,6 +54,9 @@ const GroupCard = ({
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [showRecipeSuggestions, setShowRecipeSuggestions] = useState(false);
+  const [recipes, setRecipes] = useState([]);
+  const [groupRecipes, setGroupRecipes] = useState([]);
 
   useEffect(() => {
     const fetchGroupMembers = async () => {
@@ -108,7 +114,6 @@ const GroupCard = ({
       }
 
       const data = await response.json();
-      console.log(data);
       setMemberIngredients((prev) => ({ ...prev, [memberId]: data.pantry }));
     } catch (error) {
       console.error('Error fetching member ingredients:', error);
@@ -129,6 +134,67 @@ const GroupCard = ({
     // Cleanup interval on component unmount
     return () => clearInterval(intervalId);
   }, [groupMembers]);
+
+  const fetchGroupRecipes = async () => {
+    try {
+      const response = await fetch(`${domain}/api/groups/${group.groupId}/recipes`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch group recipes');
+      }
+
+      const data = await response.json();
+      setGroupRecipes(Array.isArray(data.recipes) ? data.recipes : []);
+    } catch (error) {
+      console.error('Error fetching group recipes:', error);
+      setSnackbarMessage('Failed to fetch group recipes');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  };
+
+  useEffect(() => {
+    fetchGroupRecipes();
+
+    // Short polling to update group recipes every 10 seconds
+    const intervalId = setInterval(fetchGroupRecipes, 10000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [group.groupId]);
+
+  const handleDeleteRecipe = async (recipeId) => {
+    try {
+      const response = await fetch(`${domain}/api/groups/${group.groupId}/recipes/${recipeId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete recipe');
+      }
+
+      const deletedRecipe = await response.json();
+      setGroupRecipes((prev) => prev.filter((recipe) => recipe.recipeId !== recipeId));
+      setSnackbarMessage('Recipe deleted successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error('Error deleting recipe:', error);
+      setSnackbarMessage('Failed to delete recipe');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  };
 
   const handleOpenDialog = () => {
     setOpenDialog(true);
@@ -191,6 +257,37 @@ const GroupCard = ({
     setSnackbarOpen(false);
   };
 
+  const handleSearchRecipes = async () => {
+    if (showRecipeSuggestions) {
+      setShowRecipeSuggestions(false);
+      return;
+    }
+  
+    try {
+      const response = await fetch(`${domain}/api/groups/${group.groupId}/search-most-matching?limit=10&page=1`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('idToken')}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to fetch recipes');
+      }
+  
+      const data = await response.json();
+      console.log("recuoe search", data);
+      setRecipes(data || []);
+      setShowRecipeSuggestions(true);
+    } catch (error) {
+      console.error('Error fetching recipes:', error);
+      setSnackbarMessage('Failed to fetch recipes');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  };
+
   return (
     <Paper elevation={3} sx={{ marginBottom: 2, padding: 2, borderRadius: '8px' }}>
       <ListItem sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
@@ -224,8 +321,115 @@ const GroupCard = ({
                 <PersonAddIcon />
               </IconButton>
             )}
+            <IconButton
+              sx={{
+                color: PURPLE,
+                '&:hover': {
+                  backgroundColor: 'rgba(126, 145, 255, 0.1)',
+                },
+              }}
+              onClick={handleSearchRecipes}
+            >
+              <SearchIcon />
+            </IconButton>
           </Box>
         </Box>
+        <Box 
+  sx={{ 
+    marginTop: 4, 
+    maxWidth: 800, 
+    margin: '0 auto', 
+    padding: 3, 
+    borderRadius: 2, 
+    backgroundColor: '#f9f9f9', 
+    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)' 
+  }}
+>
+  <Typography 
+    variant="h5" 
+    sx={{ 
+      fontWeight: 'bold', 
+      color: PURPLE, 
+      textAlign: 'center', 
+      marginBottom: 3 
+    }}
+  >
+    Our Recipes
+  </Typography>
+  <List>
+    {groupRecipes.map((recipe) => (
+      <Accordion 
+        key={recipe.recipeId} 
+        sx={{ 
+          marginBottom: 2, 
+          borderRadius: 2, 
+          boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)', 
+          overflow: 'hidden' 
+        }}
+      >
+        <AccordionSummary 
+          expandIcon={<ExpandMoreIcon />} 
+          sx={{ 
+            backgroundColor: LIGHT_PURPLE, 
+            padding: '12px 16px' 
+          }}
+        >
+          <Typography 
+            sx={{ 
+              fontWeight: 'bold', 
+              fontSize: '1.2rem', 
+              color: PURPLE 
+            }}
+          >
+            {recipe.recipeName}
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails sx={{ padding: '16px' }}>
+          <Typography 
+            variant="body1" 
+            color="textPrimary" 
+            sx={{ marginBottom: 2 }}
+          >
+            <strong>Ingredients:</strong> {recipe.ingredients.join(', ')}
+          </Typography>
+          <Typography 
+            variant="body1" 
+            color="textPrimary" 
+            sx={{ marginBottom: 2 }}
+          >
+            <strong>Instructions:</strong>
+          </Typography>
+          <ul style={{ paddingLeft: '1.5rem', margin: 0 }}>
+            {recipe.instructions.map((instruction, index) => (
+              <li key={index} style={{ marginBottom: '0.5rem' }}>
+                {instruction.step}
+              </li>
+            ))}
+          </ul>
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              justifyContent: 'flex-end', 
+              alignItems: 'center', 
+              marginTop: 2 
+            }}
+          >
+            <IconButton
+              sx={{ 
+                color: '#d32f2f', 
+                '&:hover': { color: '#ff5252' } 
+              }}
+              onClick={() => handleDeleteRecipe(recipe.recipeId)}
+              aria-label="Delete recipe"
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+    ))}
+  </List>
+</Box>
         <Divider sx={{ marginY: 2 }} />
         <Box sx={{ width: '100%' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 1 }}>
@@ -366,6 +570,15 @@ const GroupCard = ({
           {snackbarMessage}
         </Alert>
       </Snackbar>
+
+ 
+
+
+      {showRecipeSuggestions && (
+  <Box sx={{ marginTop: 4 }}>
+    <GroupRecipeSuggestion groupId={group.groupId} recipes={recipes} />
+  </Box>
+)}
     </Paper>
   );
 };

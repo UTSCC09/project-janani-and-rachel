@@ -25,7 +25,7 @@ import styles from "@/styles/Home.module.css";
 import { auth } from "../../config/firebase"; // Adjust the import path as needed
 import { jwtDecode } from "jwt-decode";
 
-export const isTokenExpired = (token) => {
+const isTokenExpired = (token) => {
   if (!token) return false;
 
   try {
